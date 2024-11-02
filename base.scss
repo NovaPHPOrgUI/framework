@@ -1,0 +1,523 @@
+/*标准字体大小（rem参照对象）设置为14像素*/
+
+html {
+  font-size: 16px;
+}
+
+
+/**
+ * 当`body`宽度大于`html`宽度时，某些浏览器会出现内部滚动条，所以给`html、body`设置宽度100%。
+ * 取消部分浏览器点击有阴影。
+ * 优化移动端滚动事件。
+ */
+
+html,
+body {
+  width: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+}
+
+
+/*移除浏览器默认的`margin、padding`*/
+
+p,
+dl,
+dt,
+dd,
+ul,
+ol,
+li,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+th,
+td,
+div,
+pre,
+body,
+code,
+form,
+input,
+legend,
+button,
+figure,
+fieldset,
+textarea,
+blockquote {
+  margin: 0;
+  padding: 0;
+}
+
+
+/**
+ * `table`相邻单元格的边框间的距离设置为0。
+ * 设置`table`的边框为合并模式。
+ */
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+
+/*移除浏览器部分元素的默认边框*/
+
+img,
+abbr,
+input,
+button,
+acronym,
+fieldset,
+textarea {
+  border: none;
+}
+
+
+/*因为`input`默认不继承父元素的居中样式，所以让`input`元素继承父元素的文本居中方式*/
+
+input {
+  text-align: inherit;
+}
+
+
+/*让`textarea`默认不可以放缩*/
+
+textarea {
+  resize: none;
+}
+
+
+/*因为部分浏览器默认的`q`标签的前后伪元素有多余样式，所以置空`q`标签前后伪元素*/
+
+q::before,
+q::after {
+  content: '';
+}
+
+
+/**
+ * 由于以下元素的部分属性没有继承父节点样式，所以声明这些元素的这些属性为父元素的属性。
+ * 取消这些元素的`outline`样式。
+ */
+
+a,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+input,
+select,
+button,
+option,
+textarea,
+optgroup {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  line-height: inherit;
+  color: inherit;
+  outline: none;
+}
+
+
+/**
+ * 如果绝对定位元素，找不到被设置过定位信息的上级元素，那么这个元素就基于根节点定位，所以给`body`设置相对定位，让这些元素基于`body`定位。
+ * 设置网页基本字体颜色为`#666`(深灰色)。
+ * 设置网页背景颜色颜色为`#fff`（纯白色）。
+ * 使字体渲染更顺滑。
+ */
+
+body {
+  font: 16px 'Helvetica Neue', Arial, 'Hiragino Sans GB', STHeiti, 'STHeiti Light [STXihei]', 'Microsoft Yahei', sans-serif;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+
+/*取消下面元素的默认文字装饰（下划线、中划线）*/
+
+a,
+del,
+ins {
+  text-decoration: none;
+}
+
+
+/*取消ol，ul默认列表样式*/
+
+ol,
+ul {
+  list-style: none;
+}
+
+
+/*使如下元素默认鼠标经过是`小手`的形状（一般表示可以点击）*/
+
+button,
+input[type='submit'],
+input[type='button'] {
+  cursor: pointer;
+}
+
+
+/*取消火狐浏览器部分版本`input`聚焦的时候默认的`padding、border`*/
+
+input::-moz-focus-inner {
+  padding: 0;
+  border: 0;
+}
+
+
+/*取消部分浏览器`input[type='number']`的默认样式*/
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+
+/*输入控件的`placeholder`颜色设置为`#999`（浅灰色）*/
+
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: #999;
+}
+
+input:-moz-placeholder,
+textarea:-moz-placeholder {
+  color: #999;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: #999;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: #999;
+}
+
+
+
+/*由于部分浏览器`template`直接显示出来，所以要隐藏`template`元素*/
+
+template {
+  display: none;
+}
+
+//重置样式
+h1{
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  font-weight: bold;
+}
+h2{
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+font-weight: bold;
+}
+h3{
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+
+
+}
+h4{
+    font-size: 1rem;
+    margin-bottom: 1rem;
+
+
+}
+h5{
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+h6{
+    font-size: 0.75rem;
+    margin-bottom: 1rem;
+
+}
+
+
+/* 基本的容器样式 */
+.container,
+.container-fluid {
+  position: relative;
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+  box-sizing: border-box;
+}
+
+
+// 屏幕断点
+$breakpoints: (
+        'xs': 600px,
+        'sm': 840px,
+        'md': 1080px,
+        'lg': 1440px,
+        'xl': 1920px
+);
+
+// 清除浮动
+.row:before, .row:after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+// 基础列样式
+[class^="col-"] {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+}
+
+// 列宽度和偏移量
+@mixin col-widths($prefix) {
+  @for $i from 1 through 12 {
+    .col-#{$prefix}#{$i} {
+      float: left;
+      width: $i * 8.33333333%;
+    }
+    .col-#{$prefix}-offset#{$i} {
+      margin-left: $i * 8.33333333%;
+    }
+  }
+}
+
+// 列间隔
+@mixin col-spaces($prefix, $value) {
+  .col-#{$prefix} {
+    margin: -$value;
+
+    > * {
+      padding: $value;
+    }
+  }
+}
+
+// 生成媒体查询
+@each $name, $breakpoint in $breakpoints {
+  @if $name == 'xs' {
+    .container {
+      padding: 0 15px;
+    }
+    .hide-#{$name} {
+      display: none !important;
+    }
+    .show-#{$name}-block {
+      display: block !important;
+    }
+    .show-#{$name}-inline {
+      display: inline !important;
+    }
+    .show-#{$name}-inline-block {
+      display: inline-block !important;
+    }
+    @include col-widths($name);
+  } @else {
+    @media screen and (min-width: $breakpoint) {
+      .container {
+
+         @if $name == 'lg' {
+          max-width: var(--mdui-breakpoint-xl);
+        } @else if $name == 'md' {
+          max-width: var(--mdui-breakpoint-lg);
+        } @else if $name == 'sm' {
+          max-width: var(--mdui-breakpoint-md);
+        }
+
+      }
+
+      .hide-#{$name} {
+        display: none !important;
+      }
+      .show-#{$name}-block {
+        display: block !important;
+      }
+      .show-#{$name}-inline {
+        display: inline !important;
+      }
+      .show-#{$name}-inline-block {
+        display: inline-block !important;
+      }
+      @include col-widths($name);
+    }
+  }
+}
+
+// 列间隔
+$space-values: (
+        1: 0.03125rem,
+        2: 0.0625rem,
+        4: 0.125rem,
+        5: 0.15625rem,
+        6: 0.1875rem,
+        8: 0.25rem,
+        10: 0.3125rem,
+        12: 0.375rem,
+        14: 0.4375rem,
+        15: 0.46875rem,
+        16: 0.5rem,
+        18: 0.5625rem,
+        20: 0.625rem,
+        22: 0.6875rem,
+        24: 0.75rem,
+        25: 0.78125rem,
+        26: 0.8125rem,
+        28: 0.875rem,
+        30: 0.9375rem,
+        32: 1rem
+);
+
+@each $key, $value in $space-values {
+  @include col-spaces('space#{$key}', $value);
+}
+
+
+// 间距变量
+$spacing-values: (
+        0: 0rem,
+        1: 0.25rem, // 4px
+        2: 0.5rem, // 8px
+        3: 1rem, // 16px
+        4: 2rem, // 32px
+        5: 3rem // 48px
+);
+
+// 生成内边距和外边距类
+@mixin generate-spacing($property, $abbreviation) {
+  @each $key, $value in $spacing-values {
+    .#{$abbreviation}-#{$key} {
+      #{$property}: $value !important;
+    }
+    .#{$abbreviation}t-#{$key} {
+      #{$property}-top: $value !important;
+    }
+    .#{$abbreviation}r-#{$key} {
+      #{$property}-right: $value !important;
+    }
+    .#{$abbreviation}b-#{$key} {
+      #{$property}-bottom: $value !important;
+    }
+    .#{$abbreviation}l-#{$key} {
+      #{$property}-left: $value !important;
+    }
+  }
+}
+
+// 生成内边距类
+@include generate-spacing(padding, p);
+
+// 生成外边距类
+@include generate-spacing(margin, m);
+
+// 文字样式类生成
+$typescale: (
+        'display-large': display-large,
+        'display-medium': display-medium,
+        'display-small': display-small,
+        'headline-large': headline-large,
+        'headline-medium': headline-medium,
+        'headline-small': headline-small,
+        'title-large': title-large,
+        'title-medium': title-medium,
+        'title-small': title-small,
+        'label-large': label-large,
+        'label-medium': label-medium,
+        'label-small': label-small,
+        'body-large': body-large,
+        'body-medium': body-medium,
+        'body-small': body-small
+);
+
+
+@each $name, $class in $typescale {
+  .#{$class} {
+    font-size: var(--mdui-typescale-#{$name}-size);
+    line-height: var(--mdui-typescale-#{$name}-line-height);
+    letter-spacing: var(--mdui-typescale-#{$name}-tracking);
+    font-weight: var(--mdui-typescale-#{$name}-weight);
+  }
+}
+
+// 背景颜色类生成
+$background-colors: (
+        'error': error,
+        'success': primary,
+        'warning': secondary,
+        'info': surface,
+        'tertiary': tertiary,
+        'tint': surface-tint-color
+);
+
+@each $name, $color in $background-colors {
+  .bg-#{$name} {
+    background-color: rgba(var(--mdui-color-#{$color}), 0.8);
+    color: rgba(var(--mdui-color-on-#{$color}));
+  }
+  .text-#{$name} {
+    color: rgba(var(--mdui-color-#{$color}));
+  }
+}
+
+
+fieldset {
+
+  border-radius: var(--nova-border-radius);
+  padding: calc(var(--nova-padding) * 2);
+  margin-bottom: 20px;
+  background-color: rgb(var(--mdui-color-surface-container-low));
+  box-shadow: var(--mdui-elevation-level1);
+}
+
+/* 美化 legend */
+legend {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color:rgba(var(--mdui-color-primary));
+  padding: 0 10px;
+}
+
+.center-vertical {
+  display: flex;
+  align-items: center;
+}
+
+// 垂直和水平居中的辅助类
+.center-both {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/***************************************/
+/*文本溢出显示省略号`to==>text-overflow`，原子类*/
+
+.to {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+
+/*文本溢出显示省略号`to==>text-overflow`，原子类*/
