@@ -32,6 +32,5 @@ window.jsMap = {
     TranslateUtils: '/components/language/TranslateUtils.js',
 
     ImageLoader: '/components/imageLoader/ImageLoader.js',
-
-
 }
+window.debug = true;
