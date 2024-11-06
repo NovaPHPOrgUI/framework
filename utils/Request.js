@@ -50,8 +50,8 @@ class Request {
                 if (typeof success === 'function') {
                     //判断响应是否为json
                     if (typeof response === 'object') {
-                        if (this.codeCallBack[response.code] && typeof this.codeCallBack[response.code] === 'function') {
-                            this.codeCallBack[response.code](response);
+                        if (self.codeCallBack[response.code] && typeof self.codeCallBack[response.code] === 'function') {
+                            self.codeCallBack[response.code](response);
                         }else{
                             success(response);
                         }
