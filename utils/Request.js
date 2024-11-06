@@ -8,14 +8,23 @@ class Request {
             response: null,
             errorMessage: null
         };
+        this.codeCallBack = {
+
+        };
     }
 
     setBaseUrl(baseUrl) {
         this.baseUrl = baseUrl;
+        return this;
     }
 
     setHeaders(headers) {
         this.headers = headers;
+        return this;
+    }
+    setOnCode(code,callback){
+        this.codeCallBack[code] = callback;
+        return this;
     }
 
 
@@ -41,8 +50,8 @@ class Request {
                 if (typeof success === 'function') {
                     //判断响应是否为json
                     if (typeof response === 'object') {
-                        if (response.code === 401) {
-                            window.location.href = baseUri + api.login;
+                        if (this.codeCallBack[response.code] && typeof this.codeCallBack[response.code] === 'function') {
+                            this.codeCallBack[response.code](response);
                         }else{
                             success(response);
                         }
