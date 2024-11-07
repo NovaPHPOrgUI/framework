@@ -39,6 +39,9 @@ window.jsMap = {
         '/components/pjax/nprogress.js',
         '/components/pjax/pjax.min.js',
         '/components/pjax/PjaxUtils.js'
-    ]
+    ],
+    DialogForm: "/components/formDialog/DialogForm.js",
+    ChipGroup: "/components/chipGroup/mduiChipGroup.js",
+    AreaPicker: "/components/areaPicker/AreaPicker.js",
 }
 window.debug = true;
