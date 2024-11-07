@@ -1,4 +1,5 @@
 window.$ = mdui.$;
+window.jQuery = $;
 const currentScript = document.currentScript.src;
 // 提取当前脚本的目录路径
 let dir = currentScript.substring(0, currentScript.lastIndexOf("/"));
@@ -24,7 +25,7 @@ window.jsMap = {
     Request: '/framework/utils/Request.js',
     Toaster: '/framework/utils/Toaster.js',
 
-    URLUtils: '/utils/URLUtils.js',
+    URLUtils: '/framework/utils/URLUtils.js',
     // Components
     ThemeSwitcher: '/components/theme/ThemeSwitcher.js',
 
@@ -32,5 +33,12 @@ window.jsMap = {
     TranslateUtils: '/components/language/TranslateUtils.js',
 
     ImageLoader: '/components/imageLoader/ImageLoader.js',
+
+    Pjax:[
+        '/components/pjax/nprogress.css',
+        '/components/pjax/nprogress.js',
+        '/components/pjax/pjax.min.js',
+        '/components/pjax/PjaxUtils.js'
+    ]
 }
 window.debug = true;
