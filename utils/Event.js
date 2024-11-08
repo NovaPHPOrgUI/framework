@@ -79,9 +79,6 @@ class EventEmitter {
                 this.events[key] = this.events[key].filter(l => l.path !== currentPath);
             }
             $.logger.debug('remove all listeners => currentPath: ' + currentPath);
-
-            console.log(this.events);
-            console.log(this.domEvents);
             return this;
         }
 

@@ -182,7 +182,7 @@ const loader = (function (window, document) {
         datas.forEach((data) => {
             loadedResources[data] = true;
         });
-        console.log(loadedResources);
+
     }
 
     // 返回一个包含加载方法的对象

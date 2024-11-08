@@ -214,7 +214,6 @@ textarea:-ms-input-placeholder {
 }
 
 
-
 /*由于部分浏览器`template`直接显示出来，所以要隐藏`template`元素*/
 
 template {
@@ -222,35 +221,40 @@ template {
 }
 
 //重置样式
-h1{
-    font-size: 2rem;
-    margin-bottom: 1rem;
+h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
   font-weight: bold;
 }
-h2{
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-font-weight: bold;
+
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
 }
-h3{
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
+
+h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
 
 
 }
-h4{
-    font-size: 1rem;
-    margin-bottom: 1rem;
+
+h4 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
 
 
 }
-h5{
-    font-size: 0.875rem;
-    margin-bottom: 1rem;
+
+h5 {
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
 }
-h6{
-    font-size: 0.75rem;
-    margin-bottom: 1rem;
+
+h6 {
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
 
 }
 
@@ -338,7 +342,7 @@ $breakpoints: (
     @media screen and (min-width: $breakpoint) {
       .container {
 
-         @if $name == 'lg' {
+        @if $name == 'lg' {
           max-width: var(--mdui-breakpoint-xl);
         } @else if $name == 'md' {
           max-width: var(--mdui-breakpoint-lg);
@@ -494,7 +498,7 @@ fieldset {
 legend {
   font-size: 1.2rem;
   font-weight: bold;
-  color:rgba(var(--mdui-color-primary));
+  color: rgba(var(--mdui-color-primary));
   padding: 0 10px;
 }
 
@@ -521,3 +525,20 @@ legend {
 
 
 /*文本溢出显示省略号`to==>text-overflow`，原子类*/
+
+:root {
+  --vh-offset: 0px;
+
+  // 生成 --10vh 到 --100vh 的变量
+  @for $i from 1 through 10 {
+    --#{$i}0vh: calc(#{$i * 10}vh - var(--vh-offset));
+  }
+
+  // 生成 --1vh 到 --9vh 的变量
+  @for $i from 1 through 9 {
+    --#{$i}vh: calc(#{$i}vh - var(--vh-offset));
+  }
+  // 保留原来的完整vh变量
+  --vh: calc(100vh - var(--vh-offset));
+}
+

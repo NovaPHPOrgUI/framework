@@ -15,7 +15,15 @@ window.pageOnLoad = function (loading) {
 window.pageOnUnLoad = function () {
 };
 window.pageLoadFiles = [];
-
+// 适配移动端
+let result = vhCheck();
+if (result.isNeeded) {
+    document.documentElement.style.setProperty(
+        `--vh-offset`,
+        `${result.offset}px`
+    )
+}
+console.log(result);
 window.jsMap = {
     Event: '/framework/utils/Event.js',
     Form: '/framework/utils/Form.js',

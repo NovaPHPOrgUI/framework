@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/static/framework/libs/mdui.css">
     <link rel="stylesheet" href="/static/framework/base.css">
     <script src="/static/framework/libs/mdui.global.min.js"></script>
+    <script src="/static/framework/libs/vhcheck.min.js"></script>
     <link rel="stylesheet" href="/static/framework/icons/fonts.css">
     {*<link rel="stylesheet" href="/static/main.css">*}
     <style id="style">

@@ -24,7 +24,6 @@ let fade = {
         let containerNode = getShadowDomRoot(container);
 
 
-        console.log(container, container.getRootNode(), containerNode)
 
         // 检查是否存在样式
         if (containerNode.querySelector("style#fade")) {
@@ -138,7 +137,7 @@ class Loading {
     background-color:  rgba(var(--mdui-color-background)); /* 半透明的黑色背景 */
     z-index: 2000; /* 确保遮罩层在其他内容之上 */
     overflow: hidden;
-    max-height: 100vh;
+    max-height: var(--vh);
 }
 </style>`;
         styleContainer.insertAdjacentHTML("afterend", style);

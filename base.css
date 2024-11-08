@@ -1348,5 +1348,28 @@ legend {
 }
 
 /*文本溢出显示省略号`to==>text-overflow`，原子类*/
+:root {
+  --vh-offset: 0px;
+  --10vh: calc(10vh - var(--vh-offset));
+  --20vh: calc(20vh - var(--vh-offset));
+  --30vh: calc(30vh - var(--vh-offset));
+  --40vh: calc(40vh - var(--vh-offset));
+  --50vh: calc(50vh - var(--vh-offset));
+  --60vh: calc(60vh - var(--vh-offset));
+  --70vh: calc(70vh - var(--vh-offset));
+  --80vh: calc(80vh - var(--vh-offset));
+  --90vh: calc(90vh - var(--vh-offset));
+  --100vh: calc(100vh - var(--vh-offset));
+  --1vh: calc(1vh - var(--vh-offset));
+  --2vh: calc(2vh - var(--vh-offset));
+  --3vh: calc(3vh - var(--vh-offset));
+  --4vh: calc(4vh - var(--vh-offset));
+  --5vh: calc(5vh - var(--vh-offset));
+  --6vh: calc(6vh - var(--vh-offset));
+  --7vh: calc(7vh - var(--vh-offset));
+  --8vh: calc(8vh - var(--vh-offset));
+  --9vh: calc(9vh - var(--vh-offset));
+  --vh: calc(100vh - var(--vh-offset));
+}
 
 /*# sourceMappingURL=base.css.map */
