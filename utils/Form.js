@@ -16,13 +16,22 @@ $.form = {
             data[name] = $(item).prop("checked")?1:0;
         });
 
+        $(form).find("mdui-chip-group").each(function (key, item) {
+            let name = $(item).attr("name");
+            data[name] = $(item).val();
+        });
+
+        $(form).find("mdui-area-picker").each(function (key, item) {
+            let name = $(item).attr("name");
+            data[name] = $(item).val();
+        });
         return data;
     },
-    set: function (form, data) {
+    set: function (form, data, disabled) {
         $(form).find(formElems).each(function () {
             let name = $(this).attr("name");
             let value = data[name];
-            if(value === undefined)return;
+            if(value === undefined) return;
             if ($(this).is("mdui-checkbox")) {
                 if (value instanceof Array) {
                     if (value.indexOf($(this).val()) !== -1) {
@@ -30,20 +39,27 @@ $.form = {
                     }
                 }
             } else if ($(this).is("mdui-switch")) {
-                if (value === 1) {
-                    $(this).prop("checked", true);
-                }else {
-                    $(this).prop("checked", false);
+                $(this).prop("checked", value === 1);
+            } else if ($(this).is("mdui-area-picker")) {
+                $(this).val(value);
+                // 设置disabled-levels属性基于数组中非空元素的数量
+                let nonEmptyLevels = value.filter(item => item !== null && item !== '').length;
+                $(this).attr('disabled-levels', nonEmptyLevels);
+            } else if ($(this).is("mdui-range-slider")) {
+                $(this).val(value[0]); // 假设value[0]是当前值
+                if (disabled){
+                    $(this).attr('min', value[1]); // 假设value[1]是最小值
+                    $(this).attr('max', value[2]); // 假设value[2]是最大值
                 }
-            } else{
+
+            } else {
                 $(this).val(value);
             }
-
+            // 如果disabled为true，则禁用元素
+            if (disabled && !$(this).is("mdui-range-slider")) { // 不禁用mdui-range-slider
+                $(this).prop('disabled', true);
+            }
         });
-
-
-
-
     },
     validate: function (form) {
         let result = true;
