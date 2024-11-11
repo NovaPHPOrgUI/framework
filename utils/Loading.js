@@ -26,12 +26,12 @@ let fade = {
 
 
         // 检查是否存在样式
-        if (containerNode.querySelector("style#fade")) {
+        if (containerNode.querySelector("#fade")) {
             return;
         }
 
 
-        let style = `<style id="#fade">
+        let style = `<style id="fade">
 .fade-enter-active {
     opacity: 1;
     transition: opacity 0.5s;
@@ -57,7 +57,6 @@ let fade = {
   font-size: 1rem;
   text-align: center;
 }<style>`;
-
         containerNode.insertAdjacentHTML("afterbegin", style);
     },
     out(container, callback) {
@@ -123,8 +122,7 @@ class Loading {
     applyStyle() {
         // 判断是否为shadowRoot
         let styleContainer = getShadowDomRoot(this.container);
-
-        if (styleContainer.querySelector("style#loading"))
+        if (styleContainer.querySelector("#loading"))
             return;
         let style = `<style id="loading">
 /** Loading */
@@ -140,7 +138,7 @@ class Loading {
     max-height: var(--vh);
 }
 </style>`;
-        styleContainer.insertAdjacentHTML("afterend", style);
+        styleContainer.insertAdjacentHTML("afterbegin", style);
     }
 
     setProgress(progress) {

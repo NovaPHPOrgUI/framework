@@ -51,5 +51,9 @@ window.jsMap = {
     DialogForm: "/components/formDialog/DialogForm.js",
     ChipGroup: "/components/chipGroup/mduiChipGroup.js",
     AreaPicker: "/components/areaPicker/AreaPicker.js",
+    ImageViewer: [
+        "/components/viewer/ImageViewer.js",
+        "/components/viewer/ImageViewer.css",
+    ],
 }
 window.debug = true;
