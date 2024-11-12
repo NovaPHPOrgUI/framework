@@ -55,5 +55,8 @@ window.jsMap = {
         "/components/viewer/ImageViewer.js",
         "/components/viewer/ImageViewer.css",
     ],
+    FileUploader: [
+        "/components/fileUpload/FileUpload.js"
+    ]
 }
 window.debug = true;
