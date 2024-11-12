@@ -60,6 +60,12 @@ window.jsMap = {
     ],
     FileUploader: [
         "/components/fileUpload/FileUpload.js"
-    ]
+    ],
+    DataTable: [
+        "/components/DataTable/Pagination.js",
+        "/components/DataTable/gridManager.js",
+        "/components/DataTable/datatable.css",
+        '/framework/utils/URLUtils.js',
+    ],
 }
 window.debug = true;
