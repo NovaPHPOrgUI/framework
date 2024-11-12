@@ -6,7 +6,7 @@ $.form = {
 
         //file upload
 
-        $(form).find("file-upload").each(function (key, item) {
+        $(form).find("mdui-file-upload").each(function (key, item) {
             let name = $(item).attr("name");
             data[name] = $(item).val();
         });
@@ -105,7 +105,7 @@ $.form = {
     reset: function (form) {
         $(form)[0].reset();
 
-        $(form).find("file-upload").each(function (key, item) {
+        $(form).find("mdui-file-upload").each(function (key, item) {
             //item.setFiles([]);
              $(item).val('');
         });
