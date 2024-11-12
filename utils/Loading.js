@@ -1,66 +1,8 @@
-//渐入渐出动画
-function isShadowDom(element) {
-    if (element instanceof ShadowRoot) {
-        return true;
-    }
-    return element.getRootNode() instanceof ShadowRoot;
-}
 
-function getShadowDomRoot(element) {
-    if (element instanceof ShadowRoot) {
-        return element.host;
-    }
-    if (element.getRootNode() instanceof ShadowRoot) {
-        return element.getRootNode().host;
-    }
-    return document.head;
-}
 
 let fade = {
 
-
-    applyStyle(container) {
-
-        let containerNode = getShadowDomRoot(container);
-
-
-
-        // 检查是否存在样式
-        if (containerNode.querySelector("#fade")) {
-            return;
-        }
-
-
-        let style = `<style id="fade">
-.fade-enter-active {
-    opacity: 1;
-    transition: opacity 0.5s;
-}
-.fade-enter {
-    opacity: 0;
-}
-
-/* 定义退出动画 */
-.fade-leave-active {
-    opacity: 0;
-    transition: opacity 0.5s;
-}
-.fade-leave {
-    opacity: 1;
-}
-    .loading-text {
-  position: absolute;
-  top: calc(50% + 40px);
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(var(--mdui-color-primary));
-  font-size: 1rem;
-  text-align: center;
-}<style>`;
-        containerNode.insertAdjacentHTML("afterbegin", style);
-    },
     out(container, callback) {
-        this.applyStyle(container);
         container.classList.add("fade-leave-active");
         if (callback) {
             setTimeout(function () {
@@ -69,7 +11,6 @@ let fade = {
         }
     },
     in(container, callback) {
-        this.applyStyle(container);
         container.classList.remove("fade-leave-active");
         container.classList.add("fade-enter");
         setTimeout(function () {
@@ -93,7 +34,6 @@ class Loading {
                 container = document.querySelector(container);
             }
             this.container = container;
-            this.applyStyle();
             this.overlayElement = document.createElement("div");
             this.overlayElement.className = "loading-overlay fade-leave-active";
 
@@ -102,7 +42,11 @@ class Loading {
             this.loadingElement.setAttribute("indeterminate", "");
             this.loadingElement.setAttribute("max", 100)
             this.loadingElement.style.position = "absolute";
-            this.loadingElement.style.top = "calc(50% - 20px)";
+            if (text === ""){
+                this.loadingElement.style.top = "calc(50%)";
+            }else{
+                this.loadingElement.style.top = "calc(50% - 20px)";
+            }
             this.loadingElement.style.left = "50%";
             this.loadingElement.style.transform = "translate(-50%, -50%)";
 
@@ -119,27 +63,6 @@ class Loading {
     }
 
 
-    applyStyle() {
-        // 判断是否为shadowRoot
-        let styleContainer = getShadowDomRoot(this.container);
-        if (styleContainer.querySelector("#loading"))
-            return;
-        let style = `<style id="loading">
-/** Loading */
-.loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color:  rgba(var(--mdui-color-background)); /* 半透明的黑色背景 */
-    z-index: 2000; /* 确保遮罩层在其他内容之上 */
-    overflow: hidden;
-    max-height: var(--vh);
-}
-</style>`;
-        styleContainer.insertAdjacentHTML("afterbegin", style);
-    }
 
     setProgress(progress) {
         this.loadingElement.setAttribute("value", progress);

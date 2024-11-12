@@ -28,7 +28,10 @@ window.jsMap = {
     Event: '/framework/utils/Event.js',
     Form: '/framework/utils/Form.js',
     Loader: '/framework/utils/Loader.js',
-    Loading: '/framework/utils/Loading.js',
+    Loading: [
+        '/framework/utils/Loading.js',
+        '/framework/utils/Loading.css'
+    ],
     Logger: '/framework/utils/Logger.js',
     Request: '/framework/utils/Request.js',
     Toaster: '/framework/utils/Toaster.js',
