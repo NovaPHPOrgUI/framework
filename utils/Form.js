@@ -109,6 +109,34 @@ $.form = {
         });
 
     },
+
+    manage(uri,form,callback,beforeSubmit){
+        if (typeof form === "object") {
+            form = form[0];
+        }
+        $.request.get(uri,{},(response) => {
+            if (response.code === 200){
+                $.form.val(form,response.data);
+            }else{
+                $.toaster.error(response.msg);
+            }
+        });
+
+        $.form.submit(form,(data) => {
+            $.request.postForm(uri,data,(response) => {
+                if (response.code === 200){
+                    $.toaster.success(response.msg);
+                    if (callback){
+                        callback(response);
+                    }
+                }else{
+                    $.toaster.error(response.msg);
+                }
+            },beforeSubmit);
+        });
+
+    },
+
     reset: function (form) {
         $(form)[0].reset();
 
