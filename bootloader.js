@@ -65,6 +65,7 @@ window.jsMap = {
         "/components/dataTable/Pagination.js",
         "/components/dataTable/gridManager.js",
         "/components/dataTable/datatable.css",
+        '/components/dataTable/DataTable.js',
         '/framework/utils/URLUtils.js',
     ],
 }
