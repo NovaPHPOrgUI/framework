@@ -62,9 +62,9 @@ window.jsMap = {
         "/components/fileUpload/FileUpload.js"
     ],
     DataTable: [
-        "/components/DataTable/Pagination.js",
-        "/components/DataTable/gridManager.js",
-        "/components/DataTable/datatable.css",
+        "/components/dataTable/Pagination.js",
+        "/components/dataTable/gridManager.js",
+        "/components/dataTable/datatable.css",
         '/framework/utils/URLUtils.js',
     ],
 }
