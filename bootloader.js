@@ -23,7 +23,6 @@ if (result.isNeeded) {
         `${result.offset}px`
     )
 }
-console.log(result);
 window.jsMap = {
     Event: '/framework/utils/Event.js',
     Form: '/framework/utils/Form.js',

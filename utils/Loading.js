@@ -3,6 +3,12 @@
 let fade = {
 
     out(container, callback) {
+        if (container === null) {
+            if (callback) {
+                callback();
+            }
+            return;
+        }
         container.classList.add("fade-leave-active");
         if (callback) {
             setTimeout(function () {
@@ -11,6 +17,12 @@ let fade = {
         }
     },
     in(container, callback) {
+        if (container === null) {
+            if (callback) {
+                callback();
+            }
+            return;
+        }
         container.classList.remove("fade-leave-active");
         container.classList.add("fade-enter");
         setTimeout(function () {
