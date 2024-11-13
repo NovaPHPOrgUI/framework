@@ -1,4 +1,4 @@
-let formElems = "mdui-text-field,mdui-switch,mdui-checkbox,mdui-radio-group,mdui-select,mdui-slider,file-upload"
+let formElems = "mdui-text-field,mdui-switch,mdui-checkbox,mdui-radio-group,mdui-select,mdui-slider,mdui-file-upload,mdui-area-picker,mdui-range-slider,mdui-chip-group"
 $.form = {
 
     get: function (form) {
@@ -32,6 +32,8 @@ $.form = {
             let name = $(this).attr("name");
             let value = data[name];
             if(value === undefined) return;
+
+
             if ($(this).is("mdui-checkbox")) {
                 if (value instanceof Array) {
                     if (value.indexOf($(this).val()) !== -1) {
@@ -41,23 +43,28 @@ $.form = {
             } else if ($(this).is("mdui-switch")) {
                 $(this).prop("checked", value === 1);
             } else if ($(this).is("mdui-area-picker")) {
-                $(this).val(value);
-                // 设置disabled-levels属性基于数组中非空元素的数量
-                let nonEmptyLevels = value.filter(item => item !== null && item !== '').length;
-                $(this).attr('disabled-levels', nonEmptyLevels);
+                $(this)[0].value = value;
             } else if ($(this).is("mdui-range-slider")) {
-                $(this).val(value[0]); // 假设value[0]是当前值
-                if (disabled){
-                    $(this).attr('min', value[1]); // 假设value[1]是最小值
-                    $(this).attr('max', value[2]); // 假设value[2]是最大值
-                }
-
+                $(this)[0].value = value;
+                // 触发change事件
+                $(this).trigger('change');
+            } else if($(this).is("mdui-chip-group")){
+                $(this)[0].value = value
             } else {
+                if(typeof value === "object"){
+                    value = JSON.stringify(value);
+                }
                 $(this).val(value);
             }
             // 如果disabled为true，则禁用元素
-            if (disabled && !$(this).is("mdui-range-slider")) { // 不禁用mdui-range-slider
-                $(this).prop('disabled', true);
+            if (disabled ) { // 不禁用mdui-range-slider
+                if (
+                    value !==null &&
+                    value.length > 0
+                    ){
+                    $(this).prop('disabled', true);
+                }
+
             }
         });
     },
@@ -107,6 +114,16 @@ $.form = {
 
         $(form).find("mdui-file-upload").each(function (key, item) {
             //item.setFiles([]);
+             $(item).val('');
+        });
+
+
+
+        $(form).find("mdui-chip-group").each(function (key, item) {
+            $(item).val([]);
+        });
+
+        $(form).find("mdui-area-picker").each(function (key, item) {
              $(item).val('');
         });
     },
