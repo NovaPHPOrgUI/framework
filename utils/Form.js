@@ -31,6 +31,8 @@ $.form = {
         $(form).find(formElems).each(function () {
             let name = $(this).attr("name");
             let value = data[name];
+
+
             if(value === undefined) return;
 
 
@@ -40,6 +42,7 @@ $.form = {
                         $(this).prop("checked", true);
                     }
                 }
+
             } else if ($(this).is("mdui-switch")) {
                 $(this).prop("checked", value === 1);
             } else if ($(this).is("mdui-area-picker")) {
@@ -49,6 +52,13 @@ $.form = {
                 // 触发change事件
                 $(this).trigger('change');
             } else if($(this).is("mdui-chip-group")){
+                $(this)[0].value = value
+            } else if ($(this).is("mdui-file-upload")) {
+                $(this)[0].value = value
+            } else if ($(this).is("mdui-select")) {
+                if (typeof value !== "object") {
+                    value = value.toString();
+                }
                 $(this)[0].value = value
             } else {
                 if(typeof value === "object"){
