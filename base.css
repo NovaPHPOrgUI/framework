@@ -1360,15 +1360,6 @@ legend {
   --80vh: calc(80vh - var(--vh-offset));
   --90vh: calc(90vh - var(--vh-offset));
   --100vh: calc(100vh - var(--vh-offset));
-  --1vh: calc(1vh - var(--vh-offset));
-  --2vh: calc(2vh - var(--vh-offset));
-  --3vh: calc(3vh - var(--vh-offset));
-  --4vh: calc(4vh - var(--vh-offset));
-  --5vh: calc(5vh - var(--vh-offset));
-  --6vh: calc(6vh - var(--vh-offset));
-  --7vh: calc(7vh - var(--vh-offset));
-  --8vh: calc(8vh - var(--vh-offset));
-  --9vh: calc(9vh - var(--vh-offset));
   --vh: calc(100vh - var(--vh-offset));
 }
 

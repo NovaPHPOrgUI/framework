@@ -528,15 +528,9 @@ legend {
 
 :root {
   --vh-offset: 0px;
-
   // 生成 --10vh 到 --100vh 的变量
   @for $i from 1 through 10 {
     --#{$i}0vh: calc(#{$i * 10}vh - var(--vh-offset));
-  }
-
-  // 生成 --1vh 到 --9vh 的变量
-  @for $i from 1 through 9 {
-    --#{$i}vh: calc(#{$i}vh - var(--vh-offset));
   }
   // 保留原来的完整vh变量
   --vh: calc(100vh - var(--vh-offset));
