@@ -25,12 +25,12 @@ const loader = (function (window, document) {
         inProgressResources[path] = true;
         // 创建 script 元素
         const script = document.createElement("script");
-        script.src = path;
+        script.src = path + v();
         script.async = true;
 
         // 加载完成或失败的处理
         script.onload = script.onerror = function () {
-            let link = script.src.replace(baseUri, '');
+            let link = path.replace(baseUri, '');
             $.waitProp(window.novaFiles, [link], () => {
                 loadedResources[path] = true;
                 inProgressResources[path] = false;
@@ -58,7 +58,7 @@ const loader = (function (window, document) {
         inProgressResources[path] = true;
 
         if (element) {
-            fetch(path)
+            fetch(path + v())
                 .then((res) => res.text())
                 .then((data) => {
                     let node = document.createElement("style");
@@ -108,6 +108,14 @@ const loader = (function (window, document) {
         return uris;
     }
 
+    function v() {
+        if (window.debug) {
+            return "?v=" + new Date().getTime();
+        } else {
+            return "?v=" + window.version
+        }
+    }
+
     /**
      * 加载单个文件（JS 或 CSS）
      * @param {string} path - 文件路径
@@ -119,6 +127,7 @@ const loader = (function (window, document) {
 
         const cssRegex = /\.css(?:\?|#|$)/i;
         const jsRegex = /\.js(?:\?|#|$)/i;
+
 
         if (cssRegex.test(path)) {
             loadCSS(path, callback, element);

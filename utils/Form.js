@@ -1,4 +1,4 @@
-let formElems = "mdui-text-field,mdui-switch,mdui-checkbox,mdui-radio-group,mdui-select,mdui-slider,mdui-file-upload,mdui-area-picker,mdui-range-slider,mdui-chip-group"
+let formElems = "mdui-text-field,mdui-switch,mdui-checkbox,mdui-radio-group,mdui-select,mdui-slider,mdui-file-upload,mdui-area-picker,mdui-range-slider,mdui-chip-group,mdui-date-picker"
 $.form = {
 
     get: function (form) {
@@ -22,6 +22,11 @@ $.form = {
         });
 
         $(form).find("mdui-area-picker").each(function (key, item) {
+            let name = $(item).attr("name");
+            data[name] = $(item).val();
+        });
+
+        $(form).find("mdui-date-picker").each(function (key, item) {
             let name = $(item).attr("name");
             data[name] = $(item).val();
         });

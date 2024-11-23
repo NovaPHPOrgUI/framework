@@ -67,5 +67,7 @@ window.jsMap = {
         '/components/dataTable/DataTable.js',
         '/framework/utils/URLUtils.js',
     ],
+    DatePicker: "/components/datepicker/datepicker.js",
 }
 window.debug = true;
+window.version = "";
