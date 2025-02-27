@@ -68,6 +68,7 @@ window.jsMap = {
         '/framework/utils/URLUtils.js',
     ],
     DatePicker: "/components/datepicker/datepicker.js",
+    Markdown: "/components/markdown/Markdown.js",
 }
 window.debug = true;
 window.version = "";
