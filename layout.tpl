@@ -1,50 +1,45 @@
-
 <!doctype html>
-<html lang="zh-CN" class="mdui-theme-auto">
+<html lang="zh-CN" class="mdui-theme-light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
     <meta name="renderer" content="webkit"/>
-
-    <link rel="shortcut icon" href="/static/favicon.ico">
-    <title id="title">Nova-admin</title>
-    <link rel="stylesheet" href="/static/framework/libs/mdui.css">
-    <link rel="stylesheet" href="/static/framework/base.css">
-    <script src="/static/framework/libs/mdui.global.min.js"></script>
-    <script src="/static/framework/libs/vhcheck.min.js"></script>
-    <link rel="stylesheet" href="/static/framework/icons/fonts.css">
-    {*<link rel="stylesheet" href="/static/main.css">*}
+    <title id="title">{$title}</title>
+    {include file="publicHeader.tpl"}
+    <link rel="stylesheet" href="/static/css/init.css?v={$__v}">
     <style id="style">
     </style>
 </head>
-    <body >
-    <script src="/static/framework/bootloader.js"></script>
-    <script src="/static/framework/utils/Loading.js"></script>
-    <script src="/static/framework/utils/Logger.js"></script>
-    <script src="/static/framework/utils/Loader.js"></script>
-    <script src="/static/framework/utils/Event.js"></script>
-    <script src="/static/framework/utils/Toaster.js"></script>
-    <script src="/static/framework/utils/Request.js"></script>
 
-    <script>
-        let level = debug ? 'debug' : 'error';
-        $.logger.setLevel(level);
-        $.logger.info('App is running in ' + level + ' mode');
-        $.preloader([
-            'Loading',
-            'Logger',
-            'Event',
-            'Toaster',
-            'Request',
-            'ThemeSwitcher',
-            'Language'
-        ]);
-        window.loading && window.loading.close();
-        $.request.setBaseUrl(baseUri);
-        $.request.setHeaders(headers);
-    </script>
-    <script src="/static/init.js"></script>
-    <div class="container">
+<body class="bg" style="height: var(--vh)">
+{include file="publicScript.tpl"}
+<script src="/static/js/init.js?v={$__v}"></script>
+<div>
+    <mdui-top-app-bar variant="center-aligned"  style="position: relative" class="bg">
+        <mdui-top-app-bar-title class="title-medium title center-both" >
+            {$title}
+        </mdui-top-app-bar-title>
+        <mdui-button icon="filter_list" variant="text" style="display: none" id="filter">筛选</mdui-button>
+    </mdui-top-app-bar>
 
+    <div style="height: calc(var(--vh) - 144px);overflow: auto;">
+        <div  id="container">
+
+        </div>
     </div>
+
+    <mdui-navigation-bar value="/" style="position: relative" class="bg">
+        <mdui-navigation-bar-item icon="notes" value="/">缘分</mdui-navigation-bar-item>
+        <mdui-navigation-bar-item icon="person" value="/my">我的</mdui-navigation-bar-item>
+    </mdui-navigation-bar>
+</div>
+<script>
+    window.isGuest = {$guest};
+    window.isUser = {$isUser};
+    window.isAdmin = {$isAdmin};
+    window.isSuperAdmin = {$isSuperAdmin};
+</script>
+<script id="script"> </script>
+</body>
 </html>
+
