@@ -8,8 +8,8 @@
 
 //资源加载
 const loader = (function (window, document) {
-    // 简单的缓存和回调队列
-    const loadedResources = {};
+    // 修改缓存对象，存储资源内容
+    const loadedResources = {}; // 改为 {[path]: content}
     const inProgressResources = {};
     /**
      * 加载单个 JavaScript 文件
@@ -131,19 +131,42 @@ const loader = (function (window, document) {
      * @param element
      */
     function loadFile(path, callback, element) {
-
-
         const cssRegex = /\.css(?:\?|#|$)/i;
         const jsRegex = /\.js(?:\?|#|$)/i;
-
 
         if (cssRegex.test(path)) {
             loadCSS(path, callback, element);
         } else if (jsRegex.test(path)) {
             loadScript(path, callback);
         } else {
-            throw new Error("Unsupported file type: " + path);
+            // 使用Request库加载通用资源
+            loadResource(path, callback);
         }
+    }
+
+    function loadResource(path, callback) {
+        if (loadedResources[path]) {
+            callback(null, loadedResources[path]); // 返回缓存内容
+            return;
+        }
+        if (inProgressResources[path]) {
+            $.waitProp(loadedResources, [path], callback);
+            return;
+        }
+        
+        inProgressResources[path] = true;
+        
+        // 使用项目自带的Request库
+        $.request.get(path + v(), null,
+            (data) => { // success（假设request库回调参数为data）
+                loadedResources[path] = data; // 存储实际内容
+                callback(null, data);
+            },
+            (error) => { 
+                callback(error);
+                inProgressResources[path] = false;
+            }
+        )
     }
 
     /**
@@ -202,13 +225,21 @@ const loader = (function (window, document) {
 
     }
 
+    // 新增获取资源内容的方法
+    function getResource(path) {
+        let uris = buildUris([path]);
+        return loadedResources[uris[0]];
+    }
+
     // 返回一个包含加载方法的对象
     return {
         load: load,
-        setPreload: setPreload
+        setPreload: setPreload,
+        get: getResource // 新增资源获取方法
     };
 })(window, document);
 $.loader = loader.load;
+$.res = loader.get;
 $.preloader = loader.setPreload;
 $.waitElement = function (selector, callback) {
     if (document.querySelector(selector)) {
