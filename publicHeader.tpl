@@ -11,8 +11,3 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png?v={$__v}"/>
 <link rel="icon" type="image/ico" href="/static/icons/favicon.ico?v={$__v}"/>
 
-{if $__debug}
-    <meta http-equiv="expires" content="0">
-    <meta http-equiv="pragma" content="no-cache">
-    <meta http-equiv="cache-control" content="no-cache">
-{/if}
