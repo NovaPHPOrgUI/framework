@@ -246,6 +246,7 @@ $.waitElement = function (selector, callback) {
         callback();
         return;
     }
+    $.logger && $.logger.debug("Wait waitElement ", selector);
     setTimeout(() => $.waitElement(selector, callback), 100);
 }
 
@@ -276,7 +277,7 @@ $.waitClass = function (className, parent, callback) {
         return;
     }
     setTimeout(() => $.waitClass(className, parent, callback), 100);
-    //$.logger && $.logger.debug("Wait Class ", className);
+    $.logger && $.logger.debug("Wait Class ", className);
 }
 
 $.waitProps = function (objProps, callback) {
