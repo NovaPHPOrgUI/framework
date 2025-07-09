@@ -78,6 +78,7 @@ window.jsMap = {
     DatePicker: "/components/datepicker/datepicker.js",
     Markdown: "/components/markdown/Markdown.js",
     Captcha: "/components/captcha/Captcha.js",
+    QrScan:"/components/qrscan/QrScan.js",
 }
 window.debug = true;
 window.version = "";
