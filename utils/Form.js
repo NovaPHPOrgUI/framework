@@ -57,7 +57,7 @@ $.form = {
                 }
 
             } else if ($(this).is("mdui-switch")) {
-                $(this).prop("checked", value === 1);
+                $(this).prop("checked", value === 1 || value === "true" || value === true || value === "1" );
             } else if ($(this).is("mdui-area-picker")) {
                 $(this)[0].value = value;
             } else if ($(this).is("mdui-range-slider")) {
