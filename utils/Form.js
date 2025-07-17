@@ -54,6 +54,8 @@ $.form = {
                     if (value.indexOf($(this).val()) !== -1) {
                         $(this).prop("checked", true);
                     }
+                }else{
+                    $(this).prop("checked", value === 1 || value === "true" || value === true || value === "1" );
                 }
 
             } else if ($(this).is("mdui-switch")) {
