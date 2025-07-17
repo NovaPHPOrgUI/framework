@@ -142,6 +142,9 @@ $.form = {
         $.request.get(uri,{},(response) => {
             if (response.code === 200){
                 $.form.val(form,response.data);
+                if(callback){
+                    callback(response,'get')
+                }
             }else{
                 $.toaster.error(response.msg);
             }
@@ -152,7 +155,7 @@ $.form = {
                 if (response.code === 200){
                     $.toaster.success(response.msg);
                     if (callback){
-                        callback(response);
+                        callback(response,'post');
                     }
                 }else{
                     $.toaster.error(response.msg);
