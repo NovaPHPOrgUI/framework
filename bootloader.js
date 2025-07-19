@@ -96,7 +96,8 @@ window.jsMap = {
         "/components/viewer/ImageViewer.css",
     ],
     FileUploader: [
-        "/components/fileUpload/FileUpload.js"
+        "/components/fileUpload/FileUpload.js",
+        "/components/fileUpload/File.js",
     ],
     DataTable: [
         "/components/dataTable/Pagination.js",
