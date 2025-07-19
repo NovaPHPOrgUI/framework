@@ -97,6 +97,7 @@ window.jsMap = {
     ],
     FileUploader: [
         "/components/fileUpload/FileUpload.js",
+        "/components/fileUpload/FileUploader.js",
         "/components/fileUpload/File.js",
     ],
     DataTable: [
