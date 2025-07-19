@@ -54,7 +54,7 @@ class Toaster {
      * @param {string} message - 消息内容
      * @param {Object} params - 额外参数配置
      */
-    info(message, params) {
+    info(message, params = null) {
         this.createSnackbar(message, "info", params);
         $.logger.info(message);
     }
@@ -64,7 +64,7 @@ class Toaster {
      * @param {string} message - 消息内容
      * @param {Object} params - 额外参数配置
      */
-    warn(message, params) {
+    warn(message, params = null) {
         this.createSnackbar(message, "warning", params);
         $.logger.warn(message);
     }
@@ -74,7 +74,7 @@ class Toaster {
      * @param {string} message - 消息内容
      * @param {Object} params - 额外参数配置
      */
-    error(message, params) {
+    error(message, params = null) {
         this.createSnackbar(message, "error", params);
         $.logger.error(message);
     }
@@ -84,7 +84,7 @@ class Toaster {
      * @param {string} message - 消息内容
      * @param {Object} params - 额外参数配置
      */
-    success(message, params) {
+    success(message, params = null) {
         this.createSnackbar(message, "success", params);
         $.logger.success(message);
     }
