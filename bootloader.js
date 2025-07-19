@@ -71,8 +71,8 @@ window.jsMap = {
     ],
     Logger: '/framework/utils/Logger.js',
     Request: '/framework/utils/Request.js',
+    Layer: '/framework/utils/Layer.js',
     Toaster: '/framework/utils/Toaster.js',
-
     URLUtils: '/framework/utils/URLUtils.js',
     // Components
     ThemeSwitcher: '/components/theme/ThemeSwitcher.js',

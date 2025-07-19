@@ -1,109 +1,84 @@
-/**
- * 消息提示工具类
- * 提供不同类型的消息提示功能，包括信息、警告、错误、成功等
- * @file Toaster.js
- * @author License Auto System
- * @version 1.0.0
- */
-
-/*
- * Copyright (c) 2025. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
- * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
- * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
- * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
- * Vestibulum commodo. Ut rhoncus gravida arcu.
- */
-
-/**
- * 消息提示工具类
- * 提供snackbar消息提示功能，支持不同类型的消息样式
- */
-class Toaster {
+(function (win) {
+    'use strict';
+  
+    // ---------------------------------------------------------------------------
+    // Toaster -------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
     /**
-     * 创建snackbar消息提示
-     * @param {string} message - 消息内容
-     * @param {string} color - 消息颜色类型
-     * @param {Object} params - 额外参数配置
+     * Toaster 类 - 用于显示消息提示的组件
+     * 提供 info、warn、error、success 四种类型的消息提示
+     * @class Toaster
      */
-    createSnackbar(message, color, params = {}) {
-        let id = "snackbar" + Math.random().toString(36).substring(2);
-        let html = `<mdui-snackbar class="bg-${color}" id="${id}"`;
-
-        let keys = Object.keys(params);
-        for (let key of keys) {
-            html += ` ${key}="${params[key]}"`;
-        }
-
-        html += `>${message}</mdui-snackbar>`;
-
-        let timeout = params["auto-close-delay"] || 5000;
-
-        let snackbarDiv = document.createElement("div");
-        snackbarDiv.innerHTML = html;
-
-        let snackbar = snackbarDiv.querySelector("#" + id);
-        snackbar.open = true;
-        document.body.appendChild(snackbarDiv);
-        setTimeout(() => {
-            snackbarDiv.remove();
-        }, timeout);
+    class Toaster {
+      /**
+       * 创建 Toaster 实例
+       * @constructor
+       */
+      constructor () {
+        /** @type {number} 默认超时时间（毫秒） */
+        this.defaultTimeout = 5000;
+      }
+  
+      /**
+       * 核心渲染方法 - 显示消息提示
+       * @private
+       * @param {string} type - 消息类型 ('info', 'warning', 'error', 'success')
+       * @param {string} message - 要显示的消息内容
+       * @param {Object} options - 配置选项
+       * @param {number} [options.timeout=this.defaultTimeout] - 显示超时时间（毫秒）
+       * @param {Object} [options.attrs] - 额外的 HTML 属性
+       */
+      _show (type, message, {timeout = this.defaultTimeout, ...attrs} = {}) {
+        const id      = `snackbar-${(win.crypto?.randomUUID?.() ?? Date.now().toString(36))}`;
+        const attrStr = Object.entries(attrs).map(([k, v]) => `${k}="${v}"`).join(' ');
+  
+        const wrapper      = document.createElement('div');
+        wrapper.innerHTML  = `<mdui-snackbar id="${id}" class="bg-${type}" ${attrStr}>${message}</mdui-snackbar>`;
+        const snackbar     = wrapper.firstElementChild;
+        snackbar.open      = true;
+        document.body.appendChild(wrapper);
+        setTimeout(() => wrapper.remove(), timeout);
+      }
+  
+      /**
+       * 显示信息提示
+       * @param {string} msg - 消息内容
+       * @param {Object} [opt] - 配置选项
+       * @param {number} [opt.timeout] - 显示超时时间（毫秒）
+       * @param {Object} [opt.attrs] - 额外的 HTML 属性
+       */
+      info    (msg, opt) { this._show('info',    msg, opt); win.$?.logger?.info?.(msg);    }
+      
+      /**
+       * 显示警告提示
+       * @param {string} msg - 消息内容
+       * @param {Object} [opt] - 配置选项
+       * @param {number} [opt.timeout] - 显示超时时间（毫秒）
+       * @param {Object} [opt.attrs] - 额外的 HTML 属性
+       */
+      warn    (msg, opt) { this._show('warning', msg, opt); win.$?.logger?.warn?.(msg);    }
+      
+      /**
+       * 显示错误提示
+       * @param {string} msg - 消息内容
+       * @param {Object} [opt] - 配置选项
+       * @param {number} [opt.timeout] - 显示超时时间（毫秒）
+       * @param {Object} [opt.attrs] - 额外的 HTML 属性
+       */
+      error   (msg, opt) { this._show('error',   msg, opt); win.$?.logger?.error?.(msg);   }
+      
+      /**
+       * 显示成功提示
+       * @param {string} msg - 消息内容
+       * @param {Object} [opt] - 配置选项
+       * @param {number} [opt.timeout] - 显示超时时间（毫秒）
+       * @param {Object} [opt.attrs] - 额外的 HTML 属性
+       */
+      success (msg, opt) { this._show('success', msg, opt); win.$?.logger?.success?.(msg); }
     }
-
-    /**
-     * 显示信息类型消息
-     * @param {string} message - 消息内容
-     * @param {Object} params - 额外参数配置
-     */
-    info(message, params) {
-        this.createSnackbar(message, "info", params);
-        $.logger.info(message);
-    }
-
-    /**
-     * 显示警告类型消息
-     * @param {string} message - 消息内容
-     * @param {Object} params - 额外参数配置
-     */
-    warn(message, params) {
-        this.createSnackbar(message, "warning", params);
-        $.logger.warn(message);
-    }
-
-    /**
-     * 显示错误类型消息
-     * @param {string} message - 消息内容
-     * @param {Object} params - 额外参数配置
-     */
-    error(message, params) {
-        this.createSnackbar(message, "error", params);
-        $.logger.error(message);
-    }
-
-    /**
-     * 显示成功类型消息
-     * @param {string} message - 消息内容
-     * @param {Object} params - 额外参数配置
-     */
-    success(message, params) {
-        this.createSnackbar(message, "success", params);
-        $.logger.success(message);
-    }
-}
-
-/**
- * 使用示例
- * $.toaster.info("这是一条信息");
- * $.toaster.warn("这是一条警告");
- * $.toaster.error("这是一条错误");
- * $.toaster.success("操作成功");
- */
-
-/** @type {Toaster} 全局消息提示工具实例 */
-$.toaster = new Toaster();
-
-/** @type {Function} 全局确认对话框函数 */
-$.confirm = mdui.confirm;
-/** @type {Function} 全局警告对话框函数 */
-$.alert  = mdui.alert;
-/** @type {Function} 全局提示输入对话框函数 */
-$.prompt = mdui.prompt;
+  
+    // Expose as $.toaster --------------------------------------------------------
+    win.$ = win.$ || {};
+    /** @type {Toaster} 全局 Toaster 实例 */
+    win.$.toaster = new Toaster();
+})(window);
