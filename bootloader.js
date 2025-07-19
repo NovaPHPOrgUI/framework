@@ -1,3 +1,11 @@
+/**
+ * 框架启动加载器
+ * 初始化全局变量、配置和移动端适配
+ * @file bootloader.js
+ * @author License Auto System
+ * @version 1.0.0
+ */
+
 /*
  * Copyright (c) 2025. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
  * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
@@ -6,23 +14,43 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
+/** @type {Object} 全局jQuery对象，指向mdui.$ */
 window.$ = mdui.$;
+/** @type {Object} 全局jQuery别名 */
 window.jQuery = $;
+
+/** @type {string} 当前脚本的完整URL */
 const currentScript = document.currentScript.src;
 // 提取当前脚本的目录路径
 let dir = currentScript.substring(0, currentScript.lastIndexOf("/"));
+/** @type {string} 脚本目录路径 */
 $.scriptDir = dir.substring(0, dir.lastIndexOf("/"));
+/** @type {string} 基础URI路径 */
 window.baseUri = $.scriptDir.substring(0, $.scriptDir.lastIndexOf("/"));
 
+/** @type {Object} 全局文件缓存对象 */
 if (!window.novaFiles) {
     window.novaFiles = {};
 }
+
+/**
+ * 页面加载完成后的初始化函数
+ * @param {boolean} loading - 是否正在加载状态
+ * @returns {boolean} 返回false
+ */
 window.pageOnLoad = function (loading) {
     return false;
 };
+
+/**
+ * 页面卸载时的清理函数
+ */
 window.pageOnUnLoad = function () {
 };
+
+/** @type {Array<string>} 页面加载时需要加载的文件列表 */
 window.pageLoadFiles = [];
+
 // 适配移动端
 let result = vhCheck();
 if (result.isNeeded) {
@@ -31,6 +59,8 @@ if (result.isNeeded) {
         `${result.offset}px`
     )
 }
+
+/** @type {Object} JavaScript文件映射配置 */
 window.jsMap = {
     Event: '/framework/utils/Event.js',
     Form: '/framework/utils/Form.js',
@@ -80,5 +110,8 @@ window.jsMap = {
     Captcha: "/components/captcha/Captcha.js",
     QrScan:"/components/qrscan/QrScan.js",
 }
+
+/** @type {boolean} 调试模式开关 */
 window.debug = true;
+/** @type {string} 版本号 */
 window.version = "";

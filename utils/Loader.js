@@ -1,3 +1,11 @@
+/**
+ * 资源加载器工具类
+ * 提供JavaScript和CSS文件的动态加载功能，支持缓存和并发控制
+ * @file Loader.js
+ * @author License Auto System
+ * @version 1.0.0
+ */
+
 /*
  * Copyright (c) 2025. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
  * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
@@ -6,19 +14,23 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-//资源加载
+/**
+ * 资源加载器
+ * 提供JavaScript、CSS和其他资源的动态加载功能
+ */
 const loader = (function (window, document) {
-    // 修改缓存对象，存储资源内容
+    /** @type {Object} 已加载资源的缓存对象 */
     const loadedResources = {}; // 改为 {[path]: content}
+    /** @type {Object} 正在加载中的资源对象 */
     const inProgressResources = {};
+    
     /**
-     * 加载单个 JavaScript 文件
+     * 加载单个JavaScript文件
      * @param {string} path - 文件路径
      * @param {Function} callback - 加载完成后的回调函数
      */
     function loadScript(path, callback) {
         if (loadedResources[path]) {
-
             // 如果已加载，直接调用回调
             callback();
             return;
@@ -31,7 +43,7 @@ const loader = (function (window, document) {
             return;
         }
         inProgressResources[path] = true;
-        // 创建 script 元素
+        // 创建script元素
         const script = document.createElement("script");
         script.src = path + v();
         script.async = true;
@@ -44,7 +56,6 @@ const loader = (function (window, document) {
                 inProgressResources[path] = false;
                 callback();
             });
-
         };
 
         // 添加到文档中
@@ -52,10 +63,10 @@ const loader = (function (window, document) {
     }
 
     /**
-     * 加载单个 CSS 文件
+     * 加载单个CSS文件
      * @param {string} path - 文件路径
      * @param {Function} callback - 加载完成后的回调函数
-     * @param element
+     * @param {HTMLElement} element - 要插入样式的元素
      */
     function loadCSS(path, callback, element) {
         if (!element && (loadedResources[path] || inProgressResources[path])) {
@@ -77,7 +88,7 @@ const loader = (function (window, document) {
             return;
         }
 
-        // 创建 link 元素
+        // 创建link元素
         const link = document.createElement("link");
         link.rel = "stylesheet";
         link.href = path;
@@ -92,9 +103,19 @@ const loader = (function (window, document) {
         existingStyle.parentNode.insertBefore(link, existingStyle);
     }
 
+    /**
+     * 构建URI路径数组
+     * @param {string[]} paths - 原始路径数组
+     * @returns {string[]} 构建后的URI数组
+     */
     function buildUris(paths) {
         let uris = [];
 
+        /**
+         * 连接URI路径
+         * @param {string} path - 路径
+         * @returns {string} 完整的URI
+         */
         function concatUri(path) {
             if (!path.startsWith("http")) {
                 path = ("/" + path).replace(/\/\//g, "/");
@@ -116,6 +137,10 @@ const loader = (function (window, document) {
         return uris;
     }
 
+    /**
+     * 获取版本号查询参数
+     * @returns {string} 版本号查询字符串
+     */
     function v() {
         if (window.debug) {
             return "?v=" + new Date().getTime();
@@ -125,10 +150,10 @@ const loader = (function (window, document) {
     }
 
     /**
-     * 加载单个文件（JS 或 CSS）
+     * 加载单个文件（JS或CSS）
      * @param {string} path - 文件路径
      * @param {Function} callback - 加载完成后的回调函数
-     * @param element
+     * @param {HTMLElement} element - 要插入样式的元素
      */
     function loadFile(path, callback, element) {
         const cssRegex = /\.css(?:\?|#|$)/i;
@@ -144,6 +169,11 @@ const loader = (function (window, document) {
         }
     }
 
+    /**
+     * 加载通用资源
+     * @param {string} path - 资源路径
+     * @param {Function} callback - 加载完成后的回调函数
+     */
     function loadResource(path, callback) {
         if (loadedResources[path]) {
             callback(null, loadedResources[path]); // 返回缓存内容
@@ -173,7 +203,7 @@ const loader = (function (window, document) {
      * 加载多个文件
      * @param {string[]} paths - 文件路径数组
      * @param {Function} callback - 所有文件加载完成后的回调函数
-     * @param element
+     * @param {HTMLElement} element - 要插入样式的元素
      */
     function loadFiles(paths, callback, element) {
         let remaining = paths.length;
@@ -194,7 +224,7 @@ const loader = (function (window, document) {
      * 主加载函数
      * @param {(string|string[])} paths - 文件路径或路径数组
      * @param {Function} callback - 加载完成后的回调函数
-     * @param element
+     * @param {HTMLElement} element - 要插入样式的元素
      */
     function load(paths, callback, element = null) {
         if (typeof paths === "string") {
@@ -206,7 +236,6 @@ const loader = (function (window, document) {
             return;
         }
 
-
         let uris = buildUris(paths);
 
         if ($.logger) {
@@ -217,15 +246,22 @@ const loader = (function (window, document) {
         }, element);
     }
 
+    /**
+     * 设置预加载资源
+     * @param {string[]} datas - 要预加载的资源路径数组
+     */
     function setPreload(datas) {
         datas = buildUris(datas);
         datas.forEach((data) => {
             loadedResources[data] = true;
         });
-
     }
 
-    // 新增获取资源内容的方法
+    /**
+     * 获取已加载的资源内容
+     * @param {string} path - 资源路径
+     * @returns {*} 资源内容
+     */
     function getResource(path) {
         let uris = buildUris([path]);
         return loadedResources[uris[0]];
@@ -238,9 +274,19 @@ const loader = (function (window, document) {
         get: getResource // 新增资源获取方法
     };
 })(window, document);
+
+/** @type {Function} 全局资源加载函数 */
 $.loader = loader.load;
+/** @type {Function} 全局资源获取函数 */
 $.res = loader.get;
+/** @type {Function} 全局预加载函数 */
 $.preloader = loader.setPreload;
+
+/**
+ * 等待元素出现
+ * @param {string} selector - CSS选择器
+ * @param {Function} callback - 元素出现后的回调函数
+ */
 $.waitElement = function (selector, callback) {
     if (document.querySelector(selector)) {
         callback();
@@ -250,6 +296,13 @@ $.waitElement = function (selector, callback) {
     setTimeout(() => $.waitElement(selector, callback), 100);
 }
 
+/**
+ * 等待对象属性存在
+ * @param {Object} obj - 要检查的对象
+ * @param {string|string[]} props - 属性名或属性名数组
+ * @param {Function} callback - 属性存在后的回调函数
+ * @param {number} count - 当前等待次数
+ */
 $.waitProp = function (obj, props, callback, count = 0) {
     if (count > 600) {
         $.logger && $.logger.error("Wait Prop Timeout: ", props.join(', '));
@@ -270,6 +323,12 @@ $.waitProp = function (obj, props, callback, count = 0) {
     callback();
 }
 
+/**
+ * 等待类名出现
+ * @param {string} className - 类名
+ * @param {HTMLElement} parent - 父元素，默认为document
+ * @param {Function} callback - 类名出现后的回调函数
+ */
 $.waitClass = function (className, parent, callback) {
     parent = parent || document
     if (parent.querySelector(className)) {
@@ -280,9 +339,17 @@ $.waitClass = function (className, parent, callback) {
     $.logger && $.logger.debug("Wait Class ", className);
 }
 
+/**
+ * 等待多个对象属性
+ * @param {Array<Object>} objProps - 对象属性配置数组
+ * @param {Function} callback - 所有属性都存在后的回调函数
+ */
 $.waitProps = function (objProps, callback) {
     let length = objProps.length;
 
+    /**
+     * 单个属性等待完成的回调
+     */
     function callbackItems() {
         length--;
         if (length === 0) {
@@ -291,7 +358,6 @@ $.waitProps = function (objProps, callback) {
     }
 
     for (const objProp of objProps) {
-
         $.waitProp(objProp.obj, objProp.props, callbackItems);
     }
 }

@@ -1,3 +1,11 @@
+/**
+ * 表单工具类
+ * 提供表单数据获取、设置、验证和提交功能，支持多种MDUI组件
+ * @file Form.js
+ * @author License Auto System
+ * @version 1.0.0
+ */
+
 /*
  * Copyright (c) 2025. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
  * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
@@ -6,14 +14,25 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
+/** @type {string} 表单元素选择器字符串 */
 let formElems = "mdui-text-field,mdui-switch,mdui-checkbox,mdui-radio-group,mdui-select,mdui-slider,mdui-file-upload,mdui-area-picker,mdui-range-slider,mdui-chip-group,mdui-date-picker"
+
+/**
+ * 表单工具对象
+ * 提供表单操作的各种功能方法
+ * @namespace $.form
+ */
 $.form = {
 
+    /**
+     * 获取表单数据
+     * @param {HTMLElement|jQuery} form - 表单元素
+     * @returns {Object} 表单数据对象
+     */
     get: function (form) {
         let data = $(form).serializeObject();
 
         //file upload
-
         $(form).find("mdui-file-upload").each(function (key, item) {
             let name = $(item).attr("name");
             data[name] = $(item).val();
@@ -40,14 +59,19 @@ $.form = {
         });
         return data;
     },
+    
+    /**
+     * 设置表单数据
+     * @param {HTMLElement|jQuery} form - 表单元素
+     * @param {Object} data - 要设置的数据对象
+     * @param {boolean} disabled - 是否禁用表单元素
+     */
     set: function (form, data, disabled) {
         $(form).find(formElems).each(function () {
             let name = $(this).attr("name");
             let value = data[name];
 
-
             if(value === undefined) return;
-
 
             if ($(this).is("mdui-checkbox")) {
                 if (value instanceof Array) {
@@ -93,6 +117,12 @@ $.form = {
             }
         });
     },
+    
+    /**
+     * 验证表单
+     * @param {HTMLElement|jQuery} form - 表单元素
+     * @returns {boolean} 验证是否通过
+     */
     validate: function (form) {
         let result = true;
         $(form).find(formElems).each(function (){
@@ -110,6 +140,12 @@ $.form = {
         return result;
     },
 
+    /**
+     * 提交表单
+     * @param {HTMLElement|jQuery} form - 表单元素
+     * @param {Function} callback - 提交回调函数
+     * @param {Function} beforeSubmit - 提交前回调函数
+     */
     submit: function (form, callback, beforeSubmit) {
         if (typeof form === "object") {
             form = form[0];
@@ -135,6 +171,13 @@ $.form = {
 
     },
 
+    /**
+     * 管理表单（获取和提交）
+     * @param {string} uri - 接口地址
+     * @param {HTMLElement|jQuery} form - 表单元素
+     * @param {Function} callback - 回调函数
+     * @param {Function} beforeSubmit - 提交前回调函数
+     */
     manage(uri,form,callback,beforeSubmit){
         if (typeof form === "object") {
             form = form[0];
@@ -165,6 +208,10 @@ $.form = {
 
     },
 
+    /**
+     * 重置表单
+     * @param {HTMLElement|jQuery} form - 表单元素
+     */
     reset: function (form) {
         $(form)[0].reset();
 
@@ -172,8 +219,6 @@ $.form = {
             //item.setFiles([]);
              $(item).val('');
         });
-
-
 
         $(form).find("mdui-chip-group").each(function (key, item) {
             $(item).val([]);
@@ -183,6 +228,13 @@ $.form = {
              $(item).val('');
         });
     },
+    
+    /**
+     * 获取或设置表单值
+     * @param {HTMLElement|jQuery} form - 表单元素
+     * @param {Object} data - 要设置的数据，如果不提供则获取表单数据
+     * @returns {Object|undefined} 如果获取数据则返回数据对象，否则返回undefined
+     */
     val(form,data) {
         if (data) {
             $.form.set(form,data);

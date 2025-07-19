@@ -1,4 +1,10 @@
-
+/**
+ * 加载动画工具类
+ * 提供淡入淡出效果和加载动画功能
+ * @file Loading.js
+ * @author License Auto System
+ * @version 1.0.0
+ */
 
 /*
  * Copyright (c) 2025. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -8,8 +14,17 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
+/**
+ * 淡入淡出效果工具对象
+ * 提供元素的淡入和淡出动画效果
+ */
 let fade = {
 
+    /**
+     * 淡出效果
+     * @param {HTMLElement} container - 要淡出的容器元素
+     * @param {Function} callback - 淡出完成后的回调函数
+     */
     out(container, callback) {
         if (container === null) {
             if (callback) {
@@ -24,6 +39,12 @@ let fade = {
             }, 500);
         }
     },
+    
+    /**
+     * 淡入效果
+     * @param {HTMLElement} container - 要淡入的容器元素
+     * @param {Function} callback - 淡入完成后的回调函数
+     */
     in(container, callback) {
         if (container === null) {
             if (callback) {
@@ -44,20 +65,33 @@ let fade = {
         }, 10);
     },
 };
+
+/** @type {Object} 全局淡入淡出工具对象 */
 $.fade = fade;
 
-//加载动画
+/**
+ * 加载动画类
+ * 提供加载状态显示和进度管理功能
+ */
 class Loading {
+    /**
+     * 构造函数
+     * @param {HTMLElement|string} container - 容器元素或选择器
+     * @param {string} text - 加载提示文字，默认为空字符串
+     */
     constructor(container, text = "") {
         try {
             if (typeof container === "string") {
                 container = document.querySelector(container);
             }
+            /** @type {HTMLElement} 容器元素 */
             this.container = container;
+            /** @type {HTMLElement} 遮罩层元素 */
             this.overlayElement = document.createElement("div");
             this.overlayElement.className = "loading-overlay fade-leave-active";
 
             // 使用 mdui-circular-progress
+            /** @type {HTMLElement} 加载进度条元素 */
             this.loadingElement = document.createElement("mdui-circular-progress");
             this.loadingElement.setAttribute("indeterminate", "");
             this.loadingElement.setAttribute("max", 100)
@@ -71,6 +105,7 @@ class Loading {
             this.loadingElement.style.transform = "translate(-50%, -50%)";
 
             // 创建文字元素
+            /** @type {HTMLElement} 文字显示元素 */
             this.textElement = document.createElement("div");
             this.textElement.className = "loading-text";
             this.setText(text);
@@ -82,16 +117,25 @@ class Loading {
         }
     }
 
-
-
+    /**
+     * 设置进度值
+     * @param {number} progress - 进度值（0-100）
+     */
     setProgress(progress) {
         this.loadingElement.setAttribute("value", progress);
     }
 
+    /**
+     * 设置加载提示文字
+     * @param {string} text - 提示文字
+     */
     setText(text) {
         this.textElement.textContent = text;
     }
 
+    /**
+     * 显示加载动画
+     */
     show() {
         try {
             this.container.appendChild(this.overlayElement);
@@ -101,7 +145,9 @@ class Loading {
         }
     }
 
-
+    /**
+     * 关闭加载动画
+     */
     close() {
         try {
             let that = this;
@@ -116,5 +162,6 @@ class Loading {
     }
 }
 
+/** @type {Loading} 全局加载动画实例 */
 window.loading = new Loading(document.body);
 window.loading.show();

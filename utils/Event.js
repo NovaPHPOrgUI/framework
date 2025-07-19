@@ -1,3 +1,11 @@
+/**
+ * 事件发射器工具类
+ * 提供自定义事件和DOM事件管理功能，支持事件注册、触发和清理
+ * @file Event.js
+ * @author License Auto System
+ * @version 1.0.0
+ */
+
 /*
  * Copyright (c) 2025. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
  * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
@@ -6,35 +14,50 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
+/**
+ * 事件发射器类
+ * 提供自定义事件和DOM事件的管理功能
+ */
 class EventEmitter {
+    /**
+     * 构造函数
+     * 初始化事件存储对象
+     */
     constructor() {
-        // 存储自定义事件及其对应的回调函数
+        /** @type {Object} 存储自定义事件及其对应的回调函数 */
         this.events = {};
-        // 存储 DOM 事件及其对应的回调函数
+        /** @type {Object} 存储DOM事件及其对应的回调函数 */
         this.domEvents = {};
     }
 
-    // 获取当前路径
+    /**
+     * 获取当前路径
+     * @returns {string} 当前路径
+     */
     path() {
        if (typeof nova!=="undefined")return nova.getPath();
        return ""
     }
 
+    /**
+     * 获取上一个路径
+     * @returns {string} 上一个路径
+     */
     lastPath(){
         if (typeof nova!=="undefined")return nova.lastUrl;
         return ""
     }
 
-    // 注册事件
     /**
-     * @param {string|HTMLElement} event 事件名称或 DOM 对象
-     * @param {string} listener 监听器或者 DOM 事件类型
-     * @param {?function} listener2 监听器（仅用于 DOM 事件）
-     * @returns {EventEmitter}
+     * 注册事件监听器
+     * @param {string|HTMLElement} event 事件名称或DOM对象
+     * @param {string|Function} listener 监听器或者DOM事件类型
+     * @param {?Function} listener2 监听器（仅用于DOM事件）
+     * @returns {EventEmitter} 返回当前实例，支持链式调用
      */
     on(event, listener, listener2 = null) {
         if (typeof event !== 'string') {
-            // 处理 DOM 事件
+            // 处理DOM事件
             let target = event;
             let eventType = listener;
             let eventListener = listener2;
@@ -60,7 +83,12 @@ class EventEmitter {
         return this;
     }
 
-    // 注册一次性事件
+    /**
+     * 注册一次性事件监听器
+     * @param {string} event 事件名称
+     * @param {Function} listener 监听器函数
+     * @returns {EventEmitter} 返回当前实例，支持链式调用
+     */
     once(event, listener) {
         const onceWrapper = (...args) => {
             listener(...args);
@@ -70,7 +98,12 @@ class EventEmitter {
         return this;
     }
 
-    // 取消事件
+    /**
+     * 取消事件监听器
+     * @param {string} event 事件名称
+     * @param {Function} listener 监听器函数
+     * @returns {EventEmitter} 返回当前实例，支持链式调用
+     */
     off(event, listener) {
         let currentPath = this.lastPath();
         if (!event && currentPath!=="") {
@@ -99,7 +132,7 @@ class EventEmitter {
             }
         }
 
-        // 处理 DOM 事件
+        // 处理DOM事件
         if (this.domEvents[currentPath]) {
             if (listener) {
                 this.domEvents[currentPath] = this.domEvents[currentPath].filter(({ target, eventType, eventListener }) => {
@@ -120,7 +153,11 @@ class EventEmitter {
         return this;
     }
 
-    // 取消所有事件
+    /**
+     * 移除所有事件监听器
+     * @param {string} event 事件名称，如果不提供则移除所有事件
+     * @returns {EventEmitter} 返回当前实例，支持链式调用
+     */
     removeAllListeners(event) {
         if (!event) {
             // 清空所有事件
@@ -147,12 +184,21 @@ class EventEmitter {
         return this;
     }
 
-    // 获取事件监听器
+    /**
+     * 获取指定事件的所有监听器
+     * @param {string} event 事件名称
+     * @returns {Array<Function>} 监听器函数数组
+     */
     listeners(event) {
         return (this.events[event] || []).map(l => l.listener);
     }
 
-    // 触发事件
+    /**
+     * 触发事件
+     * @param {string} event 事件名称
+     * @param {...any} args 传递给监听器的参数
+     * @returns {EventEmitter} 返回当前实例，支持链式调用
+     */
     emit(event, ...args) {
         if (this.events[event]) {
             this.events[event].forEach(l => l.listener(...args));
@@ -161,7 +207,13 @@ class EventEmitter {
     }
 }
 
+/**
+ * 使用示例
+ * $.emitter.on('customEvent', function(data) {
+ *     console.log('Custom event triggered:', data);
+ * });
+ * $.emitter.emit('customEvent', {message: 'Hello'});
+ */
 
-// 使用示例
-//
+/** @type {EventEmitter} 全局事件发射器实例 */
 $.emitter = new EventEmitter();
