@@ -77,9 +77,9 @@ class Request {
      * @param {string} method - 请求方法
      * @param {string} url - 请求URL
      * @param {Object|string} data - 请求数据
-     * @param {string} contentType - 内容类型
-     * @param {Function} success - 成功回调
-     * @param {Function} error - 错误回调
+     * @param {string} [contentType] - 内容类型
+     * @param {Function} [success] - 成功回调
+     * @param {Function} [error] - 错误回调
      * @returns {Object} jQuery AJAX对象
      * @private
      */
@@ -132,8 +132,8 @@ class Request {
      * GET请求
      * @param {string} url - 请求URL
      * @param {Object} data - 请求参数
-     * @param {Function} success - 成功回调
-     * @param {Function} error - 错误回调
+     * @param {Function} [success] - 成功回调
+     * @param {Function} [error] - 错误回调
      * @returns {Object} jQuery AJAX对象
      */
     get(url, data, success, error) {
@@ -144,8 +144,8 @@ class Request {
      * POST表单请求
      * @param {string} url - 请求URL
      * @param {Object} data - 表单数据
-     * @param {Function} success - 成功回调
-     * @param {Function} error - 错误回调
+     * @param {Function} [success] - 成功回调
+     * @param {Function} [error] - 错误回调
      * @returns {Object} jQuery AJAX对象
      */
     postForm(url, data, success, error) {
@@ -156,8 +156,8 @@ class Request {
      * POST JSON请求
      * @param {string} url - 请求URL
      * @param {Object} data - JSON数据
-     * @param {Function} success - 成功回调
-     * @param {Function} error - 错误回调
+     * @param {Function} [success] - 成功回调
+     * @param {Function} [error] - 错误回调
      * @returns {Object} jQuery AJAX对象
      */
     postJson(url, data, success, error) {
@@ -168,8 +168,8 @@ class Request {
      * PUT请求
      * @param {string} url - 请求URL
      * @param {Object} data - 请求数据
-     * @param {Function} success - 成功回调
-     * @param {Function} error - 错误回调
+     * @param {Function} [success] - 成功回调
+     * @param {Function} [error] - 错误回调
      * @returns {Object} jQuery AJAX对象
      */
     put(url, data, success, error) {
@@ -180,8 +180,8 @@ class Request {
      * DELETE请求
      * @param {string} url - 请求URL
      * @param {Object} data - 请求数据
-     * @param {Function} success - 成功回调
-     * @param {Function} error - 错误回调
+     * @param {Function} [success] - 成功回调
+     * @param {Function} [error] - 错误回调
      * @returns {Object} jQuery AJAX对象
      */
     delete(url, data, success, error) {

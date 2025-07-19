@@ -81,4 +81,34 @@
     win.$ = win.$ || {};
     /** @type {Toaster} 全局 Toaster 实例 */
     win.$.toaster = new Toaster();
+
+    win.$.copy =  function(text) {
+        if (navigator.clipboard?.writeText) {
+            try {
+                navigator.clipboard.writeText(text);
+                return true;
+            } catch (_) {
+            }
+        }
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = 0;
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            return document.execCommand('copy');
+        } finally {
+            document.body.removeChild(ta);
+        }
+    }
+    win.$.formatDateTime =  function (date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
 })(window);

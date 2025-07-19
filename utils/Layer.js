@@ -5,8 +5,29 @@
  * @author 系统
  * @version 1.0.0
  */
+
+/**
+ * Layer弹层配置选项
+ * @typedef {Object} LayerOptions
+ * @property {string} [title=''] - 弹层标题
+ * @property {string} [content=''] - 弹层内容（HTML）
+ * @property {Array<Object>} [buttons=[]] - 按钮列表
+ * @property {string} buttons[].text - 按钮文本
+ * @property {Function} [buttons[].onClick] - 按钮点击回调
+ * @property {boolean} [closeBtn=true] - 是否显示右上角关闭按钮
+ * @property {string} [className=''] - 自定义CSS类名
+ * @property {string} [style=''] - 自定义内联样式
+ * @property {Function} [onOpen] - 弹层打开时的回调函数
+ * @property {Function} [onClosed] - 弹层关闭时的回调函数
+ * @property {string} [btn='确定'] - 按钮文本（alert方法专用）
+ * @property {string} [btnConfirm='确定'] - 确定按钮文本（confirm方法专用）
+ * @property {string} [btnCancel='取消'] - 取消按钮文本（confirm方法专用）
+ * @property {...*} [rest] - 其余MDUI Dialog API支持的选项
+ */
+
 (function (win) {
   'use strict';
+
 
   const { dialog } = win.mdui;
   /** @type {number} 弹层实例 ID 计数 */
@@ -16,18 +37,7 @@
 
   /**
    * 创建并打开一个 Dialog
-   * @param {Object} opts - 弹层配置选项
-   * @param {string} [opts.title=''] - 弹层标题
-   * @param {string} [opts.content=''] - 弹层内容（HTML）
-   * @param {Array<Object>} [opts.buttons=[]] - 按钮列表
-   * @param {string} opts.buttons[].text - 按钮文本
-   * @param {Function} [opts.buttons[].onClick] - 按钮点击回调
-   * @param {boolean} [opts.closeBtn=true] - 是否显示右上角关闭按钮
-   * @param {string} [opts.className=''] - 自定义 class
-   * @param {string} [opts.style=''] - 自定义 style
-   * @param {Function} [opts.onOpen] - 弹层打开时的回调函数
-   * @param {Function} [opts.onClosed] - 弹层关闭时的回调函数
-   * @param {...*} opts.rest - 其余 dialog API 支持的选项
+   * @param {LayerOptions} opts - 弹层配置选项
    * @returns {number} 弹层实例ID
    * @private
    */
@@ -49,30 +59,33 @@
     let html = `<div class="layer-panel" style="position:relative;">`;
 
     // Header
-    html += `<div class="layer-header headline-medium" style="padding:16px; font-weight:bold; border-bottom:1px solid #eee; position:relative;">`;
+    html += `<div class="layer-header headline-medium" style=" font-weight:bold;  position:relative;">`;
     html += `${title}`;
     if (closeBtn) {
       html += `
         <mdui-button-icon 
           class="layer-close" 
           icon="close" 
-          style="position:absolute; top:16px; right:16px; cursor:pointer;">
+          style="position:absolute; top:0; right:0rem; cursor:pointer;">
         </mdui-button-icon>`;
     }
     html += `</div>`;
 
     // Body
-    html += `<div class="layer-content" style="padding:16px;">${content}</div>`;
+    html += `<div class="layer-content" style="padding: 1.5rem 0.5rem;">${content}</div>`;
 
     // Footer
     if (buttons.length) {
-      html += `<div class="layer-footer" style="padding:16px; border-top:1px solid #eee; text-align:right;">`;
+      html += `<div class="layer-footer" style="text-align:right;">`;
       buttons.forEach((btn, i) => {
+        // 最多两个按钮，第一个用默认样式，第二个用outlined样式
+        const variant = i === 1 ? '' : 'variant="outlined"';
         html += `
           <mdui-button 
             class="layer-btn" 
             data-btn-index="${i}" 
-            style="margin-left:8px;">
+            ${variant}
+            style="margin-left:0.5rem;">
             ${btn.text}
           </mdui-button>`;
       });
@@ -100,8 +113,10 @@
       // 底部按钮
       buttons.forEach((btn, i) => {
         const el = this.querySelector(`[data-btn-index="${i}"]`);
-        el && el.addEventListener('click', () => {
-          btn.onClick?.();
+        el && el.addEventListener('click', () =>
+        {
+          console.log(btn);
+          if(btn.onClick) btn.onClick();
           inst.open = false;
         });
       });
@@ -124,105 +139,127 @@
   const layer = {
     /**
      * 显示提示弹层
-     * @param {string} msg - 提示消息
-     * @param {Function} [yes] - 确定按钮回调函数
-     * @param {Object} [o={}] - 配置选项
-     * @param {string} [o.title='提示'] - 弹层标题
-     * @param {string} [o.btn='确定'] - 按钮文本
+     * @param {LayerOptions} options - 配置选项
+     * @param {string} options.msg - 提示消息
+     * @param {Function} [options.yes] - 确定按钮回调函数
+     * @param {string} [options.title='提示'] - 弹层标题
+     * @param {string} [options.btn='确定'] - 按钮文本
      * @returns {number} 弹层实例ID
      * @example
      * // 基本用法
-     * $.layer.alert('操作成功！');
-     * 
+     * $.layer.alert({ msg: '操作成功！' });
+     *
      * // 带回调
-     * $.layer.alert('确认删除？', function() {
-     *   console.log('用户点击了确定');
+     * $.layer.alert({
+     *   msg: '确认删除？',
+     *   yes: function() {
+     *     console.log('用户点击了确定');
+     *   }
      * });
-     * 
+     *
      * // 自定义配置
-     * $.layer.alert('自定义标题', function() {
-     *   // 回调
-     * }, {
+     * $.layer.alert({
+     *   msg: '自定义标题',
+     *   yes: function() {
+     *     // 回调
+     *   },
      *   title: '系统提示',
-     *   btn: '知道了'
+     *   btn: '知道了',
+     *   className: 'custom-alert',
+     *   style: 'width: 400px;'
      * });
      */
-    alert(msg, yes, o = {}) {
+    alert(options = {}) {
+      const { msg, yes, title = '提示', btn = '确定', ...rest } = options;
       return createDialog({
-        title:   o.title || '提示',
+        title:   title,
         content: `<div>${msg}</div>`,
-        buttons: [{ text: o.btn || '确定', onClick: yes }],
-        ...o
+        buttons: [{ text: btn, onClick: yes }],
+        ...rest
       });
     },
 
     /**
      * 显示确认弹层
-     * @param {string} msg - 确认消息
-     * @param {Function} [yes] - 确定按钮回调函数
-     * @param {Function} [no] - 取消按钮回调函数
-     * @param {Object} [o={}] - 配置选项
-     * @param {string} [o.title='确认'] - 弹层标题
-     * @param {string} [o.btnConfirm='确定'] - 确定按钮文本
-     * @param {string} [o.btnCancel='取消'] - 取消按钮文本
+     * @param {LayerOptions} options - 配置选项
+     * @param {string} options.msg - 确认消息
+     * @param {Function} [options.yes] - 确定按钮回调函数
+     * @param {Function} [options.no] - 取消按钮回调函数
+     * @param {string} [options.title='确认'] - 弹层标题
+     * @param {string} [options.btnConfirm='确定'] - 确定按钮文本
+     * @param {string} [options.btnCancel='取消'] - 取消按钮文本
      * @returns {number} 弹层实例ID
      * @example
      * // 基本用法
-     * $.layer.confirm('确认删除此文件？');
-     * 
+     * $.layer.confirm({ msg: '确认删除此文件？' });
+     *
      * // 带回调
-     * $.layer.confirm('确认删除？', function() {
-     *   console.log('用户点击了确定');
-     * }, function() {
-     *   console.log('用户点击了取消');
+     * $.layer.confirm({
+     *   msg: '确认删除？',
+     *   yes: function() {
+     *     console.log('用户点击了确定');
+     *   },
+     *   no: function() {
+     *     console.log('用户点击了取消');
+     *   }
      * });
-     * 
+     *
      * // 自定义配置
-     * $.layer.confirm('确认操作？', function() {
-     *   // 确定回调
-     * }, function() {
-     *   // 取消回调
-     * }, {
+     * $.layer.confirm({
+     *   msg: '确认操作？',
+     *   yes: function() {
+     *     // 确定回调
+     *   },
+     *   no: function() {
+     *     // 取消回调
+     *   },
      *   title: '系统确认',
      *   btnConfirm: '是',
-     *   btnCancel: '否'
+     *   btnCancel: '否',
+     *   className: 'custom-confirm',
+     *   style: 'width: 450px;'
      * });
      */
-    confirm(msg, yes, no, o = {}) {
+    confirm(options = {}) {
+      const { msg, yes, no, title = '确认', btnConfirm = '确定', btnCancel = '取消', ...rest } = options;
       return createDialog({
-        title:   o.title || '确认',
+        title:   title,
         content: `<div>${msg}</div>`,
         buttons: [
-          { text: o.btnCancel  || '取消', onClick: no  },
-          { text: o.btnConfirm || '确定', onClick: yes }
-        ],
-        ...o
+          { text: btnCancel, onClick: no  },
+          { text: btnConfirm, onClick: yes }
+        ].slice(0, 2), // 确保最多只有两个按钮
+        ...rest
       });
     },
 
     /**
      * 显示消息提示（自动关闭）
-     * @param {string} message - 消息内容
-     * @param {number} [time=2000] - 显示时间（毫秒）
-     * @param {Object} [o={}] - 配置选项
+     * @param {LayerOptions} options - 配置选项
+     * @param {string} options.message - 消息内容
+     * @param {number} [options.time=2000] - 显示时间（毫秒）
      * @returns {number} 弹层实例ID
      * @example
      * // 基本用法
-     * $.layer.msg('操作成功！');
-     * 
+     * $.layer.msg({ message: '操作成功！' });
+     *
      * // 自定义显示时间
-     * $.layer.msg('保存成功！', 3000);
-     * 
+     * $.layer.msg({ message: '保存成功！', time: 3000 });
+     *
      * // 自定义配置
-     * $.layer.msg('自定义消息', 5000, {
-     *   className: 'custom-msg'
+     * $.layer.msg({
+     *   message: '自定义消息',
+     *   time: 5000,
+     *   className: 'custom-msg',
+     *   style: 'background: #4CAF50; color: white;'
      * });
      */
-    msg(message, time = 2000, o = {}) {
+    msg(options = {}) {
+      const { message, time = 2000, ...rest } = options;
       const id = createDialog({
         content:    `<div>${message}</div>`,
         closeBtn:   false,
-        ...o
+        ...rest
       });
       setTimeout(() => this.close(id), time);
       return id;
@@ -230,82 +267,90 @@
 
     /**
      * 显示加载中弹层
-     * @param {Object} [o={}] - 配置选项
+     * @param {LayerOptions} [options={}] - 配置选项
      * @returns {number} 弹层实例ID
      * @example
      * // 基本用法
      * const loadingId = $.layer.load();
-     * 
+     *
      * // 加载完成后关闭
      * setTimeout(() => {
      *   $.layer.close(loadingId);
      * }, 2000);
-     * 
+     *
      * // 自定义配置
      * $.layer.load({
      *   title: '加载中...',
-     *   className: 'custom-loading'
+     *   className: 'custom-loading',
+     *   style: 'width: 300px;'
      * });
      */
-    load(o = {}) {
+    load(options = {}) {
       return createDialog({
         content:    '<mdui-spinner></mdui-spinner>',
         closeBtn:   false,
-        ...o
+        ...options
       });
     },
 
     /**
      * 显示HTML内容弹层
-     * @param {string} content - HTML内容
-     * @param {Object} [o={}] - 配置选项
-     * @param {string} [o.title=''] - 弹层标题
+     * @param {LayerOptions} options - 配置选项
+     * @param {string} options.content - HTML内容
+     * @param {string} [options.title=''] - 弹层标题
      * @returns {number} 弹层实例ID
      * @example
      * // 基本用法
-     * $.layer.html('<div>自定义HTML内容</div>');
-     * 
+     * $.layer.html({ content: '<div>自定义HTML内容</div>' });
+     *
      * // 带标题
-     * $.layer.html('<div>复杂HTML内容</div>', {
+     * $.layer.html({
+     *   content: '<div>复杂HTML内容</div>',
      *   title: '详细信息'
      * });
-     * 
+     *
      * // 自定义样式
-     * $.layer.html('<div>样式化内容</div>', {
+     * $.layer.html({
+     *   content: '<div>样式化内容</div>',
      *   title: '自定义样式',
      *   className: 'custom-html-layer',
-     *   style: 'width: 600px;'
+     *   style: 'width: 600px; height: 400px;'
      * });
      */
-    html(content, o = {}) {
-      return createDialog({ title: o.title || '', content: content, ...o });
+    html(options = {}) {
+      const { content, title = '', ...rest } = options;
+      return createDialog({ title: title, content: content, ...rest });
     },
 
     /**
      * 显示iframe弹层
-     * @param {string} src - iframe源地址
-     * @param {Object} [o={}] - 配置选项
-     * @param {string} [o.title=''] - 弹层标题
+     * @param {LayerOptions} options - 配置选项
+     * @param {string} options.src - iframe源地址
+     * @param {string} [options.title=''] - 弹层标题
      * @returns {number} 弹层实例ID
      * @example
      * // 基本用法
-     * $.layer.iframe('/api/detail');
-     * 
+     * $.layer.iframe({ src: '/api/detail' });
+     *
      * // 带标题
-     * $.layer.iframe('/api/detail', {
+     * $.layer.iframe({
+     *   src: '/api/detail',
      *   title: '详细信息'
      * });
-     * 
+     *
      * // 外部链接
-     * $.layer.iframe('https://example.com', {
-     *   title: '外部链接'
+     * $.layer.iframe({
+     *   src: 'https://example.com',
+     *   title: '外部链接',
+     *   style: 'width: 800px; height: 600px;'
      * });
      */
-    iframe(src, o = {}) {
+    iframe(options = {}) {
+      const { src, title = '', ...rest } = options;
       return createDialog({
-        title:   o.title || '',
+        title:   title,
         content: `<iframe src="${src}" style="width:100%;height:100%;border:0;" loading="lazy"></iframe>`,
-        ...o
+        ...rest
       });
     },
 
