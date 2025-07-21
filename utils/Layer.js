@@ -363,7 +363,9 @@
      * $.layer.close(layerId);
      */
     close(id) {
-      cache.get(id)?.destroy();
+      if(cache.get(id)){
+        cache.get(id).open = false;
+      }
     },
 
     /**
