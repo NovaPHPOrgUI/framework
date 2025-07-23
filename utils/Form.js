@@ -142,9 +142,9 @@ $.form = {
 
     /**
      * 提交表单
-     * @param {HTMLElement|jQuery} form - 表单元素
-     * @param {Function} callback - 提交回调函数
-     * @param {Function} beforeSubmit - 提交前回调函数
+     * @param {HTMLElement|jQuery|String} form - 表单元素
+     * @param {Function} [callback] - 提交回调函数
+     * @param {Function} [beforeSubmit] - 提交前回调函数
      */
     submit: function (form, callback, beforeSubmit) {
         if (typeof form === "object") {
@@ -174,9 +174,9 @@ $.form = {
     /**
      * 管理表单（获取和提交）
      * @param {string} uri - 接口地址
-     * @param {HTMLElement|jQuery} form - 表单元素
-     * @param {Function} callback - 回调函数
-     * @param {Function} beforeSubmit - 提交前回调函数
+     * @param {HTMLElement|jQuery|String} form - 表单元素
+     * @param {Function} [callback] - 回调函数
+     * @param {Function} [beforeSubmit] - 提交前回调函数
      */
     manage(uri,form,callback,beforeSubmit){
         if (typeof form === "object") {
