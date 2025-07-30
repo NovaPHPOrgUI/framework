@@ -4,32 +4,37 @@
  * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
  * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
  * Vestibulum commodo. Ut rhoncus gravida arcu.
+ *
+ * Optimized & annotated by ChatGPT
+ * - 去重 / 合并重复代码
+ * - 模块化注释，便于维护
+ * - 统一 placeholder、文本溢出等实现
  */
 
-/*标准字体大小（rem参照对象）设置为14像素*/
+/*------------------------------------*\
+  0. Sass 标准库导入
+\*------------------------------------*/
+@use "sass:list";
+@use "sass:math";
 
+/*------------------------------------*\
+  1. 基础 Reset 与通用规则
+\*------------------------------------*/
 html {
+  /* 统一 rem 基准：16px */
   font-size: 16px;
 }
 
-
-/**
- * 当`body`宽度大于`html`宽度时，某些浏览器会出现内部滚动条，所以给`html、body`设置宽度100%。
- * 取消部分浏览器点击有阴影。
- * 优化移动端滚动事件。
- */
-
+/* 防止内部滚动条 & 优化移动端滚动体验 */
 html,
 body {
   width: 100%;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-tap-highlight-color: transparent;
   -webkit-overflow-scrolling: touch;
   overflow-scrolling: touch;
 }
 
-
-/*移除浏览器默认的`margin、padding`*/
-
+/* 移除浏览器默认 margin & padding */
 p,
 dl,
 dt,
@@ -61,20 +66,13 @@ blockquote {
   padding: 0;
 }
 
-
-/**
- * `table`相邻单元格的边框间的距离设置为0。
- * 设置`table`的边框为合并模式。
- */
-
+/* table 合并边框模式 */
 table {
   border-spacing: 0;
   border-collapse: collapse;
 }
 
-
-/*移除浏览器部分元素的默认边框*/
-
+/* 去除默认边框 */
 img,
 abbr,
 input,
@@ -85,34 +83,17 @@ textarea {
   border: none;
 }
 
+/* input 继承文本对齐 */
+input { text-align: inherit; }
 
-/*因为`input`默认不继承父元素的居中样式，所以让`input`元素继承父元素的文本居中方式*/
+/* textarea 禁止缩放 */
+textarea { resize: none; }
 
-input {
-  text-align: inherit;
-}
-
-
-/*让`textarea`默认不可以放缩*/
-
-textarea {
-  resize: none;
-}
-
-
-/*因为部分浏览器默认的`q`标签的前后伪元素有多余样式，所以置空`q`标签前后伪元素*/
-
+/* 清空 q 伪元素内容 */
 q::before,
-q::after {
-  content: '';
-}
+q::after { content: ''; }
 
-
-/**
- * 由于以下元素的部分属性没有继承父节点样式，所以声明这些元素的这些属性为父元素的属性。
- * 取消这些元素的`outline`样式。
- */
-
+/* 统一继承并去除 outline */
 a,
 h1,
 h2,
@@ -135,139 +116,69 @@ optgroup {
   outline: none;
 }
 
-
-/**
- * 如果绝对定位元素，找不到被设置过定位信息的上级元素，那么这个元素就基于根节点定位，所以给`body`设置相对定位，让这些元素基于`body`定位。
- * 设置网页基本字体颜色为`#666`(深灰色)。
- * 设置网页背景颜色颜色为`#fff`（纯白色）。
- * 使字体渲染更顺滑。
- */
-
+/* body 默认字体、颜色和抗锯齿 */
 body {
   font: 16px 'Helvetica Neue', Arial, 'Hiragino Sans GB', STHeiti, 'STHeiti Light [STXihei]', 'Microsoft Yahei', sans-serif;
-  position: relative;
+  position: relative; /* 为绝对定位子元素提供定位上下文 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  color: #666;
+  background: #fff;
 }
 
-
-/*取消下面元素的默认文字装饰（下划线、中划线）*/
-
+/* 取消文字装饰 */
 a,
 del,
-ins {
-  text-decoration: none;
-}
+ins { text-decoration: none; }
 
-
-/*取消ol，ul默认列表样式*/
-
+/* 移除默认列表样式 */
 ol,
-ul {
-  list-style: none;
-}
+ul { list-style: none; }
 
-
-/*使如下元素默认鼠标经过是`小手`的形状（一般表示可以点击）*/
-
+/* 点击组件光标样式 */
 button,
 input[type='submit'],
-input[type='button'] {
-  cursor: pointer;
-}
+input[type='button'] { cursor: pointer; }
 
-
-/*取消火狐浏览器部分版本`input`聚焦的时候默认的`padding、border`*/
-
+/* 火狐 input 聚焦默认 padding/border */
 input::-moz-focus-inner {
   padding: 0;
   border: 0;
 }
 
-
-/*取消部分浏览器`input[type='number']`的默认样式*/
-
+/* 去除 number 输入控件默认微调按钮 */
 input[type='number'] {
   -moz-appearance: textfield;
 }
-
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
   margin: 0;
   -webkit-appearance: none;
 }
 
-
-/*输入控件的`placeholder`颜色设置为`#999`（浅灰色）*/
-
-input::-webkit-input-placeholder,
-textarea::-webkit-input-placeholder {
+/* 统一 placeholder 样式 */
+input::placeholder,
+textarea::placeholder {
   color: #999;
+  opacity: 1;
 }
 
-input:-moz-placeholder,
-textarea:-moz-placeholder {
-  color: #999;
-}
+/* 隐藏 template 标签内容 */
+template { display: none; }
 
-input::-moz-placeholder,
-textarea::-moz-placeholder {
-  color: #999;
-}
+/*------------------------------------*\
+  2. 标题与容器结构
+\*------------------------------------*/
 
-input:-ms-input-placeholder,
-textarea:-ms-input-placeholder {
-  color: #999;
-}
+h1 { font-size: 2rem;   margin-bottom: 1rem; font-weight: bold; }
+h2 { font-size: 1.5rem; margin-bottom: 1rem; font-weight: bold; }
+h3 { font-size: 1.25rem; margin-bottom: 1rem; }
+h4 { font-size: 1rem;   margin-bottom: 1rem; }
+h5 { font-size: 0.875rem; margin-bottom: 1rem; }
+h6 { font-size: 0.75rem;  margin-bottom: 1rem; }
 
-
-/*由于部分浏览器`template`直接显示出来，所以要隐藏`template`元素*/
-
-template {
-  display: none;
-}
-
-//重置样式
-h1 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  font-weight: bold;
-}
-
-h2 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  font-weight: bold;
-}
-
-h3 {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-
-
-}
-
-h4 {
-  font-size: 1rem;
-  margin-bottom: 1rem;
-
-
-}
-
-h5 {
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
-}
-
-h6 {
-  font-size: 0.75rem;
-  margin-bottom: 1rem;
-
-}
-
-
-/* 基本的容器样式 */
+/* 基本容器 */
 .container,
 .container-fluid {
   position: relative;
@@ -279,8 +190,11 @@ h6 {
   box-sizing: border-box;
 }
 
+/*------------------------------------*\
+  3. 断点、栅格与布局工具
+\*------------------------------------*/
 
-// 屏幕断点
+/* 屏幕断点 */
 $breakpoints: (
         'xs': 600px,
         'sm': 840px,
@@ -289,26 +203,27 @@ $breakpoints: (
         'xl': 1920px
 );
 
-// 清除浮动
-.row:before, .row:after {
+/* 清除浮动 */
+.row::before,
+.row::after {
   content: "";
   display: block;
   clear: both;
 }
 
-// 基础列样式
+/* 基础列样式 */
 [class^="col-"] {
   position: relative;
   display: block;
   box-sizing: border-box;
 }
 
-// 列宽度和偏移量
+/* 列宽度与偏移量生成器 */
 @mixin col-widths($prefix) {
   @for $i from 1 through 12 {
     .col-#{$prefix}#{$i} {
       float: left;
-      width: $i * 8.33333333%;
+      width: $i * 8.33333333%; // 100/12
     }
     .col-#{$prefix}-offset#{$i} {
       margin-left: $i * 8.33333333%;
@@ -316,40 +231,28 @@ $breakpoints: (
   }
 }
 
-// 列间隔
+/* 列间距生成器（包裹容器和子元素 padding） */
 @mixin col-spaces($prefix, $value) {
   .col-#{$prefix} {
     margin: -$value;
-
-    > * {
-      padding: $value;
-    }
+    > * { padding: $value; }
   }
 }
 
-// 生成媒体查询
+/* 根据断点生成容器宽度、显示/隐藏、列宽 */
 @each $name, $breakpoint in $breakpoints {
   @if $name == 'xs' {
-    .container {
-      padding: 0 15px;
-    }
-    .hide-#{$name} {
-      display: none !important;
-    }
-    .show-#{$name}-block {
-      display: block !important;
-    }
-    .show-#{$name}-inline {
-      display: inline !important;
-    }
-    .show-#{$name}-inline-block {
-      display: inline-block !important;
-    }
+    .container { padding: 0 15px; }
+
+    .hide-#{$name} { display: none !important; }
+    .show-#{$name}-block { display: block !important; }
+    .show-#{$name}-inline { display: inline !important; }
+    .show-#{$name}-inline-block { display: inline-block !important; }
+
     @include col-widths($name);
   } @else {
     @media screen and (min-width: $breakpoint) {
       .container {
-
         @if $name == 'lg' {
           max-width: var(--mdui-breakpoint-xl);
         } @else if $name == 'md' {
@@ -357,27 +260,19 @@ $breakpoints: (
         } @else if $name == 'sm' {
           max-width: var(--mdui-breakpoint-md);
         }
-
       }
 
-      .hide-#{$name} {
-        display: none !important;
-      }
-      .show-#{$name}-block {
-        display: block !important;
-      }
-      .show-#{$name}-inline {
-        display: inline !important;
-      }
-      .show-#{$name}-inline-block {
-        display: inline-block !important;
-      }
+      .hide-#{$name} { display: none !important; }
+      .show-#{$name}-block { display: block !important; }
+      .show-#{$name}-inline { display: inline !important; }
+      .show-#{$name}-inline-block { display: inline-block !important; }
+
       @include col-widths($name);
     }
   }
 }
 
-// 列间隔
+/* 列间距尺寸表 */
 $space-values: (
         1: 0.03125rem,
         2: 0.0625rem,
@@ -405,45 +300,34 @@ $space-values: (
   @include col-spaces('space#{$key}', $value);
 }
 
-
-// 间距变量
+/*------------------------------------*\
+  4. 间距工具类 (margin/padding)
+\*------------------------------------*/
 $spacing-values: (
         0: 0rem,
         1: 0.25rem, // 4px
-        2: 0.5rem, // 8px
-        3: 1rem, // 16px
-        4: 2rem, // 32px
-        5: 3rem // 48px
+        2: 0.5rem,  // 8px
+        3: 1rem,    // 16px
+        4: 2rem,    // 32px
+        5: 3rem     // 48px
 );
 
-// 生成内边距和外边距类
 @mixin generate-spacing($property, $abbreviation) {
   @each $key, $value in $spacing-values {
-    .#{$abbreviation}-#{$key} {
-      #{$property}: $value !important;
-    }
-    .#{$abbreviation}t-#{$key} {
-      #{$property}-top: $value !important;
-    }
-    .#{$abbreviation}r-#{$key} {
-      #{$property}-right: $value !important;
-    }
-    .#{$abbreviation}b-#{$key} {
-      #{$property}-bottom: $value !important;
-    }
-    .#{$abbreviation}l-#{$key} {
-      #{$property}-left: $value !important;
-    }
+    .#{$abbreviation}-#{$key} { #{$property}: $value !important; }
+    .#{$abbreviation}t-#{$key} { #{$property}-top: $value !important; }
+    .#{$abbreviation}r-#{$key} { #{$property}-right: $value !important; }
+    .#{$abbreviation}b-#{$key} { #{$property}-bottom: $value !important; }
+    .#{$abbreviation}l-#{$key} { #{$property}-left: $value !important; }
   }
 }
 
-// 生成内边距类
 @include generate-spacing(padding, p);
-
-// 生成外边距类
 @include generate-spacing(margin, m);
 
-// 文字样式类生成
+/*------------------------------------*\
+  5. Typo Scale 工具类
+\*------------------------------------*/
 $typescale: (
         'display-large': display-large,
         'display-medium': display-medium,
@@ -462,7 +346,6 @@ $typescale: (
         'body-small': body-small
 );
 
-
 @each $name, $class in $typescale {
   .#{$class} {
     font-size: var(--mdui-typescale-#{$name}-size);
@@ -472,7 +355,112 @@ $typescale: (
   }
 }
 
-// 背景颜色类生成
+/*------------------------------------*\
+  5.1 字重工具类
+\*------------------------------------*/
+$font-weights: (
+        'thin': 100,
+        'extralight': 200,
+        'light': 300,
+        'normal': 400,
+        'regular': 400,
+        'medium': 500,
+        'semibold': 600,
+        'bold': 700,
+        'extrabold': 800,
+        'black': 900
+);
+
+@each $name, $weight in $font-weights {
+  .font-#{$name} {
+    font-weight: $weight !important;
+  }
+}
+
+/* 数字字重类 */
+@for $i from 1 through 9 {
+  .font-#{$i}00 {
+    font-weight: #{$i * 100} !important;
+  }
+}
+
+/* 字体样式 */
+.italic { font-style: italic !important; }
+.not-italic { font-style: normal !important; }
+
+/* 文本装饰 */
+.underline { text-decoration: underline !important; }
+.overline { text-decoration: overline !important; }
+.line-through { text-decoration: line-through !important; }
+.no-underline { text-decoration: none !important; }
+
+/* 字母间距 */
+$letter-spacings: (
+        'tighter': -0.05em,
+        'tight': -0.025em,
+        'normal': 0em,
+        'wide': 0.025em,
+        'wider': 0.05em,
+        'widest': 0.1em
+);
+
+@each $name, $spacing in $letter-spacings {
+  .tracking-#{$name} {
+    letter-spacing: $spacing !important;
+  }
+}
+
+/* 行高 */
+$line-heights: (
+        'none': 1,
+        'tight': 1.25,
+        'snug': 1.375,
+        'normal': 1.5,
+        'relaxed': 1.625,
+        'loose': 2
+);
+
+@each $name, $height in $line-heights {
+  .leading-#{$name} {
+    line-height: $height !important;
+  }
+}
+
+/* 数字行高 */
+@for $i from 3 through 10 {
+  .leading-#{$i} {
+    line-height: #{$i * 0.25}rem !important;
+  }
+}
+
+/* 文本大小写 */
+.uppercase { text-transform: uppercase !important; }
+.lowercase { text-transform: lowercase !important; }
+.capitalize { text-transform: capitalize !important; }
+.normal-case { text-transform: none !important; }
+
+/* 文本换行 */
+.whitespace-normal { white-space: normal !important; }
+.whitespace-nowrap { white-space: nowrap !important; }
+.whitespace-pre { white-space: pre !important; }
+.whitespace-pre-line { white-space: pre-line !important; }
+.whitespace-pre-wrap { white-space: pre-wrap !important; }
+
+/* 断词 */
+.break-normal { 
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+.break-words { 
+  overflow-wrap: break-word !important;
+}
+.break-all { 
+  word-break: break-all !important;
+}
+
+/*------------------------------------*\
+  6. 颜色背景/文本工具类
+\*------------------------------------*/
 $background-colors: (
         'error': error,
         'success': primary,
@@ -492,9 +480,73 @@ $background-colors: (
   }
 }
 
+/* MDUI 完整颜色系统 */
+$mdui-colors: (
+        'primary': primary,
+        'on-primary': on-primary,
+        'primary-container': primary-container,
+        'on-primary-container': on-primary-container,
+        'secondary': secondary,
+        'on-secondary': on-secondary,
+        'secondary-container': secondary-container,
+        'on-secondary-container': on-secondary-container,
+        'tertiary': tertiary,
+        'on-tertiary': on-tertiary,
+        'tertiary-container': tertiary-container,
+        'on-tertiary-container': on-tertiary-container,
+        'error': error,
+        'on-error': on-error,
+        'error-container': error-container,
+        'on-error-container': on-error-container,
+        'background': background,
+        'on-background': on-background,
+        'surface': surface,
+        'on-surface': on-surface,
+        'surface-variant': surface-variant,
+        'on-surface-variant': on-surface-variant,
+        'surface-container': surface-container,
+        'surface-container-low': surface-container-low,
+        'surface-container-high': surface-container-high,
+        'surface-container-highest': surface-container-highest,
+        'surface-tint': surface-tint,
+        'outline': outline,
+        'outline-variant': outline-variant,
+        'shadow': shadow,
+        'scrim': scrim,
+        'inverse-surface': inverse-surface,
+        'on-inverse-surface': on-inverse-surface,
+        'inverse-primary': inverse-primary
+);
 
+@each $name, $color in $mdui-colors {
+  .text-#{$name} {
+    color: rgba(var(--mdui-color-#{$color})) !important;
+  }
+  .bg-#{$name} {
+    background-color: rgba(var(--mdui-color-#{$color})) !important;
+  }
+}
+
+/* 透明度变化的文本颜色 */
+$text-opacities: (
+        12: 0.12,
+        38: 0.38,
+        60: 0.60,
+        87: 0.87
+);
+
+@each $opacity-name, $opacity-value in $text-opacities {
+  @each $name, $color in $mdui-colors {
+    .text-#{$name}-#{$opacity-name} {
+      color: rgba(var(--mdui-color-#{$color}), #{$opacity-value}) !important;
+    }
+  }
+}
+
+/*------------------------------------*\
+  7. 表单 fieldset/legend 样式
+\*------------------------------------*/
 fieldset {
-
   border-radius: var(--nova-border-radius);
   padding: calc(var(--nova-padding) * 2);
   margin-bottom: 20px;
@@ -502,7 +554,6 @@ fieldset {
   box-shadow: var(--mdui-elevation-level1);
 }
 
-/* 美化 legend */
 legend {
   font-size: 1.2rem;
   font-weight: bold;
@@ -510,37 +561,820 @@ legend {
   padding: 0 10px;
 }
 
-.center-vertical {
-  display: flex;
-  align-items: center;
-}
+/*------------------------------------*\
+  8. 简易居中工具类
+\*------------------------------------*/
+.center-vertical { display: flex; align-items: center; }
+.center-both { display: flex; align-items: center; justify-content: center; }
 
-// 垂直和水平居中的辅助类
-.center-both {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/***************************************/
-/*文本溢出显示省略号`to==>text-overflow`，原子类*/
-
+/*------------------------------------*\
+  9. 文本溢出与省略号
+\*------------------------------------*/
+/* 单行省略号（合并 .to 与 .text-ellipsis） */
+.text-ellipsis,
 .to {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
 }
 
+/* 多行文本溢出 */
+@for $i from 2 through 6 {
+  .line-clamp-#{$i} {
+    overflow: hidden !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: $i !important;
+  }
+}
 
-/*文本溢出显示省略号`to==>text-overflow`，原子类*/
-
+/*------------------------------------*\
+  10. 视口高度变量 (移动端地址栏问题)
+\*------------------------------------*/
 :root {
   --vh-offset: 0px;
-  // 生成 --10vh 到 --100vh 的变量
+  /* 生成 --10vh 到 --100vh */
   @for $i from 1 through 10 {
     --#{$i}0vh: calc(#{$i * 10}vh - var(--vh-offset));
   }
-  // 保留原来的完整vh变量
+  /* 完整 vh 变量 */
   --vh: calc(100vh - var(--vh-offset));
 }
 
+/*------------------------------------*\
+  11. 尺寸、Z-index、透明度、圆角映射表
+\*------------------------------------*/
+$size-percentages: (
+        0: 0%,
+        10: 10%,
+        20: 20%,
+        25: 25%,
+        30: 30%,
+        40: 40%,
+        50: 50%,
+        60: 60%,
+        70: 70%,
+        75: 75%,
+        80: 80%,
+        90: 90%,
+        100: 100%
+);
+
+$size-fixed: (
+        auto: auto,
+        full: 100%,
+        screen: 100vh,
+        min: min-content,
+        max: max-content,
+        fit: fit-content
+);
+
+$z-indexes: (
+        0: 0,
+        1: 1,
+        10: 10,
+        20: 20,
+        30: 30,
+        40: 40,
+        50: 50,
+        auto: auto
+);
+
+$opacities: (
+        0: 0,
+        5: 0.05,
+        10: 0.1,
+        20: 0.2,
+        25: 0.25,
+        30: 0.3,
+        40: 0.4,
+        50: 0.5,
+        60: 0.6,
+        70: 0.7,
+        75: 0.75,
+        80: 0.8,
+        90: 0.9,
+        95: 0.95,
+        100: 1
+);
+
+$border-radius: (
+        0: 0,
+        sm: 0.125rem,
+        md: 0.25rem,
+        lg: 0.375rem,
+        xl: 0.5rem,
+        2xl: 0.75rem,
+        3xl: 1rem,
+        full: 9999px
+);
+
+/*------------------------------------*\
+  12. Flexbox 布局工具类
+\*------------------------------------*/
+.d-flex { display: flex !important; }
+.d-inline-flex { display: inline-flex !important; }
+
+$flex-directions: (
+        row: row,
+        col: column,
+        row-reverse: row-reverse,
+        col-reverse: column-reverse
+);
+@each $name, $value in $flex-directions {
+  .flex-#{$name} { flex-direction: $value !important; }
+}
+
+$flex-wraps: (
+        wrap: wrap,
+        nowrap: nowrap,
+        wrap-reverse: wrap-reverse
+);
+@each $name, $value in $flex-wraps {
+  .flex-#{$name} { flex-wrap: $value !important; }
+}
+
+$justify-contents: (
+        start: flex-start,
+        center: center,
+        end: flex-end,
+        between: space-between,
+        around: space-around,
+        evenly: space-evenly,
+        stretch: stretch
+);
+@each $name, $value in $justify-contents {
+  .justify-#{$name} { justify-content: $value !important; }
+}
+
+$align-items: (
+        start: flex-start,
+        center: center,
+        end: flex-end,
+        stretch: stretch,
+        baseline: baseline
+);
+@each $name, $value in $align-items {
+  .items-#{$name} { align-items: $value !important; }
+}
+
+@each $name, $value in $justify-contents {
+  .content-#{$name} { align-content: $value !important; }
+}
+@each $name, $value in $align-items {
+  .self-#{$name} { align-self: $value !important; }
+}
+
+$flex-values: (
+        1: (1, 1, 0%),
+        auto: (1, 1, auto),
+        initial: (0, 1, auto),
+        none: (0, 0, auto)
+);
+@each $name, $values in $flex-values {
+  .flex-#{$name} {
+    flex: list.nth($values, 1) list.nth($values, 2) list.nth($values, 3) !important;
+  }
+}
+
+@for $i from 0 through 12 {
+  .flex-grow-#{$i} { flex-grow: $i !important; }
+  .flex-shrink-#{$i} { flex-shrink: $i !important; }
+}
+@for $i from 0 through 12 {
+  .order-#{$i} { order: $i !important; }
+}
+.order-first { order: -9999 !important; }
+.order-last  { order: 9999 !important; }
+
+/*------------------------------------*\
+  13. Grid 布局工具类
+\*------------------------------------*/
+.d-grid { display: grid !important; }
+.d-inline-grid { display: inline-grid !important; }
+
+@for $i from 1 through 12 {
+  .grid-cols-#{$i} {
+    grid-template-columns: repeat($i, minmax(0, 1fr)) !important;
+  }
+}
+@for $i from 1 through 12 {
+  .col-span-#{$i} { grid-column: span $i / span $i !important; }
+}
+@for $i from 1 through 6 {
+  .row-span-#{$i} { grid-row: span $i / span $i !important; }
+}
+
+$grid-gaps: (
+        0: 0,
+        1: 0.25rem,
+        2: 0.5rem,
+        3: 0.75rem,
+        4: 1rem,
+        5: 1.25rem,
+        6: 1.5rem,
+        8: 2rem,
+        10: 2.5rem,
+        12: 3rem
+);
+@each $name, $value in $grid-gaps {
+  .gap-#{$name}   { gap: $value !important; }
+  .gap-x-#{$name} { column-gap: $value !important; }
+  .gap-y-#{$name} { row-gap: $value !important; }
+}
+
+/*------------------------------------*\
+  14. Display 工具类
+\*------------------------------------*/
+$displays: (
+        none: none,
+        block: block,
+        inline: inline,
+        inline-block: inline-block,
+        table: table,
+        table-cell: table-cell,
+        table-row: table-row,
+        flow-root: flow-root,
+        contents: contents
+);
+@each $name, $value in $displays {
+  .d-#{$name} { display: $value !important; }
+}
+
+/*------------------------------------*\
+  15. 定位工具类
+\*------------------------------------*/
+$positions: (
+        static: static,
+        relative: relative,
+        absolute: absolute,
+        fixed: fixed,
+        sticky: sticky
+);
+@each $name, $value in $positions {
+  .position-#{$name} { position: $value !important; }
+}
+
+$position-values: (
+        0: 0,
+        1: 0.25rem,
+        2: 0.5rem,
+        3: 0.75rem,
+        4: 1rem,
+        5: 1.25rem,
+        6: 1.5rem,
+        8: 2rem,
+        10: 2.5rem,
+        12: 3rem,
+        16: 4rem,
+        20: 5rem,
+        24: 6rem,
+        auto: auto
+);
+@each $name, $value in $position-values {
+  .top-#{$name} { top: $value !important; }
+  .right-#{$name} { right: $value !important; }
+  .bottom-#{$name} { bottom: $value !important; }
+  .left-#{$name} { left: $value !important; }
+}
+
+.inset-0 {
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+}
+
+/*------------------------------------*\
+  16. 尺寸工具类 (宽/高/min/max)
+\*------------------------------------*/
+@each $name, $value in $size-percentages {
+  .w-#{$name} { width: $value !important; }
+  .h-#{$name} { height: $value !important; }
+}
+@each $name, $value in $size-fixed {
+  .w-#{$name} { width: $value !important; }
+  .h-#{$name} { height: $value !important; }
+  .min-w-#{$name} { min-width: $value !important; }
+  .max-w-#{$name} { max-width: $value !important; }
+  .min-h-#{$name} { min-height: $value !important; }
+  .max-h-#{$name} { max-height: $value !important; }
+}
+
+.h-screen { height: 100vh !important; }
+.min-h-screen { min-height: 100vh !important; }
+.w-screen { width: 100vw !important; }
+.min-w-screen { min-width: 100vw !important; }
+
+/*------------------------------------*\
+  17. 文本对齐 & 垂直对齐
+\*------------------------------------*/
+$text-aligns: (
+        left: left,
+        center: center,
+        right: right,
+        justify: justify,
+        start: start,
+        end: end
+);
+@each $name, $value in $text-aligns {
+  .text-#{$name} { text-align: $value !important; }
+}
+
+$vertical-aligns: (
+        baseline: baseline,
+        top: top,
+        middle: middle,
+        bottom: bottom,
+        text-top: text-top,
+        text-bottom: text-bottom,
+        sub: sub,
+        super: super
+);
+@each $name, $value in $vertical-aligns {
+  .align-#{$name} { vertical-align: $value !important; }
+}
+
+/*------------------------------------*\
+  18. 溢出处理工具类
+\*------------------------------------*/
+$overflows: (
+        auto: auto,
+        hidden: hidden,
+        clip: clip,
+        visible: visible,
+        scroll: scroll
+);
+@each $name, $value in $overflows {
+  .overflow-#{$name}    { overflow: $value !important; }
+  .overflow-x-#{$name}  { overflow-x: $value !important; }
+  .overflow-y-#{$name}  { overflow-y: $value !important; }
+}
+
+.text-clip {
+  overflow: hidden !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+}
+
+/*------------------------------------*\
+  19. 浮动与清除浮动
+\*------------------------------------*/
+$floats: (
+        left: left,
+        right: right,
+        none: none
+);
+@each $name, $value in $floats {
+  .float-#{$name} { float: $value !important; }
+}
+
+.clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.clear-left  { clear: left !important; }
+.clear-right { clear: right !important; }
+.clear-both  { clear: both !important; }
+.clear-none  { clear: none !important; }
+
+/*------------------------------------*\
+  20. 边框与圆角工具类
+\*------------------------------------*/
+.border    { border: 1px solid rgba(var(--mdui-color-outline), 0.12) !important; }
+.border-0  { border: 0 !important; }
+
+$border-sides: (top, right, bottom, left);
+@each $side in $border-sides {
+  .border-#{$side}   { border-#{$side}: 1px solid rgba(var(--mdui-color-outline), 0.12) !important; }
+  .border-#{$side}-0 { border-#{$side}: 0 !important; }
+}
+
+@for $i from 0 through 8 {
+  .border-#{$i} { border-width: #{$i}px !important; }
+  @each $side in $border-sides {
+    .border-#{$side}-#{$i} { border-#{$side}-width: #{$i}px !important; }
+  }
+}
+
+$border-styles: (
+        solid: solid,
+        dashed: dashed,
+        dotted: dotted,
+        double: double,
+        none: none
+);
+@each $name, $value in $border-styles {
+  .border-#{$name} { border-style: $value !important; }
+}
+
+@each $name, $value in $border-radius {
+  .rounded-#{$name} { border-radius: $value !important; }
+}
+.rounded { border-radius: 0.25rem !important; }
+
+$corner-sides: (
+        t: (top-left, top-right),
+        r: (top-right, bottom-right),
+        b: (bottom-right, bottom-left),
+        l: (bottom-left, top-left),
+        tl: (top-left),
+        tr: (top-right),
+        br: (bottom-right),
+        bl: (bottom-left)
+);
+@each $name, $value in $border-radius {
+  @each $side, $corners in $corner-sides {
+    .rounded-#{$side}-#{$name} {
+      @each $corner in $corners {
+        border-#{$corner}-radius: $value !important;
+      }
+    }
+  }
+}
+
+/*------------------------------------*\
+  21. 阴影工具类
+\*------------------------------------*/
+$shadows: (
+        none: none,
+        sm: var(--mdui-elevation-level1),
+        md: var(--mdui-elevation-level2),
+        lg: var(--mdui-elevation-level3),
+        xl: var(--mdui-elevation-level4),
+        2xl: var(--mdui-elevation-level5)
+);
+@each $name, $value in $shadows {
+  .shadow-#{$name} { box-shadow: $value !important; }
+}
+.shadow { box-shadow: var(--mdui-elevation-level2) !important; }
+
+/*------------------------------------*\
+  22. 透明度工具类
+\*------------------------------------*/
+@each $name, $value in $opacities {
+  .opacity-#{$name} { opacity: $value !important; }
+}
+
+/*------------------------------------*\
+  23. Z-index 工具类
+\*------------------------------------*/
+@each $name, $value in $z-indexes {
+  .z-#{$name} { z-index: $value !important; }
+}
+
+/*------------------------------------*\
+  24. 可见性工具类
+\*------------------------------------*/
+.visible { visibility: visible !important; }
+.invisible { visibility: hidden !important; }
+
+/*------------------------------------*\
+  25. 光标样式
+\*------------------------------------*/
+$cursors: (
+        auto: auto,
+        default: default,
+        pointer: pointer,
+        wait: wait,
+        text: text,
+        move: move,
+        help: help,
+        not-allowed: not-allowed,
+        none: none,
+        context-menu: context-menu,
+        progress: progress,
+        cell: cell,
+        crosshair: crosshair,
+        vertical-text: vertical-text,
+        alias: alias,
+        copy: copy,
+        no-drop: no-drop,
+        grab: grab,
+        grabbing: grabbing,
+        all-scroll: all-scroll,
+        col-resize: col-resize,
+        row-resize: row-resize,
+        n-resize: n-resize,
+        e-resize: e-resize,
+        s-resize: s-resize,
+        w-resize: w-resize,
+        ne-resize: ne-resize,
+        nw-resize: nw-resize,
+        se-resize: se-resize,
+        sw-resize: sw-resize,
+        ew-resize: ew-resize,
+        ns-resize: ns-resize,
+        nesw-resize: nesw-resize,
+        nwse-resize: nwse-resize,
+        zoom-in: zoom-in,
+        zoom-out: zoom-out
+);
+@each $name, $value in $cursors {
+  .cursor-#{$name} { cursor: $value !important; }
+}
+
+/*------------------------------------*\
+  26. 用户选择行为
+\*------------------------------------*/
+$user-selects: (
+        none: none,
+        text: text,
+        all: all,
+        auto: auto
+);
+@each $name, $value in $user-selects {
+  .select-#{$name} {
+    -webkit-user-select: $value !important;
+    -moz-user-select: $value !important;
+    -ms-user-select: $value !important;
+    user-select: $value !important;
+  }
+}
+
+/*------------------------------------*\
+  27. Pointer Events
+\*------------------------------------*/
+.pointer-events-none { pointer-events: none !important; }
+.pointer-events-auto { pointer-events: auto !important; }
+
+/*------------------------------------*\
+  28. 响应式扩展工具类
+\*------------------------------------*/
+@each $breakpoint-name, $breakpoint-value in $breakpoints {
+  @if $breakpoint-name != 'xs' {
+    @media screen and (min-width: $breakpoint-value) {
+      /* Flexbox 响应式 */
+      @each $name, $value in $flex-directions {
+        .#{$breakpoint-name}\:flex-#{$name} { flex-direction: $value !important; }
+      }
+      @each $name, $value in $justify-contents {
+        .#{$breakpoint-name}\:justify-#{$name} { justify-content: $value !important; }
+      }
+      @each $name, $value in $align-items {
+        .#{$breakpoint-name}\:items-#{$name} { align-items: $value !important; }
+      }
+
+      /* Display 响应式 */
+      @each $name, $value in $displays {
+        .#{$breakpoint-name}\:d-#{$name} { display: $value !important; }
+      }
+
+      /* 尺寸响应式 */
+      @each $name, $value in $size-percentages {
+        .#{$breakpoint-name}\:w-#{$name} { width: $value !important; }
+        .#{$breakpoint-name}\:h-#{$name} { height: $value !important; }
+      }
+
+      /* 文本对齐响应式 */
+      @each $name, $value in $text-aligns {
+        .#{$breakpoint-name}\:text-#{$name} { text-align: $value !important; }
+      }
+
+      /* 字重响应式 */
+      @each $name, $weight in $font-weights {
+        .#{$breakpoint-name}\:font-#{$name} { font-weight: $weight !important; }
+      }
+
+      /* 文本颜色响应式 */
+      @each $name, $color in $mdui-colors {
+        .#{$breakpoint-name}\:text-#{$name} { color: rgba(var(--mdui-color-#{$color})) !important; }
+      }
+    }
+  }
+}
+
+/*------------------------------------*\
+  29. 交互状态工具类 (hover/focus/active)
+\*------------------------------------*/
+@each $name, $color in $background-colors {
+  .hover\:bg-#{$name}:hover {
+    background-color: rgba(var(--mdui-color-#{$color}), 0.8) !important;
+    color: rgba(var(--mdui-color-on-#{$color})) !important;
+  }
+  .hover\:text-#{$name}:hover {
+    color: rgba(var(--mdui-color-#{$color})) !important;
+  }
+}
+
+/* MDUI 颜色交互状态 */
+@each $name, $color in $mdui-colors {
+  .hover\:text-#{$name}:hover {
+    color: rgba(var(--mdui-color-#{$color})) !important;
+  }
+  .hover\:bg-#{$name}:hover {
+    background-color: rgba(var(--mdui-color-#{$color})) !important;
+  }
+  .focus\:text-#{$name}:focus {
+    color: rgba(var(--mdui-color-#{$color})) !important;
+  }
+  .focus\:bg-#{$name}:focus {
+    background-color: rgba(var(--mdui-color-#{$color})) !important;
+  }
+}
+
+/* 字重交互状态 */
+@each $name, $weight in $font-weights {
+  .hover\:font-#{$name}:hover {
+    font-weight: $weight !important;
+  }
+  .focus\:font-#{$name}:focus {
+    font-weight: $weight !important;
+  }
+}
+
+.focus\:outline-none:focus { outline: none !important; }
+.focus\:ring:focus {
+  outline: 2px solid rgba(var(--mdui-color-primary), 0.5) !important;
+  outline-offset: 2px !important;
+}
+
+.active\:scale-95:active { transform: scale(0.95) !important; }
+
+/*------------------------------------*\
+  30. 变换工具类 (scale/rotate/translate)
+\*------------------------------------*/
+@for $i from 0 through 200 {
+  @if $i % 5 == 0 {
+    .scale-#{$i} { transform: scale(#{math.div($i, 100)}) !important; }
+  }
+}
+
+@for $i from 0 through 360 {
+  @if $i % 45 == 0 or $i == 1 or $i == 2 or $i == 3 or $i == 6 or $i == 12 {
+    .rotate-#{$i} { transform: rotate(#{$i}deg) !important; }
+  }
+}
+
+$translate-values: (
+        0: 0,
+        1: 0.25rem,
+        2: 0.5rem,
+        3: 0.75rem,
+        4: 1rem,
+        5: 1.25rem,
+        6: 1.5rem,
+        8: 2rem,
+        10: 2.5rem,
+        12: 3rem,
+        16: 4rem,
+        20: 5rem,
+        24: 6rem,
+        32: 8rem,
+        40: 10rem,
+        48: 12rem,
+        56: 14rem,
+        64: 16rem,
+        full: 100%
+);
+@each $name, $value in $translate-values {
+  .translate-x-#{$name} { transform: translateX($value) !important; }
+  .translate-y-#{$name} { transform: translateY($value) !important; }
+  .-translate-x-#{$name} { transform: translateX(-$value) !important; }
+  .-translate-y-#{$name} { transform: translateY(-$value) !important; }
+}
+
+/*------------------------------------*\
+  31. 过渡 & 动画工具类
+\*------------------------------------*/
+$transition-properties: (
+        none: none,
+        all: all,
+        colors: (color, background-color, border-color, text-decoration-color, fill, stroke),
+        opacity: opacity,
+        shadow: box-shadow,
+        transform: transform
+);
+@each $name, $value in $transition-properties {
+  .transition-#{$name} {
+    @if $name == 'colors' {
+      transition-property: #{$value} !important;
+    } @else {
+      transition-property: $value !important;
+    }
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition-duration: 150ms !important;
+  }
+}
+
+.transition {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-duration: 150ms !important;
+}
+
+$durations: (
+        75: 75ms,
+        100: 100ms,
+        150: 150ms,
+        200: 200ms,
+        300: 300ms,
+        500: 500ms,
+        700: 700ms,
+        1000: 1000ms
+);
+@each $name, $value in $durations {
+  .duration-#{$name} { transition-duration: $value !important; }
+}
+
+$easings: (
+        linear: linear,
+        in: cubic-bezier(0.4, 0, 1, 1),
+        out: cubic-bezier(0, 0, 0.2, 1),
+        in-out: cubic-bezier(0.4, 0, 0.2, 1)
+);
+@each $name, $value in $easings {
+  .ease-#{$name} { transition-timing-function: $value !important; }
+}
+
+@for $i from 75 through 1000 {
+  @if $i == 75 or $i == 100 or $i == 150 or $i == 200 or $i == 300 or $i == 500 or $i == 700 or $i == 1000 {
+    .delay-#{$i} { transition-delay: #{$i}ms !important; }
+  }
+}
+
+/*------------------------------------*\
+  32. 滤镜效果工具类
+\*------------------------------------*/
+@for $i from 0 through 3 {
+  .blur-#{$i} { filter: blur(#{$i * 4}px) !important; }
+}
+.blur { filter: blur(8px) !important; }
+.blur-none { filter: blur(0) !important; }
+
+@for $i from 0 through 200 {
+  @if $i % 25 == 0 {
+    .brightness-#{$i} { filter: brightness(#{math.div($i, 100)}) !important; }
+    .contrast-#{$i}   { filter: contrast(#{math.div($i, 100)}) !important; }
+  }
+}
+
+@for $i from 0 through 100 {
+  @if $i % 25 == 0 {
+    .grayscale-#{$i} { filter: #{"grayscale(#{math.div($i, 100)})"} !important; }
+  }
+}
+.grayscale { filter: grayscale(1) !important; }
+
+/*------------------------------------*\
+  33. 背景工具类扩展
+\*------------------------------------*/
+$background-positions: (
+        bottom: bottom,
+        center: center,
+        left: left,
+        left-bottom: left bottom,
+        left-top: left top,
+        right: right,
+        right-bottom: right bottom,
+        right-top: right top,
+        top: top
+);
+@each $name, $value in $background-positions {
+  .bg-#{$name} { background-position: $value !important; }
+}
+
+$background-repeats: (
+        repeat: repeat,
+        no-repeat: no-repeat,
+        repeat-x: repeat-x,
+        repeat-y: repeat-y,
+        repeat-round: round,
+        repeat-space: space
+);
+@each $name, $value in $background-repeats {
+  .bg-#{$name} { background-repeat: $value !important; }
+}
+
+$background-sizes: (
+        auto: auto,
+        cover: cover,
+        contain: contain
+);
+@each $name, $value in $background-sizes {
+  .bg-#{$name} { background-size: $value !important; }
+}
+
+/*------------------------------------*\
+  34. 调试辅助类
+\*------------------------------------*/
+.debug {
+  outline: 2px solid red !important;
+  outline-offset: -2px !important;
+}
+.debug * {
+  outline: 1px solid rgba(255, 0, 0, 0.3) !important;
+  outline-offset: -1px !important;
+}
+
+/*------------------------------------*\
+  35. 打印样式
+\*------------------------------------*/
+@media print {
+  .print\:hidden { display: none !important; }
+  .print\:block { display: block !important; }
+  .print\:inline-block { display: inline-block !important; }
+  .print\:inline { display: inline !important; }
+}
