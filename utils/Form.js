@@ -26,7 +26,7 @@ $.form = {
 
     /**
      * 获取表单数据
-     * @param {HTMLElement|jQuery} form - 表单元素
+     * @param {String} form - 表单元素
      * @returns {Object} 表单数据对象
      */
     get: function (form) {
@@ -62,9 +62,9 @@ $.form = {
     
     /**
      * 设置表单数据
-     * @param {HTMLElement|jQuery} form - 表单元素
+     * @param {String} form - 表单元素
      * @param {Object} data - 要设置的数据对象
-     * @param {boolean} disabled - 是否禁用表单元素
+     * @param {boolean} [disabled] - 是否禁用表单元素
      */
     set: function (form, data, disabled) {
         $(form).find(formElems).each(function () {
@@ -120,7 +120,7 @@ $.form = {
     
     /**
      * 验证表单
-     * @param {HTMLElement|jQuery} form - 表单元素
+     * @param {String} form - 表单元素
      * @returns {boolean} 验证是否通过
      */
     validate: function (form) {
@@ -142,30 +142,49 @@ $.form = {
 
     /**
      * 提交表单
-     * @param {HTMLElement|jQuery} form - 表单元素
-     * @param {Function} callback - 提交回调函数
-     * @param {Function} beforeSubmit - 提交前回调函数
+     * @param {String|HTMLElement|jQuery} form - 表单元素
+     * @param {Object} [options] - 选项对象
+     *   - options.callback(data): 提交时回调（必选，若不提供将触发原生提交）
+     *   - options.beforeSubmit(data): 提交前回调，返回 false 可中断
+     *   - options.afterSubmit(result): 提交后回调；若 callback 返回 Promise，将在 resolve 后触发
      */
-    submit: function (form, callback, beforeSubmit) {
+    submit: function (form, options) {
         if (typeof form === "object") {
             form = form[0];
         }
+
+        options = (typeof options === 'object' && options !== null) ? options : {};
+        const callback = (typeof options.callback === 'function') ? options.callback : undefined;
 
         if (!callback) {
             $(form).trigger('submit');
             return;
         }
-        $(form).on("submit",function (e) {
+
+        $(form).on("submit", function (e) {
             e.preventDefault();
             let data = $.form.get(form);
-            if (beforeSubmit && !beforeSubmit(data)) {
-                return false;
+
+            if (typeof options.beforeSubmit === 'function') {
+                try { if (options.beforeSubmit(data) === false) return false; } catch (err) { console && console.error && console.error(err); }
             }
+
             if (!$.form.validate(form)) {
                 return false;
             }
 
-            callback(data);
+            try {
+                const result = callback(data);
+                if (typeof options.afterSubmit === 'function') {
+                    if (result && typeof result.then === 'function') {
+                        result.then(function (res) { options.afterSubmit(res); }).catch(function (err) { console && console.error && console.error(err); });
+                    } else {
+                        options.afterSubmit(result);
+                    }
+                }
+            } catch (err) {
+                console && console.error && console.error(err);
+            }
             return false;
         });
 
@@ -174,43 +193,61 @@ $.form = {
     /**
      * 管理表单（获取和提交）
      * @param {string} uri - 接口地址
-     * @param {HTMLElement|jQuery} form - 表单元素
-     * @param {Function} callback - 回调函数
-     * @param {Function} beforeSubmit - 提交前回调函数
+     * @param {string|HTMLElement|jQuery} form - 表单元素
+     * @param {Object} [options] - 选项对象
+     *   - options.beforeSet(response): 设置表单之前
+     *   - options.afterSet(response): 设置表单之后
+     *   - options.beforeSubmit(data): 提交表单之前，返回 false 可中断
+     *   - options.afterSubmit(response): 提交表单之后
      */
-    manage(uri,form,callback,beforeSubmit){
+    manage(uri, form, options){
         if (typeof form === "object") {
             form = form[0];
         }
-        $.request.get(uri,{},(response) => {
+        options = (typeof options === 'object' && options !== null) ? options : {};
+
+        $.request.get(uri, {}, (response) => {
             if (response.code === 200){
-                $.form.val(form,response.data);
-                if(callback){
-                    callback(response,'get')
+                if (typeof options.beforeSet === 'function') {
+                    try { options.beforeSet(response); } catch (e) { console && console.error && console.error(e); }
                 }
-            }else{
+
+                $.form.val(form, response.data);
+
+                if (typeof options.afterSet === 'function') {
+                    try { options.afterSet(response); } catch (e) { console && console.error && console.error(e); }
+                }
+            } else {
                 $.toaster.error(response.msg);
             }
         });
 
-        $.form.submit(form,(data) => {
-            $.request.postForm(uri,data,(response) => {
-                if (response.code === 200){
-                    $.toaster.success(response.msg);
-                    if (callback){
-                        callback(response,'post');
-                    }
-                }else{
-                    $.toaster.error(response.msg);
+        $.form.submit(form, {
+            beforeSubmit: function (data) {
+                if (typeof options.beforeSubmit === 'function') {
+                    try { return options.beforeSubmit(data) !== false; } catch (e) { console && console.error && console.error(e); }
                 }
-            },beforeSubmit);
+                return true;
+            },
+            callback: function (data) {
+                $.request.postForm(uri, data, function (response) {
+                    if (response.code === 200){
+                        $.toaster.success(response.msg);
+                        if (typeof options.afterSubmit === 'function') {
+                            try { options.afterSubmit(response); } catch (e) { console && console.error && console.error(e); }
+                        }
+                    } else {
+                        $.toaster.error(response.msg);
+                    }
+                });
+            }
         });
 
     },
 
     /**
      * 重置表单
-     * @param {HTMLElement|jQuery} form - 表单元素
+     * @param {String} form - 表单元素
      */
     reset: function (form) {
         $(form)[0].reset();
@@ -231,7 +268,7 @@ $.form = {
     
     /**
      * 获取或设置表单值
-     * @param {HTMLElement|jQuery} form - 表单元素
+     * @param {String} form - 表单元素
      * @param {Object} data - 要设置的数据，如果不提供则获取表单数据
      * @returns {Object|undefined} 如果获取数据则返回数据对象，否则返回undefined
      */
@@ -241,5 +278,55 @@ $.form = {
         } else {
             return $.form.get(form);
         }
+    },
+
+    /**
+     * 动态设置 mdui-select 的选项
+     * @param {String|HTMLElement|jQuery} select - 选择器或元素（mdui-select）
+     * @param {Array|Object} items - 选项数组（对象或 {value,label,disabled}）或映射对象（value->label）
+     * @param {Object} [mapping] - 字段映射
+     *   - mapping.valueKey: 默认 'value'
+     *   - mapping.labelKey: 默认 'label'
+     *   - mapping.disabledKey: 默认 'disabled'
+     * 未提供 mapping 时，若 items 为对象，将按 key->value 作为 value->label 生成选项
+     */
+    setSelectOptions: function (select, items, mapping) {
+        const map = Object.assign({ valueKey: 'value', labelKey: 'label', disabledKey: 'disabled' }, mapping);
+        const $select = $(select);
+        if ($select.length === 0) return;
+        const el = $select[0];
+        if (!$select.is('mdui-select')) return;
+
+        // 将对象映射转换为数组（仅当未提供 mapping 时）
+        let list = items || [];
+        const isPlainObject = list && typeof list === 'object' && !Array.isArray(list);
+        if (!mapping && isPlainObject) {
+            list = Object.keys(list).map(function (key) {
+                return { value: key, label: list[key] };
+            });
+        }
+
+        // 清空现有选项
+        $select.empty();
+
+        // 生成新选项
+        (list || []).forEach(function (item) {
+            const isObj = item && typeof item === 'object';
+            const value = isObj ? item[map.valueKey] : item;
+            const label = isObj ? item[map.labelKey] : String(item);
+            const disabled = isObj ? !!item[map.disabledKey] : false;
+            const $mi = $('<mdui-menu-item>');
+            if (value !== undefined && value !== null) {
+                $mi.attr('value', String(value));
+            }
+            if (disabled) {
+                $mi.attr('disabled', 'disabled');
+            }
+            $mi.text(label == null ? '' : String(label));
+            $select.append($mi);
+        });
+
+        // 触发一次变更，便于组件刷新
+        $($select).trigger('change');
     }
 }
