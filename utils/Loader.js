@@ -319,7 +319,7 @@ $.waitProp = function (obj, props, callback, count = 0) {
         //  $.logger && $.logger.debug("Wait Prop: ", propsArray.join(', '));
         return;
     }
-    $.logger && $.logger.debug("Successful wait Prop: ", propsArray.join(', '));
+    //$.logger && $.logger.debug("Successful wait Prop: ", propsArray.join(', '));
     callback();
 }
 
