@@ -210,6 +210,111 @@ class Request {
                 }
             });
     }
+
+    /**
+     * 直接进行 SSE 请求（最小封装）
+     * 使用原生 EventSource，不依赖额外的流式实现
+     * 注意：EventSource 不支持自定义请求头，如需自定义头部请改为后端下发 Cookie 方式
+     * @param {string} url - SSE 接口相对或绝对 URL
+     * @param {Object} [options]
+     * @param {Object} [options.params] - 追加的查询参数对象（会被序列化到 URL）
+     * @param {boolean} [options.withCredentials=false] - 是否携带凭据（Cookie）
+     * @param {function(Event):void} [options.onOpen] - 连接建立回调
+     * @param {function(any|string, MessageEvent):void} [options.onMessage] - 默认消息回调（data自动尝试JSON.parse）
+     * @param {Object} [options.eventHandlers] - 自定义事件处理器对象，键为事件名，值为处理函数
+     * @param {boolean} [options.autoReconnect=true] - 是否允许自动重连（false 时在错误发生后立即关闭）
+     * @param {function(Event):void} [options.onError] - 错误回调
+     * @returns {EventSource} - 原生 EventSource 实例，可直接调用 close()
+     */
+    sse(url, options = {}) {
+        const self = this;
+        const {
+            params = undefined,
+            withCredentials = false,
+            onOpen = undefined,
+            onMessage = undefined,
+            eventHandlers = {},
+            onError = undefined,
+            autoReconnect = true
+        } = options;
+
+        // 规范化URL并拼接查询参数
+        let requestUrl = url;
+        if (!requestUrl.startsWith('http')) {
+            requestUrl = self.baseUrl + requestUrl;
+        }
+        if (params && typeof params === 'object') {
+            const usp = new URLSearchParams();
+            Object.keys(params).forEach(k => {
+                const v = params[k];
+                usp.append(k, typeof v === 'object' ? JSON.stringify(v) : v);
+            });
+            const qs = usp.toString();
+            if (qs) {
+                requestUrl += (requestUrl.includes('?') ? '&' : '?') + qs;
+            }
+        }
+
+        $.logger.info(`Request(SSE): GET ${requestUrl}`);
+
+        const es = new EventSource(requestUrl, { withCredentials });
+
+        // 处理数据的通用函数
+        const processEventData = (evt, eventType = 'message') => {
+            const data = evt && typeof evt.data === 'string' ? evt.data : '';
+            if (data === '' || data === '[DONE]') {
+                return;
+            }
+            try {
+                const maybeJson = JSON.parse(data);
+                return { data: maybeJson, raw: data, eventType, event: evt };
+            } catch (e) {
+                return { data: data, raw: data, eventType, event: evt };
+            }
+        };
+
+        if (typeof onOpen === 'function') {
+            es.addEventListener('open', (evt) => {
+                onOpen(evt);
+            });
+        }
+
+        // 默认消息处理器
+        if (typeof onMessage === 'function') {
+            es.onmessage = (evt) => {
+                const processed = processEventData(evt, 'message');
+                if (processed) {
+                    onMessage(processed.data, processed.event, processed.eventType);
+                }
+            };
+        }
+
+        // 自定义事件处理器
+        if (eventHandlers && typeof eventHandlers === 'object') {
+            Object.keys(eventHandlers).forEach(eventName => {
+                const handler = eventHandlers[eventName];
+                if (typeof handler === 'function') {
+                    es.addEventListener(eventName, (evt) => {
+                        const processed = processEventData(evt, eventName);
+                        if (processed) {
+                            handler(processed.data, processed.event, processed.eventType);
+                        }
+                    });
+                }
+            });
+        }
+
+        es.onerror = (evt) => {
+            if (!autoReconnect) {
+                try { es.close(); } catch (e) {}
+            }
+            if (typeof onError === 'function') {
+                onError(evt);
+            }
+        };
+
+        return es;
+    }
 }
 
 /**

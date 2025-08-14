@@ -269,7 +269,7 @@ $.form = {
     /**
      * 获取或设置表单值
      * @param {String} form - 表单元素
-     * @param {Object} data - 要设置的数据，如果不提供则获取表单数据
+     * @param {Object} [data] - 要设置的数据，如果不提供则获取表单数据
      * @returns {Object|undefined} 如果获取数据则返回数据对象，否则返回undefined
      */
     val(form,data) {
