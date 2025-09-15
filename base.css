@@ -126,8 +126,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  color: #666;
-  background: #fff;
 }
 
 /* 取消文字装饰 */
