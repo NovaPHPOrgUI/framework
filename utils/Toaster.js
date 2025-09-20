@@ -111,4 +111,19 @@
         const seconds = String(date.getSeconds()).padStart(2, '0');
         return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     }
+    win.$.escapeHtml = function (input) {
+        if (input === null || input === undefined) return '';
+        const str = String(input);
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',   // 或 &apos; 但兼容性上用 &#39;
+            '`': '&#96;',
+            '=': '&#61;',
+            '/': '&#x2F;'
+        };
+        return str.replace(/[&<>"'`=\/]/g, ch => map[ch]);
+    }
 })(window);
