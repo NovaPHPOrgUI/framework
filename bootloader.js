@@ -111,6 +111,7 @@ window.jsMap = {
     Markdown: "/components/markdown/Markdown.js",
     Captcha: "/components/captcha/Captcha.js",
     QrScan:"/components/qrscan/QrScan.js",
+    Tpl:"/components/tpl/ViewCompile.js",
 }
 
 /** @type {boolean} 调试模式开关 */
