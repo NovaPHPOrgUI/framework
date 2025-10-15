@@ -115,6 +115,7 @@ window.jsMap = {
         "/components/tree/Tree.js",
         "/components/tree/Tree.css"
     ],
+    ContextMenu: "/components/menu/ContextMenu.js",
 }
 
 /** @type {boolean} 调试模式开关 */
