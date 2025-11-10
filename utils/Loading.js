@@ -60,7 +60,7 @@ let fade = {
             if (callback) {
                 setTimeout(function () {
                     callback();
-                }, 5000);
+                }, 500); // 修复：应该是500ms而不是5000ms
             }
         }, 10);
     },
@@ -165,3 +165,80 @@ class Loading {
 /** @type {Loading} 全局加载动画实例 */
 window.loading = new Loading(document.body);
 window.loading.show();
+
+// 属性驱动的Loading管理（封装在IIFE中，不污染全局）
+(function() {
+    const map = new WeakMap();
+
+    function show(el,text) {
+        if (map.has(el)) return;
+        
+        // 确保元素有定位，否则遮罩层会飞掉
+        const pos = getComputedStyle(el).position;
+        if (pos === 'static') el.style.position = 'relative';
+        
+        const instance = new Loading(el, el.getAttribute('loading') || text || '');
+        map.set(el, instance);
+        instance.show();
+    }
+
+    function hide(el) {
+        const instance = map.get(el);
+        if (instance) {
+            instance.close();
+            map.delete(el);
+        }
+    }
+
+    function update(el, text) {
+        const instance = map.get(el);
+        if (instance) instance.setText(text);
+    }
+
+    // 监听DOM变化
+    new MutationObserver(mutations => {
+        mutations.forEach(m => {
+            if (m.type === 'childList') {
+                m.addedNodes.forEach(node => {
+                    if (node.nodeType === 1) {
+                        if (node.hasAttribute?.('loading')) show(node);
+                        node.querySelectorAll?.('[loading]').forEach(show);
+                    }
+                });
+            }
+            if (m.type === 'attributes') {
+                m.target.hasAttribute('loading') ? show(m.target) : hide(m.target);
+            }
+        });
+    }).observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['loading']
+    });
+
+    // jQuery插件
+    if (typeof $ !== 'undefined' && $.fn) {
+        $.fn.closeLoading = function() {
+            return this.each(function() {
+                this.removeAttribute('loading');
+                hide(this);
+            });
+        };
+        
+        $.fn.updateLoading = function(text) {
+            return this.each(function() {
+                update(this, text);
+            });
+        };
+
+        $.fn.showLoading = function(text) {
+            return this.each(function() {
+                show(this, text);
+            });
+        };
+    }
+
+    // 初始化已有元素
+    document.querySelectorAll('[loading]').forEach(show);
+})();

@@ -23,8 +23,10 @@
     </mdui-top-app-bar>
 
     <div style="height: calc(var(--vh) - 144px);overflow: auto;">
-        <div  id="container">
+        <div  id="bodyContainer" loading="加载中">
+            <div  id="container" >
 
+            </div>
         </div>
     </div>
 
