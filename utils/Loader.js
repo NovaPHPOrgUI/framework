@@ -22,10 +22,11 @@ window.loadedResources = {};
 window.inProgressResources = {};
 const loader = (function (window, document) {
     /**
-     * 获取版本号查询参数
-     * @returns {string} 版本号查询字符串
+     * 给URL添加版本号参数
+     * @param {string} url - 原始URL
+     * @returns {string} 带版本号的URL
      */
-    const v = () => window.debug ? "?v=" + Math.floor(Date.now() / 60000) : "?v=" + window.version;
+    const addVersion = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + window.version;
     
     /**
      * 执行回调队列（统一的回调管理）
@@ -73,7 +74,7 @@ const loader = (function (window, document) {
         
         inProgressResources[path] = { callbacks: [callback] };
         const script = document.createElement("script");
-        script.src = path + v();
+        script.src = addVersion(path);
         script.async = true;
         script.onload = script.onerror = () => {
             loadedResources[path] = true;
@@ -96,7 +97,7 @@ const loader = (function (window, document) {
         inProgressResources[path] = true;
 
         if (element) {
-            fetch(path + v())
+            fetch(addVersion(path))
                 .then(res => res.text())
                 .then(data => {
                     const node = document.createElement("style");
@@ -134,7 +135,7 @@ const loader = (function (window, document) {
         }
         
         inProgressResources[path] = { callbacks: [callback] };
-        $.request.get(path + v(), null,
+        $.request.get(addVersion(path), null,
             (data) => {
                 loadedResources[path] = data;
                 fireCallbacks(path, null, data);
@@ -194,12 +195,12 @@ const loader = (function (window, document) {
                 groups.loaded.push(uri);
                 continue;
             }
-            
-            // 外部资源单独加载
-            if (uri.startsWith("http://") || uri.startsWith("https://")) {
+
+            if (!uri.startsWith(window.baseUri)){
                 groups.external.push(uri);
                 continue;
             }
+
             
             // 静态资源按类型分组
             if (/\.css(?:\?|#|$)/i.test(uri)) {
