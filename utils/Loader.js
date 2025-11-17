@@ -18,59 +18,78 @@
  * 资源加载器
  * 提供JavaScript、CSS和其他资源的动态加载功能
  */
+window.loadedResources = {};
+window.inProgressResources = {};
 const loader = (function (window, document) {
-    /** @type {Object} 已加载资源的缓存对象 */
-    const loadedResources = {}; // 改为 {[path]: content}
-    /** @type {Object} 正在加载中的资源对象 */
-    const inProgressResources = {};
+    /**
+     * 获取版本号查询参数
+     * @returns {string} 版本号查询字符串
+     */
+    const v = () => window.debug ? "?v=" + Math.floor(Date.now() / 60000) : "?v=" + window.version;
     
     /**
-     * 加载单个JavaScript文件
+     * 执行回调队列（统一的回调管理）
+     * @param {string} path - 资源路径
+     * @param {...*} args - 传递给回调的参数
+     */
+    function fireCallbacks(path, ...args) {
+        const callbacks = inProgressResources[path]?.callbacks || [];
+        delete inProgressResources[path];
+        callbacks.forEach(cb => {
+            try {
+                cb(...args);
+            } catch (e) {
+                $.logger?.error('Callback error for', path, e);
+            }
+        });
+    }
+    
+    /**
+     * 添加到回调队列
+     * @param {string} path - 资源路径
+     * @param {Function} callback - 回调函数
+     */
+    function queueCallback(path, callback) {
+        if (!inProgressResources[path].callbacks) {
+            inProgressResources[path].callbacks = [];
+        }
+        inProgressResources[path].callbacks.push(callback);
+    }
+    
+    /**
+     * 加载JavaScript文件
      * @param {string} path - 文件路径
-     * @param {Function} callback - 加载完成后的回调函数
+     * @param {Function} callback - 回调函数
      */
     function loadScript(path, callback) {
         if (loadedResources[path]) {
-            // 如果已加载，直接调用回调
             callback();
             return;
         }
         if (inProgressResources[path]) {
-            // 如果正在加载，等待加载完成后调用回调
-            $.waitProp(loadedResources, [path], () => {
-                callback();
-            });
+            queueCallback(path, callback);
             return;
         }
-        inProgressResources[path] = true;
-        // 创建script元素
+        
+        inProgressResources[path] = { callbacks: [callback] };
         const script = document.createElement("script");
         script.src = path + v();
         script.async = true;
-
-        // 加载完成或失败的处理
-        script.onload = script.onerror = function () {
-            let link = path.replace(baseUri, '');
-            $.waitProp(window.novaFiles, [link], () => {
-                loadedResources[path] = true;
-                inProgressResources[path] = false;
-                callback();
-            });
+        script.onload = script.onerror = () => {
+            loadedResources[path] = true;
+            fireCallbacks(path);
         };
-
-        // 添加到文档中
         document.head.appendChild(script);
     }
 
     /**
-     * 加载单个CSS文件
+     * 加载CSS文件
      * @param {string} path - 文件路径
-     * @param {Function} callback - 加载完成后的回调函数
+     * @param {Function} callback - 回调函数
      * @param {HTMLElement} element - 要插入样式的元素
      */
     function loadCSS(path, callback, element) {
         if (!element && (loadedResources[path] || inProgressResources[path])) {
-            // 如果已加载，直接调用回调
             callback();
             return;
         }
@@ -78,9 +97,9 @@ const loader = (function (window, document) {
 
         if (element) {
             fetch(path + v())
-                .then((res) => res.text())
-                .then((data) => {
-                    let node = document.createElement("style");
+                .then(res => res.text())
+                .then(data => {
+                    const node = document.createElement("style");
                     node.innerHTML = data;
                     element.appendChild(node);
                     callback();
@@ -88,19 +107,40 @@ const loader = (function (window, document) {
             return;
         }
 
-        // 创建link元素
         const link = document.createElement("link");
         link.rel = "stylesheet";
         link.href = path;
-
-        // 加载完成或失败的处理
-        link.onload = link.onerror = function () {
+        link.onload = link.onerror = () => {
             loadedResources[path] = true;
             inProgressResources[path] = false;
             callback();
         };
-        const existingStyle = document.querySelector('#style');
-        existingStyle.parentNode.insertBefore(link, existingStyle);
+        document.querySelector('#style').parentNode.insertBefore(link, document.querySelector('#style'));
+    }
+
+    /**
+     * 加载通用资源
+     * @param {string} path - 资源路径
+     * @param {Function} callback - 回调函数
+     */
+    function loadResource(path, callback) {
+        if (loadedResources[path]) {
+            callback(null, loadedResources[path]);
+            return;
+        }
+        if (inProgressResources[path]) {
+            queueCallback(path, callback);
+            return;
+        }
+        
+        inProgressResources[path] = { callbacks: [callback] };
+        $.request.get(path + v(), null,
+            (data) => {
+                loadedResources[path] = data;
+                fireCallbacks(path, null, data);
+            },
+            (error) => fireCallbacks(path, error)
+        );
     }
 
     /**
@@ -109,141 +149,186 @@ const loader = (function (window, document) {
      * @returns {string[]} 构建后的URI数组
      */
     function buildUris(paths) {
-        let uris = [];
-
-        /**
-         * 连接URI路径
-         * @param {string} path - 路径
-         * @returns {string} 完整的URI
-         */
-        function concatUri(path) {
-            if (!path.startsWith("http")) {
-                path = ("/" + path).replace(/\/\//g, "/");
-                path = $.scriptDir + path;
-            }
-            return path;
-        }
-
-        for (const path of paths) {
-            let uri = jsMap[path] || path;
-            if (typeof uri != "string") {
-                for (let uriElement of uri) {
-                    uris.push(concatUri(uriElement));
-                }
-            } else {
-                uris.push(concatUri(uri));
-            }
-        }
-        return uris;
+        return paths.flatMap(path => {
+            const mapped = jsMap[path] || path;
+            const uris = Array.isArray(mapped) ? mapped : [mapped];
+            return uris.map(uri => 
+                uri.startsWith("http") ? uri : $.scriptDir + uri.replace(/^\/+/, '')
+            );
+        });
     }
 
     /**
-     * 获取版本号查询参数
-     * @returns {string} 版本号查询字符串
-     */
-    function v() {
-        if (window.debug) {
-            return "?v=" + new Date().getTime();
-        } else {
-            return "?v=" + window.version
-        }
-    }
-
-    /**
-     * 加载单个文件（JS或CSS）
+     * 加载单个文件（根据扩展名分发）
      * @param {string} path - 文件路径
-     * @param {Function} callback - 加载完成后的回调函数
+     * @param {Function} callback - 回调函数
      * @param {HTMLElement} element - 要插入样式的元素
      */
     function loadFile(path, callback, element) {
-        const cssRegex = /\.css(?:\?|#|$)/i;
-        const jsRegex = /\.js(?:\?|#|$)/i;
-
-        if (cssRegex.test(path)) {
+        if (/\.css(?:\?|#|$)/i.test(path)) {
             loadCSS(path, callback, element);
-        } else if (jsRegex.test(path)) {
+        } else if (/\.js(?:\?|#|$)/i.test(path)) {
             loadScript(path, callback);
         } else {
-            // 使用Request库加载通用资源
             loadResource(path, callback);
         }
     }
 
     /**
-     * 加载通用资源
-     * @param {string} path - 资源路径
-     * @param {Function} callback - 加载完成后的回调函数
+     * 按类型和来源分组文件
+     * @param {string[]} uris - URI数组
+     * @returns {{bundle: {js: string[], css: string[]}, external: string[], loaded: string[]}}
      */
-    function loadResource(path, callback) {
-        if (loadedResources[path]) {
-            callback(null, loadedResources[path]); // 返回缓存内容
-            return;
-        }
-        if (inProgressResources[path]) {
-            $.waitProp(loadedResources, [path], callback);
-            return;
-        }
+    function groupFiles(uris) {
+        const groups = {
+            bundle: { js: [], css: [] },
+            external: [],
+            loaded: []
+        };
+
+
         
-        inProgressResources[path] = true;
-        
-        // 使用项目自带的Request库
-        $.request.get(path + v(), null,
-            (data) => { // success（假设request库回调参数为data）
-                loadedResources[path] = data; // 存储实际内容
-                callback(null, data);
-            },
-            (error) => { 
-                callback(error);
-                inProgressResources[path] = false;
+        for (const uri of uris) {
+            // 已加载的文件跳过
+            if (loadedResources[uri]) {
+                groups.loaded.push(uri);
+                continue;
             }
-        )
+            
+            // 外部资源单独加载
+            if (uri.startsWith("http://") || uri.startsWith("https://")) {
+                groups.external.push(uri);
+                continue;
+            }
+            
+            // 静态资源按类型分组
+            if (/\.css(?:\?|#|$)/i.test(uri)) {
+                groups.bundle.css.push(uri);
+            } else if (/\.js(?:\?|#|$)/i.test(uri)) {
+                groups.bundle.js.push(uri);
+            } else {
+                // 其他资源保持单独加载
+                groups.external.push(uri);
+            }
+        }
+        
+        return groups;
     }
-
+    
     /**
-     * 加载多个文件
-     * @param {string[]} paths - 文件路径数组
-     * @param {Function} callback - 所有文件加载完成后的回调函数
-     * @param {HTMLElement} element - 要插入样式的元素
+     * 创建bundle URL
+     * @param {string[]} files - 文件路径数组
+     * @param {string} type - 文件类型 'js' 或 'css'
+     * @returns {string} bundle URL
      */
-    function loadFiles(paths, callback, element) {
-        let remaining = paths.length;
-        // 单个文件加载完成后的处理
-        function singleCallback() {
-            if (--remaining === 0) {
-                callback();
-            }
-        }
-
-        // 加载每个文件
-        paths.forEach(function (path) {
-            loadFile(path, singleCallback, element);
+    function createBundleUrl(files, type) {
+        // 移除 scriptDir 前缀和版本参数，只保留相对路径
+        const cleanFiles = files.map(f => {
+            let path = f.replace($.scriptDir, '').replace(/^\//, '');
+            // 移除 /static/ 前缀（如果有）
+            path = path.replace(/^static\//, '');
+            return path;
+        });
+        
+        const fileParam = cleanFiles.join(',');
+        return `/static/bundle?file=${encodeURIComponent(fileParam)}&type=${type}`;
+    }
+    
+    /**
+     * 标记bundle中的所有文件为已加载
+     * @param {string[]} files - 文件路径数组
+     */
+    function markBundleLoaded(files) {
+        files.forEach(file => {
+            loadedResources[file] = true;
         });
     }
 
     /**
      * 主加载函数
      * @param {(string|string[])} paths - 文件路径或路径数组
-     * @param {Function} callback - 加载完成后的回调函数
+     * @param {Function} callback - 回调函数
      * @param {HTMLElement} element - 要插入样式的元素
      */
-    function load(paths, callback, element = null) {
-        if (typeof paths === "string") {
-            paths = [paths];
-        }
+    function load(paths, callback = () => {}, element = null) {
 
+        paths = Array.isArray(paths) ? paths : [paths];
+        
         if (paths.length === 0) {
             callback();
             return;
         }
 
-        let uris = buildUris(paths);
+        const uris = buildUris(paths);
 
-        if ($.logger) {
-            $.logger.debug("Load Modules", uris);
+        $.logger.debug("Load Modules", uris);
+
+        // 分组文件
+        const groups = groupFiles(uris);
+        console.log(groups,uris)
+        // 计算总任务数
+        let remaining = groups.loaded.length + groups.external.length;
+        const hasBundleJs = groups.bundle.js.length > 0;
+        const hasBundleCss = groups.bundle.css.length > 0;
+        
+        // Bundle 模式：多文件合并成1个请求
+        if (hasBundleJs && groups.bundle.js.length > 1) {
+            remaining += 1;
+        } else {
+            remaining += groups.bundle.js.length;
+        }
+        
+        if (hasBundleCss && groups.bundle.css.length > 1) {
+            remaining += 1;
+        } else {
+            remaining += groups.bundle.css.length;
+        }
+        
+        // 如果没有需要加载的文件，直接回调
+        if (remaining === 0) {
+            callback();
+            return;
         }
 
-        loadFiles(uris, callback || function () {
-        }, element);
+        const singleCallback = () => {
+            if (--remaining === 0) callback();
+        };
+        
+        // 已加载文件直接回调
+        groups.loaded.forEach(() => singleCallback());
+        
+        // 加载 JS bundle（多文件合并）
+        if (hasBundleJs) {
+            if (groups.bundle.js.length > 1) {
+                const bundleUrl = createBundleUrl(groups.bundle.js, 'js');
+                $.logger?.debug("Load JS Bundle", groups.bundle.js);
+                loadScript(bundleUrl, () => {
+                    markBundleLoaded(groups.bundle.js);
+                    singleCallback();
+                });
+            } else {
+                // 单文件不走bundle
+                loadFile(groups.bundle.js[0], singleCallback, element);
+            }
+        }
+        
+        // 加载 CSS bundle（多文件合并）
+        if (hasBundleCss) {
+            if (groups.bundle.css.length > 1) {
+                const bundleUrl = createBundleUrl(groups.bundle.css, 'css');
+                $.logger?.debug("Load CSS Bundle", groups.bundle.css);
+                loadCSS(bundleUrl, () => {
+                    markBundleLoaded(groups.bundle.css);
+                    singleCallback();
+                }, element);
+            } else {
+                // 单文件不走bundle
+                loadFile(groups.bundle.css[0], singleCallback, element);
+            }
+        }
+        
+        // 外部资源和其他资源保持单独加载
+        groups.external.forEach(path => loadFile(path, singleCallback, element));
     }
 
     /**
@@ -251,10 +336,7 @@ const loader = (function (window, document) {
      * @param {string[]} datas - 要预加载的资源路径数组
      */
     function setPreload(datas) {
-        datas = buildUris(datas);
-        datas.forEach((data) => {
-            loadedResources[data] = true;
-        });
+        buildUris(datas).forEach(data => loadedResources[data] = true);
     }
 
     /**
@@ -263,16 +345,10 @@ const loader = (function (window, document) {
      * @returns {*} 资源内容
      */
     function getResource(path) {
-        let uris = buildUris([path]);
-        return loadedResources[uris[0]];
+        return loadedResources[buildUris([path])[0]];
     }
 
-    // 返回一个包含加载方法的对象
-    return {
-        load: load,
-        setPreload: setPreload,
-        get: getResource // 新增资源获取方法
-    };
+    return { load, setPreload, get: getResource };
 })(window, document);
 
 /** @type {Function} 全局资源加载函数 */
@@ -283,7 +359,7 @@ $.res = loader.get;
 $.preloader = loader.setPreload;
 
 /**
- * 等待元素出现
+ * 等待元素出现（使用MutationObserver）
  * @param {string} selector - CSS选择器
  * @param {Function} callback - 元素出现后的回调函数
  */
@@ -292,8 +368,21 @@ $.waitElement = function (selector, callback) {
         callback();
         return;
     }
-    $.logger && $.logger.debug("Wait waitElement ", selector);
-    setTimeout(() => $.waitElement(selector, callback), 100);
+    
+    $.logger?.debug("Wait Element", selector);
+    
+    const observer = new MutationObserver(() => {
+        if (document.querySelector(selector)) {
+            observer.disconnect();
+            callback();
+        }
+    });
+    
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    setTimeout(() => {
+        observer.disconnect();
+        $.logger?.error("Wait Element Timeout:", selector);
+    }, 60000);
 }
 
 /**
@@ -304,60 +393,54 @@ $.waitElement = function (selector, callback) {
  * @param {number} count - 当前等待次数
  */
 $.waitProp = function (obj, props, callback, count = 0) {
-    if (count > 600) {
-        $.logger && $.logger.error("Wait Prop Timeout: ", props.join(', '));
-        return;
-    }
-    // 将单个属性转换为数组
     const propsArray = Array.isArray(props) ? props : [props];
 
-    // 检查所有属性是否都存在
-    const allPropsExist = propsArray.every(prop => obj[prop]);
-
-    if (!allPropsExist) {
-        setTimeout(() => $.waitProp(obj, propsArray, callback, count++), 100);
-        //  $.logger && $.logger.debug("Wait Prop: ", propsArray.join(', '));
+    if (propsArray.every(prop => obj[prop])) {
+        callback();
         return;
     }
-    //$.logger && $.logger.debug("Successful wait Prop: ", propsArray.join(', '));
-    callback();
+    
+    if (count > 600) {
+        $.logger?.error("Wait Prop Timeout:", propsArray.join(', '));
+        return;
+    }
+    
+    const next = () => $.waitProp(obj, propsArray, callback, count + 1);
+    setTimeout(next, count < 50 ? 50 : 100);
 }
 
 /**
- * 等待类名出现
+ * 等待类名出现（使用MutationObserver）
  * @param {string} className - 类名
  * @param {HTMLElement} parent - 父元素，默认为document
  * @param {Function} callback - 类名出现后的回调函数
  */
 $.waitClass = function (className, parent, callback) {
-    parent = parent || document
+    parent = parent || document;
+    
     if (parent.querySelector(className)) {
         callback();
         return;
     }
-    setTimeout(() => $.waitClass(className, parent, callback), 100);
-    $.logger && $.logger.debug("Wait Class ", className);
-}
-
-/**
- * 等待多个对象属性
- * @param {Array<Object>} objProps - 对象属性配置数组
- * @param {Function} callback - 所有属性都存在后的回调函数
- */
-$.waitProps = function (objProps, callback) {
-    let length = objProps.length;
-
-    /**
-     * 单个属性等待完成的回调
-     */
-    function callbackItems() {
-        length--;
-        if (length === 0) {
+    
+    $.logger?.debug("Wait Class", className);
+    
+    const observer = new MutationObserver(() => {
+        if (parent.querySelector(className)) {
+            observer.disconnect();
             callback();
         }
-    }
-
-    for (const objProp of objProps) {
-        $.waitProp(objProp.obj, objProp.props, callbackItems);
-    }
+    });
+    
+    observer.observe(parent, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class']
+    });
+    
+    setTimeout(() => {
+        observer.disconnect();
+        $.logger?.error("Wait Class Timeout:", className);
+    }, 60000);
 }

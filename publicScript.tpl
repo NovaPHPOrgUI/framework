@@ -1,10 +1,5 @@
-<script src="/static/framework/bootloader.js?v={$__v}"></script>
-<script src="/static/framework/utils/Loading.js?v={$__v}"></script>
-<script src="/static/framework/utils/Logger.js?v={$__v}"></script>
-<script src="/static/framework/utils/Loader.js?v={$__v}"></script>
-<script src="/static/framework/utils/Event.js?v={$__v}"></script>
-<script src="/static/framework/utils/Toaster.js?v={$__v}"></script>
-<script src="/static/framework/utils/Request.js?v={$__v}"></script>
+{* 框架核心Bundle - 合并了7个文件减少HTTP请求 *}
+<script src="/static/bundle?file=framework/bootloader.js,framework/utils/Loading.js,framework/utils/Logger.js,framework/utils/Loader.js,framework/utils/Event.js,framework/utils/Toaster.js,framework/utils/Request.js&type=js&v={$__v}"></script>
 <script>
     window._v = "{$__v}"
     let level = debug ? 'debug' : 'error';

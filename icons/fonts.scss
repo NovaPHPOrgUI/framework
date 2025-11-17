@@ -1,0 +1,51 @@
+$icons: (
+        "Material Icons": "./flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2",
+        "Material Icons Outlined": "./gok-H7zzDkdnRel8-DQ6KAXJ69wP1tGnf4ZGhUcel5euIg.woff2",
+        "Material Icons Round": "./LDItaoyNOAY6Uewc665JcIzCKsKc_M9flwmPq_HTTw.woff2",
+        "Material Icons Sharp": "./oPWQ_lt5nv4pWNJpghLP75WiFR4kLh3kvmvRImcycg.woff2",
+        "Material Icons Two Tone": "./hESh6WRmNCxEqUmNyh3JDeGxjVVyMg4tHGctNCu0NjbrHg.woff2"
+);
+
+/* 公共样式 */
+%icon-base {
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 字符串替换函数 */
+@function str-replace($string, $search, $replace: "") {
+  $index: str-index($string, $search);
+  @if $index {
+    @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+  }
+  @return $string;
+}
+
+/* 生成 @font-face 和类 */
+@each $name, $path in $icons {
+  @font-face {
+    font-family: $name;
+    src: url(#{$path}) format('woff2');
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+  }
+
+  $class: str-replace(to-lower-case($name), " ", "-");
+
+  .#{$class} {
+    @extend %icon-base;
+    font-family: $name;
+  }
+}
+

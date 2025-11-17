@@ -162,9 +162,6 @@ class Loading {
     }
 }
 
-/** @type {Loading} 全局加载动画实例 */
-window.loading = new Loading(document.body);
-window.loading.show();
 
 // 属性驱动的Loading管理（封装在IIFE中，不污染全局）
 (function() {

@@ -20,13 +20,13 @@ window.$ = mdui.$;
 window.jQuery = $;
 
 /** @type {string} 当前脚本的完整URL */
-const currentScript = document.currentScript.src;
-// 提取当前脚本的目录路径
-let dir = currentScript.substring(0, currentScript.lastIndexOf("/"));
-/** @type {string} 脚本目录路径 */
-$.scriptDir = dir.substring(0, dir.lastIndexOf("/"));
-/** @type {string} 基础URI路径 */
-window.baseUri = $.scriptDir.substring(0, $.scriptDir.lastIndexOf("/"));
+const scriptUrl = new URL(document.currentScript.src);
+
+/** @type {string} 脚本目录路径 (e.g., https://example.com/static) */
+$.scriptDir = scriptUrl.origin + scriptUrl.pathname.substring(0, scriptUrl.pathname.lastIndexOf("/"))+ '/';
+
+/** @type {string} 基础URI路径 (e.g., https://example.com) */
+window.baseUri = scriptUrl.origin ;
 
 /** @type {Object} 全局文件缓存对象 */
 if (!window.novaFiles) {
@@ -75,18 +75,18 @@ window.jsMap = {
     Toaster: '/framework/utils/Toaster.js',
     URLUtils: '/framework/utils/URLUtils.js',
     // Components
-    ThemeSwitcher: '/components/theme/ThemeSwitcher.js',
+    ThemeSwitcher: '/framework/theme/ThemeSwitcher.js',
 
-    Language: '/components/language/Language.js',
-    TranslateUtils: '/components/language/TranslateUtils.js',
+    Language: '/framework/language/Language.js',
+    TranslateUtils: '/framework/language/TranslateUtils.js',
 
-    ImageLoader: '/components/imageLoader/ImageLoader.js',
+    ImageLoader: '/framework/imageLoader/ImageLoader.js',
 
     Pjax:[
-        '/components/pjax/nprogress.css',
-        '/components/pjax/nprogress.js',
-        '/components/pjax/pjax.min.js',
-        '/components/pjax/PjaxUtils.js'
+        '/framework/pjax/nprogress.css',
+        '/framework/pjax/nprogress.js',
+        '/framework/pjax/pjax.min.js',
+        '/framework/pjax/PjaxUtils.js'
     ],
     DialogForm: "/components/formDialog/DialogForm.js",
     ChipGroup: "/components/chipGroup/mduiChipGroup.js",
