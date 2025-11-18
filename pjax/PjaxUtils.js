@@ -53,9 +53,7 @@ class PjaxUtils {
         if (!window.pageLoadFiles) {
             window.pageLoadFiles = [];
         }
-        if (!window.pageNeedsSidebar) {
-            window.pageNeedsSidebar = false;
-        }
+
 
         let hasChild = false;
         /**
@@ -80,7 +78,7 @@ class PjaxUtils {
                 window.pageOnLoad = null;
                 window.pageOnUnLoad = NOOP;
                 window.pageLoadFiles = [];
-                window.pageNeedsSidebar = false;
+                window.pageNeedsSidebar = true;
             } catch (e) {
                 console.log(e);
             }
