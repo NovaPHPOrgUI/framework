@@ -74,20 +74,7 @@ window.jsMap = {
     Layer: '/framework/utils/Layer.js',
     Toaster: '/framework/utils/Toaster.js',
     URLUtils: '/framework/utils/URLUtils.js',
-    // Components
-    ThemeSwitcher: '/framework/theme/ThemeSwitcher.js',
 
-    Language: '/framework/language/Language.js',
-    TranslateUtils: '/framework/language/TranslateUtils.js',
-
-    ImageLoader: '/framework/imageLoader/ImageLoader.js',
-
-    Pjax:[
-        '/framework/pjax/nprogress.css',
-        '/framework/pjax/nprogress.js',
-        '/framework/pjax/pjax.min.js',
-        '/framework/pjax/PjaxUtils.js'
-    ],
     DialogForm: "/components/formDialog/DialogForm.js",
     ChipGroup: "/components/chipGroup/mduiChipGroup.js",
     AreaPicker: "/components/areaPicker/AreaPicker.js",
@@ -108,7 +95,12 @@ window.jsMap = {
         '/framework/utils/URLUtils.js',
     ],
     DatePicker: "/components/datepicker/datepicker.js",
-    Markdown: "/components/markdown/Markdown.js",
+    Markdown: [
+        '/components/markdown/cherry-markdown.min.css',
+        '/components/markdown/cherry.css',
+        '/components/markdown/cherry-markdown.min.js',
+        "/components/markdown/Markdown.js",
+    ],
     Captcha: "/components/captcha/Captcha.js",
     QrScan:"/components/qrscan/QrScan.js",
     Tree: [

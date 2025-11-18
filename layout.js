@@ -81,6 +81,10 @@ $(document)
         DOM.drawer.open = !DOM.drawer.open;
     });
 
+$(document).on("scroll",function () {
+    if (document.querySelector("html").scrollTop === 0)$("mdui-top-app-bar").removeAttr("scrolling");
+    else $("mdui-top-app-bar").attr("scrolling","");
+})
 // 折叠面板图标旋转
 DOM.collapseItems
     .on("open", (e) => $(e.target).find("mdui-icon").addClass("rotate-ccw"))
