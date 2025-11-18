@@ -75,7 +75,11 @@ window.jsMap = {
     Toaster: '/framework/utils/Toaster.js',
     URLUtils: '/framework/utils/URLUtils.js',
 
-    DialogForm: "/components/formDialog/DialogForm.js",
+    DialogForm: [
+        '/framework/utils/Form.js',
+        "/components/formDialog/DialogForm.js",
+
+        ],
     ChipGroup: "/components/chipGroup/mduiChipGroup.js",
     AreaPicker: "/components/areaPicker/AreaPicker.js",
     ImageViewer: [

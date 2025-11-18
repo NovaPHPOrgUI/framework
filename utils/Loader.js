@@ -181,15 +181,16 @@ const loader = (function (window, document) {
      * @returns {{bundle: {js: string[], css: string[]}, external: string[], loaded: string[]}}
      */
     function groupFiles(uris) {
+        // 去重：消除重复的 URI
+        const uniqueUris = [...new Set(uris)];
+        
         const groups = {
             bundle: { js: [], css: [] },
             external: [],
             loaded: []
         };
-
-
         
-        for (const uri of uris) {
+        for (const uri of uniqueUris) {
             // 已加载的文件跳过
             if (loadedResources[uri]) {
                 groups.loaded.push(uri);
