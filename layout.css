@@ -1,0 +1,236 @@
+@charset "UTF-8";
+/*!
+ * Layout Styles
+ * 布局相关样式：导航栏、抽屉、主内容区等
+ */
+/*------------------------------------*\
+  1. CSS 变量定义
+\*------------------------------------*/
+:root {
+  --nova-padding: 1rem;
+  --nova-border-radius: var(--mdui-shape-corner-extra-large);
+  --gap: 0.5rem;
+}
+
+/*------------------------------------*\
+  2. 顶部导航栏
+\*------------------------------------*/
+mdui-top-app-bar,
+.layout-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+}
+
+.layout-header-user-info {
+  display: flex;
+  align-items: center;
+  padding: 0.3rem 0.5rem;
+  height: 3.1rem;
+  box-sizing: border-box;
+  margin-right: 1.5rem;
+}
+.layout-header-user-info::part(button) {
+  padding: 0;
+}
+.layout-header-user-info span {
+  margin-left: 0.4rem;
+  display: flex;
+  align-items: center;
+  color: rgba(var(--mdui-color-on-background));
+}
+.layout-header-user-info mdui-menu-item {
+  cursor: pointer;
+}
+
+.logo {
+  max-height: 40px;
+  aspect-ratio: 1/1;
+  width: auto;
+  height: 100%;
+}
+
+.brand-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.desktop-nav mdui-dropdown mdui-button,
+.desktop-nav mdui-button {
+  text-transform: none;
+}
+
+/*------------------------------------*\
+  3. 侧边导航抽屉
+\*------------------------------------*/
+.navigation-drawer mdui-list {
+  padding: var(--nova-padding);
+}
+
+::part(submenu) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/*------------------------------------*\
+  4. 主内容区
+\*------------------------------------*/
+mdui-layout {
+  min-height: calc(var(--vh));
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--nova-padding);
+}
+
+#bodyContainer {
+  height: fit-content;
+}
+
+#container {
+  padding: calc(var(--nova-padding) * 2);
+}
+
+footer {
+  font-size: 12px;
+  padding: 16px 0 24px;
+  color: rgba(var(--mdui-color-on-surface-variant));
+}
+
+/*------------------------------------*\
+  5. 滚动条样式
+\*------------------------------------*/
+.navigation-drawer::part(panel),
+.scroll-line {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--mdui-color-on-background)/0.5) rgba(var(--mdui-color-background)/0.5);
+}
+
+.scroll-line::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scroll-line::-webkit-scrollbar-track {
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.08);
+}
+
+.scroll-line::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/*------------------------------------*\
+  6. MDUI 组件覆盖
+\*------------------------------------*/
+.mdui-theme-dark mdui-card[variant=elevated] {
+  background: rgba(var(--mdui-color-surface-container));
+}
+
+@media (prefers-color-scheme: dark) {
+  .mdui-theme-auto mdui-card[variant=elevated] {
+    background: rgba(var(--mdui-color-surface-container));
+  }
+}
+mdui-badge {
+  height: var(--mdui-typescale-body-medium-line-height);
+  font-size: var(--mdui-typescale-body-medium-size);
+  line-height: var(--mdui-typescale-body-medium-line-height);
+  letter-spacing: var(--mdui-typescale-body-medium-tracking);
+  font-weight: var(--mdui-typescale-body-medium-weight);
+  padding: 0.5rem;
+}
+
+/*------------------------------------*\
+  7. 固定定位元素
+\*------------------------------------*/
+.right {
+  right: 1rem;
+  bottom: 1rem;
+}
+.right mdui-menu {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  width: unset;
+  max-width: unset;
+  min-width: unset;
+}
+
+/*------------------------------------*\
+  8. 动画
+\*------------------------------------*/
+.rotate-cw {
+  animation: rotate-cw 0.5s forwards;
+}
+
+.rotate-ccw {
+  animation: rotate-ccw 0.5s forwards;
+}
+
+@keyframes rotate-cw {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(90deg);
+  }
+}
+@keyframes rotate-ccw {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-90deg);
+  }
+}
+/*------------------------------------*\
+  9. 工具类
+\*------------------------------------*/
+.translate-wrapper {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+}
+
+/*------------------------------------*\
+  10. 响应式适配
+\*------------------------------------*/
+@media (max-width: 768px) {
+  .layout-header-right {
+    gap: calc(var(--gap) / 2);
+  }
+  #container {
+    padding: calc(var(--nova-padding) / 2);
+  }
+  .brand-title {
+    font-size: 1.1rem;
+  }
+  footer {
+    font-size: 11px;
+  }
+  .desktop-nav {
+    display: none !important;
+  }
+  .mobile-nav {
+    display: flex !important;
+  }
+}
+@media (min-width: 769px) {
+  .desktop-nav {
+    display: flex !important;
+  }
+  .mobile-nav {
+    display: none !important;
+  }
+}
+
+/*# sourceMappingURL=layout.css.map */

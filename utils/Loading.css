@@ -9,6 +9,7 @@
 .fade-enter-active {
     opacity: 1;
     transition: opacity 0.5s;
+    will-change: opacity;
 }
 .fade-enter {
     opacity: 0;
@@ -18,6 +19,7 @@
 .fade-leave-active {
     opacity: 0;
     transition: opacity 0.5s;
+    will-change: opacity;
 }
 .fade-leave {
     opacity: 1;
@@ -41,4 +43,9 @@
     z-index: 2000; /* 确保遮罩层在其他内容之上 */
     overflow: hidden;
     max-height: var(--vh);
+    pointer-events: none; /* 防止阻挡交互 */
+}
+
+.loading-overlay > * {
+    pointer-events: auto; /* 恢复子元素交互 */
 }

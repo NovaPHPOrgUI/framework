@@ -1,0 +1,75 @@
+@charset "UTF-8";
+/* 公共样式 */
+.material-icons-two-tone, .material-icons-sharp, .material-icons-round, .material-icons-outlined, .material-icons {
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 字符串替换函数 */
+/* 生成 @font-face 和类 */
+@font-face {
+  font-family: "Material Icons";
+  src: url(./flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2) format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+.material-icons {
+  font-family: "Material Icons";
+}
+
+@font-face {
+  font-family: "Material Icons Outlined";
+  src: url(./gok-H7zzDkdnRel8-DQ6KAXJ69wP1tGnf4ZGhUcel5euIg.woff2) format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+.material-icons-outlined {
+  font-family: "Material Icons Outlined";
+}
+
+@font-face {
+  font-family: "Material Icons Round";
+  src: url(./LDItaoyNOAY6Uewc665JcIzCKsKc_M9flwmPq_HTTw.woff2) format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+.material-icons-round {
+  font-family: "Material Icons Round";
+}
+
+@font-face {
+  font-family: "Material Icons Sharp";
+  src: url(./oPWQ_lt5nv4pWNJpghLP75WiFR4kLh3kvmvRImcycg.woff2) format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+.material-icons-sharp {
+  font-family: "Material Icons Sharp";
+}
+
+@font-face {
+  font-family: "Material Icons Two Tone";
+  src: url(./hESh6WRmNCxEqUmNyh3JDeGxjVVyMg4tHGctNCu0NjbrHg.woff2) format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+.material-icons-two-tone {
+  font-family: "Material Icons Two Tone";
+}
+
+/*# sourceMappingURL=fonts.css.map */
