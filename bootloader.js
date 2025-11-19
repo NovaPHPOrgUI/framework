@@ -98,6 +98,9 @@ window.jsMap = {
         '/components/dataTable/DataTable.js',
         '/framework/utils/URLUtils.js',
     ],
+    Pagination:[
+        "/components/dataTable/Pagination.js"
+    ],
     DatePicker: "/components/datepicker/datepicker.js",
     Markdown: [
         '/components/markdown/cherry-markdown.min.css',

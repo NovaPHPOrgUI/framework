@@ -1,9 +1,6 @@
 /**
- * 资源加载器工具类
- * 提供JavaScript和CSS文件的动态加载功能，支持缓存和并发控制
- * @file Loader.js
- * @author License Auto System
- * @version 1.0.0
+ * 资源加载器 - 动态加载 JS/CSS/资源文件
+ * 支持：缓存、并发控制、文件合并（bundle）
  */
 
 /*
@@ -14,25 +11,13 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-/**
- * 资源加载器
- * 提供JavaScript、CSS和其他资源的动态加载功能
- */
 window.loadedResources = {};
 window.inProgressResources = {};
+
 const loader = (function (window, document) {
-    /**
-     * 给URL添加版本号参数
-     * @param {string} url - 原始URL
-     * @returns {string} 带版本号的URL
-     */
     const addVersion = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + window.version;
     
-    /**
-     * 执行回调队列（统一的回调管理）
-     * @param {string} path - 资源路径
-     * @param {...*} args - 传递给回调的参数
-     */
+    /** 执行并清空回调队列 */
     function fireCallbacks(path, ...args) {
         const callbacks = inProgressResources[path]?.callbacks || [];
         delete inProgressResources[path];
@@ -45,11 +30,7 @@ const loader = (function (window, document) {
         });
     }
     
-    /**
-     * 添加到回调队列
-     * @param {string} path - 资源路径
-     * @param {Function} callback - 回调函数
-     */
+    /** 加入回调队列 */
     function queueCallback(path, callback) {
         if (!inProgressResources[path].callbacks) {
             inProgressResources[path].callbacks = [];
@@ -57,11 +38,7 @@ const loader = (function (window, document) {
         inProgressResources[path].callbacks.push(callback);
     }
     
-    /**
-     * 加载JavaScript文件
-     * @param {string} path - 文件路径
-     * @param {Function} callback - 回调函数
-     */
+    /** 加载 JavaScript */
     function loadScript(path, callback) {
         if (loadedResources[path]) {
             callback();
@@ -83,19 +60,9 @@ const loader = (function (window, document) {
         document.head.appendChild(script);
     }
 
-    /**
-     * 加载CSS文件
-     * @param {string} path - 文件路径
-     * @param {Function} callback - 回调函数
-     * @param {HTMLElement} element - 要插入样式的元素
-     */
+    /** 加载 CSS */
     function loadCSS(path, callback, element) {
-        if (!element && (loadedResources[path] || inProgressResources[path])) {
-            callback();
-            return;
-        }
-        inProgressResources[path] = true;
-
+        // element 模式：每次都重新注入（不缓存）
         if (element) {
             fetch(addVersion(path))
                 .then(res => res.text())
@@ -104,26 +71,36 @@ const loader = (function (window, document) {
                     node.innerHTML = data;
                     element.appendChild(node);
                     callback();
+                })
+                .catch(err => {
+                    $.logger?.error('Load CSS failed', path, err);
+                    callback();
                 });
             return;
         }
 
+        // 全局模式：使用缓存和并发控制
+        if (loadedResources[path]) {
+            callback();
+            return;
+        }
+        if (inProgressResources[path]) {
+            queueCallback(path, callback);
+            return;
+        }
+        
+        inProgressResources[path] = { callbacks: [callback] };
         const link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = path;
+        link.href = addVersion(path);
         link.onload = link.onerror = () => {
             loadedResources[path] = true;
-            inProgressResources[path] = false;
-            callback();
+            fireCallbacks(path);
         };
         document.querySelector('#style').parentNode.insertBefore(link, document.querySelector('#style'));
     }
 
-    /**
-     * 加载通用资源
-     * @param {string} path - 资源路径
-     * @param {Function} callback - 回调函数
-     */
+    /** 加载通用资源 */
     function loadResource(path, callback) {
         if (loadedResources[path]) {
             callback(null, loadedResources[path]);
@@ -144,11 +121,7 @@ const loader = (function (window, document) {
         );
     }
 
-    /**
-     * 构建URI路径数组
-     * @param {string[]} paths - 原始路径数组
-     * @returns {string[]} 构建后的URI数组
-     */
+    /** 构建完整 URI 路径 */
     function buildUris(paths) {
         return paths.flatMap(path => {
             const mapped = jsMap[path] || path;
@@ -159,12 +132,7 @@ const loader = (function (window, document) {
         });
     }
 
-    /**
-     * 加载单个文件（根据扩展名分发）
-     * @param {string} path - 文件路径
-     * @param {Function} callback - 回调函数
-     * @param {HTMLElement} element - 要插入样式的元素
-     */
+    /** 根据扩展名分发加载 */
     function loadFile(path, callback, element) {
         if (/\.css(?:\?|#|$)/i.test(path)) {
             loadCSS(path, callback, element);
@@ -175,41 +143,37 @@ const loader = (function (window, document) {
         }
     }
 
-    /**
-     * 按类型和来源分组文件
-     * @param {string[]} uris - URI数组
-     * @returns {{bundle: {js: string[], css: string[]}, external: string[], loaded: string[]}}
-     */
+    /** 分组：已加载/可合并/外部资源 */
     function groupFiles(uris) {
-        // 去重：消除重复的 URI
         const uniqueUris = [...new Set(uris)];
-        
         const groups = {
             bundle: { js: [], css: [] },
             external: [],
-            loaded: []
+            loaded: [],
+            loading:[]
         };
-        
+
         for (const uri of uniqueUris) {
-            // 已加载的文件跳过
             if (loadedResources[uri]) {
                 groups.loaded.push(uri);
                 continue;
             }
 
-            if (!uri.startsWith(window.baseUri)){
-                groups.external.push(uri);
+            if(inProgressResources[uri]){
+                groups.loading.push(uri);
                 continue;
             }
 
+            if (!uri.startsWith(window.baseUri)) {
+                groups.external.push(uri);
+                continue;
+            }
             
-            // 静态资源按类型分组
             if (/\.css(?:\?|#|$)/i.test(uri)) {
                 groups.bundle.css.push(uri);
             } else if (/\.js(?:\?|#|$)/i.test(uri)) {
                 groups.bundle.js.push(uri);
             } else {
-                // 其他资源保持单独加载
                 groups.external.push(uri);
             }
         }
@@ -217,17 +181,10 @@ const loader = (function (window, document) {
         return groups;
     }
     
-    /**
-     * 创建bundle URL
-     * @param {string[]} files - 文件路径数组
-     * @param {string} type - 文件类型 'js' 或 'css'
-     * @returns {string} bundle URL
-     */
+    /** 创建 bundle URL */
     function createBundleUrl(files, type) {
-        // 移除 scriptDir 前缀和版本参数，只保留相对路径
         const cleanFiles = files.map(f => {
             let path = f.replace($.scriptDir, '').replace(/^\//, '');
-            // 移除 /static/ 前缀（如果有）
             path = path.replace(/^static\//, '');
             return path;
         });
@@ -236,24 +193,62 @@ const loader = (function (window, document) {
         return `/static/bundle?file=${encodeURIComponent(fileParam)}&type=${type}`;
     }
     
-    /**
-     * 标记bundle中的所有文件为已加载
-     * @param {string[]} files - 文件路径数组
-     */
+    /** 标记所有文件为已加载 */
     function markBundleLoaded(files) {
         files.forEach(file => {
             loadedResources[file] = true;
         });
     }
+    
+    /** 预标记文件为加载中（防止重复请求）*/
+    function markInProgress(files, shouldSkip) {
+        files.forEach(file => {
+            if (shouldSkip && shouldSkip(file)) return;
+            if (!loadedResources[file] && !inProgressResources[file]) {
+                inProgressResources[file] = { callbacks: [] };
+            }
+        });
+    }
 
-    /**
-     * 主加载函数
-     * @param {(string|string[])} paths - 文件路径或路径数组
-     * @param {Function} callback - 回调函数
-     * @param {HTMLElement} element - 要插入样式的元素
-     */
+    /** 计算需要加载的任务数 */
+    function countTasks(groups) {
+        let count = groups.loaded.length + groups.external.length;
+        
+        // Bundle：多文件合并成 1 个请求
+        if (groups.bundle.js.length > 1) {
+            count += 1;
+        } else {
+            count += groups.bundle.js.length;
+        }
+        
+        if (groups.bundle.css.length > 1) {
+            count += 1;
+        } else {
+            count += groups.bundle.css.length;
+        }
+        
+        return count;
+    }
+    
+    /** 加载 Bundle 或单文件 */
+    function loadBundleOrSingle(files, type, onComplete, element) {
+        if (files.length === 0) return;
+        
+        if (files.length > 1) {
+            const bundleUrl = createBundleUrl(files, type);
+
+            const loader = type === 'js' ? loadScript : loadCSS;
+            loader(bundleUrl, () => {
+                markBundleLoaded(files);
+                onComplete();
+            }, element);
+        } else {
+            loadFile(files[0], onComplete, element);
+        }
+    }
+
+    /** 主加载函数 */
     function load(paths, callback = () => {}, element = null) {
-
         paths = Array.isArray(paths) ? paths : [paths];
         
         if (paths.length === 0) {
@@ -263,108 +258,43 @@ const loader = (function (window, document) {
 
         const uris = buildUris(paths);
 
-        $.logger.debug("Load Modules", uris);
 
-        // 分组文件
         const groups = groupFiles(uris);
-        console.log(groups,uris)
-        // 计算总任务数
-        let remaining = groups.loaded.length + groups.external.length;
-        const hasBundleJs = groups.bundle.js.length > 0;
-        const hasBundleCss = groups.bundle.css.length > 0;
+        $.logger.debug("Load Modules", groups);
+        // 预标记所有文件为"加载中"，防止并发重复加载
+        markInProgress(groups.bundle.js);
+        markInProgress(groups.bundle.css, file => element); // element 模式跳过 CSS 标记
+        markInProgress(groups.external, file => element && /\.css(?:\?|#|$)/i.test(file));
         
-        // Bundle 模式：多文件合并成1个请求
-        if (hasBundleJs && groups.bundle.js.length > 1) {
-            remaining += 1;
-        } else {
-            remaining += groups.bundle.js.length;
-        }
-        
-        if (hasBundleCss && groups.bundle.css.length > 1) {
-            remaining += 1;
-        } else {
-            remaining += groups.bundle.css.length;
-        }
-        
-        // 如果没有需要加载的文件，直接回调
+        // 计算任务数
+        let remaining = countTasks(groups);
         if (remaining === 0) {
             callback();
             return;
         }
 
-        const singleCallback = () => {
+        const taskDone = () => {
             if (--remaining === 0) callback();
         };
         
-        // 已加载文件直接回调
-        groups.loaded.forEach(() => singleCallback());
+        // 已加载
+        groups.loaded.forEach(() => taskDone());
         
-        // 加载 JS bundle（多文件合并）
-        if (hasBundleJs) {
-            if (groups.bundle.js.length > 1) {
-                const bundleUrl = createBundleUrl(groups.bundle.js, 'js');
-                $.logger?.debug("Load JS Bundle", groups.bundle.js);
-                loadScript(bundleUrl, () => {
-                    markBundleLoaded(groups.bundle.js);
-                    singleCallback();
-                });
-            } else {
-                // 单文件不走bundle
-                loadFile(groups.bundle.js[0], singleCallback, element);
-            }
-        }
+        // 加载 Bundle
+        loadBundleOrSingle(groups.bundle.js, 'js', taskDone, element);
+        loadBundleOrSingle(groups.bundle.css, 'css', taskDone, element);
         
-        // 加载 CSS bundle（多文件合并）
-        if (hasBundleCss) {
-            if (groups.bundle.css.length > 1) {
-                const bundleUrl = createBundleUrl(groups.bundle.css, 'css');
-                $.logger?.debug("Load CSS Bundle", groups.bundle.css);
-                loadCSS(bundleUrl, () => {
-                    markBundleLoaded(groups.bundle.css);
-                    singleCallback();
-                }, element);
-            } else {
-                // 单文件不走bundle
-                loadFile(groups.bundle.css[0], singleCallback, element);
-            }
-        }
-        
-        // 外部资源和其他资源保持单独加载
-        groups.external.forEach(path => loadFile(path, singleCallback, element));
+        // 外部资源
+        groups.external.forEach(path => loadFile(path, taskDone, element));
     }
 
-    /**
-     * 设置预加载资源
-     * @param {string[]} datas - 要预加载的资源路径数组
-     */
-    function setPreload(datas) {
-        buildUris(datas).forEach(data => loadedResources[data] = true);
-    }
 
-    /**
-     * 获取已加载的资源内容
-     * @param {string} path - 资源路径
-     * @returns {*} 资源内容
-     */
-    function getResource(path) {
-        return loadedResources[buildUris([path])[0]];
-    }
 
-    return { load, setPreload, get: getResource };
+    return { load };
 })(window, document);
 
-/** @type {Function} 全局资源加载函数 */
 $.loader = loader.load;
-/** @type {Function} 全局资源获取函数 */
-$.res = loader.get;
-/** @type {Function} 全局预加载函数 */
-$.preloader = loader.setPreload;
-
-/**
- * 等待元素出现（使用MutationObserver）
- * @param {string} selector - CSS选择器
- * @param {Function} callback - 元素出现后的回调函数
- */
+/** 等待 DOM 元素出现 */
 $.waitElement = function (selector, callback) {
     if (document.querySelector(selector)) {
         callback();
@@ -387,13 +317,7 @@ $.waitElement = function (selector, callback) {
     }, 60000);
 }
 
-/**
- * 等待对象属性存在
- * @param {Object} obj - 要检查的对象
- * @param {string|string[]} props - 属性名或属性名数组
- * @param {Function} callback - 属性存在后的回调函数
- * @param {number} count - 当前等待次数
- */
+/** 等待对象属性存在 */
 $.waitProp = function (obj, props, callback, count = 0) {
     const propsArray = Array.isArray(props) ? props : [props];
 
@@ -411,12 +335,7 @@ $.waitProp = function (obj, props, callback, count = 0) {
     setTimeout(next, count < 50 ? 50 : 100);
 }
 
-/**
- * 等待类名出现（使用MutationObserver）
- * @param {string} className - 类名
- * @param {HTMLElement} parent - 父元素，默认为document
- * @param {Function} callback - 类名出现后的回调函数
- */
+/** 等待类名出现 */
 $.waitClass = function (className, parent, callback) {
     parent = parent || document;
     
