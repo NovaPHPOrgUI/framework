@@ -84,16 +84,12 @@ mdui-layout {
   min-height: calc(var(--vh));
   overflow-y: auto;
   overflow-x: hidden;
-  padding: var(--nova-padding);
 }
 
 #bodyContainer {
   height: fit-content;
 }
 
-#container {
-  padding: calc(var(--nova-padding) * 2);
-}
 
 footer {
   font-size: 12px;
