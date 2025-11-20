@@ -233,18 +233,14 @@ const loader = (function (window, document) {
     /** 加载 Bundle 或单文件 */
     function loadBundleOrSingle(files, type, onComplete, element) {
         if (files.length === 0) return;
-        
-        if (files.length > 1) {
-            const bundleUrl = createBundleUrl(files, type);
 
-            const loader = type === 'js' ? loadScript : loadCSS;
-            loader(bundleUrl, () => {
-                markBundleLoaded(files);
-                onComplete();
-            }, element);
-        } else {
-            loadFile(files[0], onComplete, element);
-        }
+        const bundleUrl = createBundleUrl(files, type);
+
+        const loader = type === 'js' ? loadScript : loadCSS;
+        loader(bundleUrl, () => {
+            markBundleLoaded(files);
+            onComplete();
+        }, element);
     }
 
     /** 主加载函数 */
@@ -282,6 +278,7 @@ const loader = (function (window, document) {
         
         // 加载 Bundle
         loadBundleOrSingle(groups.bundle.js, 'js', taskDone, element);
+
         loadBundleOrSingle(groups.bundle.css, 'css', taskDone, element);
         
         // 外部资源
