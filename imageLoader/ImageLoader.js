@@ -29,14 +29,14 @@ class ImageLoader extends HTMLElement {
         this.imageSrc = this.getAttribute("src");
 
         /** @type {string} 默认图片地址 */
-        this.defaultImage = this.getAttribute('default') || "/static/components/imageLoader/default.png";
+        this.defaultImage = this.getAttribute('default') || "/static/framework/imageLoader/default.png";
         /** @type {number} 渐变动画持续时间（毫秒） */
         this.fadeDuration = parseInt(this.getAttribute('duration'), 10) || 300;
         this.attachShadow({mode: 'open'});
         /** @type {Loading} 加载状态实例 */
         this.loading = new Loading(this.shadowRoot);
         /** @type {string} 占位图片地址 */
-        this.placeholder  = this.getAttribute("placeholder") || "/static/components/imageLoader/default.png";
+        this.placeholder  = this.getAttribute("placeholder") || "/static/framework/imageLoader/default.png";
         /** @type {boolean} 是否已加载完成 */
         this.hasLoaded = false;
         /** @type {IntersectionObserver|null} 视口观察器 */
