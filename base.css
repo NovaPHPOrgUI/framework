@@ -2356,7 +2356,35 @@ legend {
 }
 
 /*------------------------------------*\
-  24. 视口高度变量
+  24. Badge 组件
+\*------------------------------------*/
+.badge {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.badge-sm {
+  padding: 0.37rem 0.55rem;
+  font-size: var(--mdui-typescale-label-small-size);
+  line-height: var(--mdui-typescale-label-small-line-height);
+}
+
+.badge-md {
+  padding: 0.5rem 0.75rem;
+  font-size: var(--mdui-typescale-label-medium-size);
+  line-height: var(--mdui-typescale-label-medium-line-height);
+}
+
+.badge-lg {
+  padding: 0.625rem 1rem;
+  font-size: var(--mdui-typescale-label-large-size);
+  line-height: var(--mdui-typescale-label-large-line-height);
+}
+
+/*------------------------------------*\
+  25. 视口高度变量
 \*------------------------------------*/
 :root {
   --vh-offset: 0px;
