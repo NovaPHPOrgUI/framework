@@ -1,47 +1,63 @@
 <!doctype html>
-<html lang="zh-CN" class="mdui-theme-light">
+<html lang="zh-CN" class="mdui-theme-light scroll-line">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
     <meta name="renderer" content="webkit"/>
     <title id="title">{$title}</title>
     {include file="publicHeader.tpl"}
-    <link rel="stylesheet" href="/static/css/init.css?v={$__v}">
-    <style id="style">
-    </style>
+    <style id="style"></style>
 </head>
 
-<body class="bg" style="height: var(--vh)">
-{include file="publicScript.tpl"}
-<script src="/static/js/init.js?v={$__v}"></script>
-<div>
-    <mdui-top-app-bar variant="center-aligned"  style="position: relative" class="bg">
-        <mdui-top-app-bar-title class="title-medium title center-both" >
-            {$title}
-        </mdui-top-app-bar-title>
-        <mdui-button icon="filter_list" variant="text" style="display: none" id="filter">筛选</mdui-button>
+<body class="bg">
+
+<mdui-layout class="scroll-line">
+    <mdui-top-app-bar scroll-behavior="elevate" scroll-target=".layout-main" class="position-fixed">
+        <mdui-button-icon icon="menu" id="navigation-drawer-switch"></mdui-button-icon>
+        <mdui-top-app-bar-title>{$title}</mdui-top-app-bar-title>
+        <div style="flex-grow: 1"></div>
+        <mdui-button-icon icon="home" href="/"></mdui-button-icon>
+        <theme-switcher iconBtn="true"></theme-switcher>
+        <lang-switcher iconBtn="true"></lang-switcher>
     </mdui-top-app-bar>
 
-    <div style="height: calc(var(--vh) - 144px);overflow: auto;">
-        <div  id="bodyContainer" loading="加载中">
-            <div  id="container" >
+    <mdui-navigation-drawer open class="navigation-drawer position-fixed" id="navigation-drawer" close-on-overlay-click>
+        <mdui-list class="m-2">
+            {foreach $menuConfig as $item}
+                {if isset($item.sub)}
+                    <mdui-collapse>
+                        <mdui-collapse-item value="item-{$item@index}">
+                            <mdui-list-item slot="header" rounded icon="{$item.icon}">
+                                <span>{$item.title}</span>
+                                <mdui-icon slot="end-icon" name="keyboard_arrow_left"></mdui-icon>
+                            </mdui-list-item>
+                            <div style="margin-left: 2.5rem">
+                                {foreach $item.sub as $sub}
+                                    <mdui-list-item rounded data-match="{isset($sub['match'])?$sub['match']:''}" data-pjax="{$sub.pjax ? 'true' : 'false'}" data-target="{isset($sub['self']) ? 'self' : ''}" data-link="{$sub.url}" icon="{$sub.icon}">{$sub.title}</mdui-list-item>
+                                {/foreach}
+                            </div>
+                        </mdui-collapse-item>
+                    </mdui-collapse>
+                {else}
+                    <mdui-list-item rounded data-match="{isset($sub['match'])?$sub['match']:''}" data-pjax="{$item.pjax ? 'true' : 'false'}" data-target="{isset($sub['self'])  ? 'self' : ''}" data-link="{$item.url}" icon="{$item.icon}">{$item.title}</mdui-list-item>
+                {/if}
+            {/foreach}
+        </mdui-list>
+    </mdui-navigation-drawer>
+
+    <mdui-layout-main class="layout-main">
+        <div id="bodyContainer">
+            <div id="container" class="container mt-0">
 
             </div>
         </div>
-    </div>
+    </mdui-layout-main>
 
-    <mdui-navigation-bar value="/" style="position: relative" class="bg">
-        <mdui-navigation-bar-item icon="notes" value="/">缘分</mdui-navigation-bar-item>
-        <mdui-navigation-bar-item icon="person" value="/my">我的</mdui-navigation-bar-item>
-    </mdui-navigation-bar>
-</div>
-<script>
-    window.isGuest = {$guest};
-    window.isUser = {$isUser};
-    window.isAdmin = {$isAdmin};
-    window.isSuperAdmin = {$isSuperAdmin};
-</script>
-<script id="script"> </script>
+
+
+</mdui-layout>
+<script id="script"></script>
+{include file="publicScript.tpl"}
 </body>
 </html>
 
