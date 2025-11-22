@@ -106,6 +106,7 @@ window.jsMap = {
         '/components/markdown/cherry-markdown.min.css',
         '/components/markdown/cherry.css',
         '/components/markdown/cherry-markdown.min.js',
+        "/components/markdown/diff.min.js",
         "/components/markdown/Markdown.js",
     ],
     Captcha: "/components/captcha/Captcha.js",
