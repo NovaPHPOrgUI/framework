@@ -98,24 +98,32 @@ footer {
 .navigation-drawer::part(panel),
 .scroll-line {
   scrollbar-width: thin;
-  scrollbar-color: rgba(var(--mdui-color-on-background)/0.5) rgba(var(--mdui-color-background)/0.5);
+  scrollbar-color: rgba(var(--mdui-color-on-background), 0.2) transparent;
+  scrollbar-gutter: stable;
 }
 
+.navigation-drawer::part(panel)::-webkit-scrollbar,
 .scroll-line::-webkit-scrollbar {
   width: 6px;
   height: 6px;
+  background: transparent;
 }
 
+.navigation-drawer::part(panel)::-webkit-scrollbar-track,
 .scroll-line::-webkit-scrollbar-track {
   border-radius: 3px;
-  background: rgba(0, 0, 0, 0.06);
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.08);
+  background: transparent;
 }
 
+.navigation-drawer::part(panel)::-webkit-scrollbar-thumb,
 .scroll-line::-webkit-scrollbar-thumb {
   border-radius: 3px;
-  background: rgba(0, 0, 0, 0.12);
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+  background: rgba(var(--mdui-color-on-background), 0.2);
+}
+
+.navigation-drawer::part(panel)::-webkit-scrollbar-thumb:hover,
+.scroll-line::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--mdui-color-on-background), 0.4);
 }
 
 /*------------------------------------*\
