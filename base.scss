@@ -510,6 +510,13 @@ $gaps: (1: 0.25rem, 2: 0.5rem, 3: 0.75rem, 4: 1rem, 5: 1.25rem, 6: 1.5rem);
 .duration-150 { transition-duration: 150ms !important; }
 .duration-300 { transition-duration: 300ms !important; }
 
+
+/* 页面内容区域平滑滚动 */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 70px; /* 为固定顶栏预留空间 */
+}
+
 /*------------------------------------*\
   22. 表单元素
 \*------------------------------------*/

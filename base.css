@@ -2323,6 +2323,12 @@ h6 {
   transition-duration: 300ms !important;
 }
 
+/* 页面内容区域平滑滚动 */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 70px; /* 为固定顶栏预留空间 */
+}
+
 /*------------------------------------*\
   22. 表单元素
 \*------------------------------------*/
