@@ -65,14 +65,7 @@ class PjaxUtils {
             this.loading = true;
             try {
                 NProgress.start();
-                const $container = $(bodyContainer);
-                hasChild = $(bodyContainer).children().length > 0;
-
-                if (hasChild){
-                    fade.out($container[0]);
-                }
-
-
+                
                 $.emitter.off();
                 window.pageOnUnLoad();
                 window.pageOnLoad = null;
@@ -114,10 +107,6 @@ class PjaxUtils {
             const onloadScript = () => {
                 loader.load(window.pageLoadFiles, () => {
                     NProgress.done();
-                    const $container = $(bodyContainer);
-                    if (hasChild) {
-                        fade.in($container[0]);
-                    }
                     
                     // 根据页面声明统一处理侧边栏显示/隐藏
                     const $drawerSwitch = $("#navigation-drawer-switch");

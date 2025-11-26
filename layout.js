@@ -104,3 +104,5 @@ $.request.setBaseUrl(baseUri).setOnCode(401,()=>{
         window.location.href = '/login';
     },1000);
 });
+
+document.body.style.display = "block"

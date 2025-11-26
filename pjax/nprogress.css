@@ -80,3 +80,14 @@
     0%   { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Page transition effect */
+#container {
+    opacity: 1;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.nprogress-busy #container {
+    opacity: 0;
+    transition: opacity 0.1s linear;
+}
