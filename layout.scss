@@ -103,7 +103,7 @@ footer {
 .navigation-drawer::part(panel),
 .scroll-line {
   scrollbar-width: thin;
-  scrollbar-color: rgba(var(--mdui-color-on-background), 0.2) transparent;
+  scrollbar-color: rgba(var(--mdui-color-on-background), 0.05) transparent;
   scrollbar-gutter: stable;
 }
 
