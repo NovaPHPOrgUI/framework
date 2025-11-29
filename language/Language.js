@@ -258,7 +258,7 @@ ${iconBtn ? '<mdui-button-icon slot="trigger"  icon="translate" id="iconBtn"></m
           'fr': 'french'
       };
 
-      return langMap[htmlLang]
+      return langMap[htmlLang] || 'chinese_simplified';
   }
 
   /**

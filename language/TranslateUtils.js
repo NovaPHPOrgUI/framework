@@ -4,6 +4,7 @@
  * @file TranslateUtils.js
  * @author License Auto System
  * @version 1.0.0
+ * @requires NodeUtils.js - DOM节点工具类
  */
 
 /*
@@ -15,229 +16,6 @@
  */
 
 /**
- * DOM节点工具类
- * 处理DOM元素的遍历、文本节点包装和翻译元素收集
- */
-class NodeUtils {
-    /**
-     * 构造函数
-     * 初始化等待翻译元素列表和属性配置
-     */
-    constructor() {
-        /** @type {Array<Object>} 等待翻译的元素列表 */
-        this.waitElements = [];
-        /** @type {Object} 需要翻译的属性配置 */
-        this.attrs = {
-            "img": ["alt"],
-            "input": ["placeholder"],
-            "textarea": ["placeholder"],
-            "a": ["title"],
-            "button": ["title"],
-            "label": ["title"],
-
-            "option": ["label"],
-            "optgroup": ["label"],
-            //mdui相关属性
-            "mdui": ["label", "placeholder", "headline", "description", "helper", "content"],
-
-        }
-        /** @type {Array<string>} 过滤的元素标签名 */
-        this.filter = [
-            'style', 'script', 'link', 'pre', 'code', 'noscript', 'iframe', 'svg', 'path', 'canvas', 'video', 'audio',
-        ]
-
-    }
-
-    /**
-     * 遍历元素及其所有子元素
-     * @param {HTMLElement} element - 要遍历的元素
-     * @param {Function} callback - 回调函数
-     */
-    traverse(element, callback) {
-        if (!element?.nodeType || !callback) return;
-        if (this.inFilter(element))return;
-        callback(element);
-        Array.from(element.children || []).forEach(child => {
-            this.traverse(child, callback);
-        });
-    }
-
-    /**
-     * 获取等待翻译的元素
-     * @param {HTMLElement} element - 要处理的元素
-     * @param {string} to - 目标语言
-     * @returns {Array<Object>} 等待翻译的元素列表
-     */
-    getWaitTranslate(element, to) {
-        this.waitElements = [];
-
-        // First pass: wrap text nodes
-        this.traverse(element, (element) => {
-            if (!this.shouldTranslateElement(element)) return;
-            this.wrapTextNodes(element);
-        });
-
-        // Second pass: process translations
-        this.traverse(element, (element) => {
-            if (!this.shouldTranslateElement(element)) return;
-            this.processAttributes(element, to);
-            this.processTextContent(element, to);
-        });
-
-        return this.waitElements;
-    }
-
-    /**
-     * 检查元素是否在过滤列表中
-     * @param {HTMLElement} element - 要检查的元素
-     * @returns {boolean} 是否在过滤列表中
-     */
-    inFilter(element){
-        return element.tagName && this.filter.includes(element.tagName.toLowerCase());
-    }
-
-    /**
-     * 检查元素是否应该翻译
-     * @param {HTMLElement} element - 要检查的元素
-     * @returns {boolean} 是否应该翻译
-     */
-    shouldTranslateElement(element) {
-        return element.tagName &&  !(element.classList.contains('no-translate') || element.classList.contains('material-symbols-outlined'));
-    }
-
-    /**
-     * 包装文本节点
-     * @param {HTMLElement} element - 要处理的元素
-     */
-    wrapTextNodes(element) {
-        // Skip if element has no children or only has element nodes∂
-        if (element.childNodes.length <= 1  || element.children.length === element.childNodes.length) {
-            return;
-        }
-
-        // Convert to array to avoid live NodeList issues
-        const nodes = Array.from(element.childNodes);
-        nodes.forEach(node => {
-            // Only process direct text nodes that aren't empty
-            if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()) {
-                // Skip if parent is already an i tag (prevent infinite recursion)
-                if (element.tagName.toLowerCase() === 'span') return;
-                const wrapper = document.createElement("span");
-                wrapper.classList.add("translate-wrapper");
-                node.replaceWith(wrapper);
-                wrapper.appendChild(node);
-            }
-        });
-    }
-
-    /**
-     * 处理元素属性翻译
-     * @param {HTMLElement} element - 要处理的元素
-     * @param {string} to - 目标语言
-     */
-    processAttributes(element, to) {
-        const tagName = element.tagName.toLowerCase();
-        
-        Object.entries(this.attrs).forEach(([key, attrs]) => {
-            if (!tagName.startsWith(key)) return;
-            
-            attrs.forEach(attr => {
-                const value = element.getAttribute(attr);
-                if (value?.trim()) {
-                    this.addTranslateElem(element, `attr_${attr}`, value, to);
-                }
-            });
-        });
-    }
-
-    /**
-     * 处理文本内容翻译
-     * @param {HTMLElement} element - 要处理的元素
-     * @param {string} to - 目标语言
-     */
-    processTextContent(element, to) {
-        if (element.children.length === 0 && element.innerText?.trim()) {
-            this.addTranslateElem(element, "text", element.innerText, to);
-        }
-    }
-
-    /**
-     * 移除表情符号
-     * @param {string} content - 要处理的内容
-     * @returns {string} 处理后的内容
-     */
-    removeEmoji(content){
-        return content.replace(/(?:[\u2700-\u27bf]|(?:\ud83c[\udde6-\uddff]){2}|[\ud800-\udbff][\udc00-\udfff]|[\u0023-\u0039]\ufe0f?\u20e3|\u3299|\u3297|\u303d|\u3030|\u24c2|\ud83c[\udd70-\udd71]|\ud83c[\udd7e-\udd7f]|\ud83c\udd8e|\ud83c[\udd91-\udd9a]|\ud83c[\udde6-\uddff]|\ud83c[\ude01-\ude02]|\ud83c\ude1a|\ud83c\ude2f|\ud83c[\ude32-\ude3a]|\ud83c[\ude50-\ude51]|\u203c|\u2049|[\u25aa-\u25ab]|\u25b6|\u25c0|[\u25fb-\u25fe]|\u00a9|\u00ae|\u2122|\u2139|\ud83c\udc04|[\u2600-\u26FF]|\u2b05|\u2b06|\u2b07|\u2b1b|\u2b1c|\u2b50|\u2b55|\u231a|\u231b|\u2328|\u23cf|[\u23e9-\u23f3]|[\u23f8-\u23fa]|\ud83c\udccf|\u2934|\u2935|[\u2190-\u21ff])/g, "");
-    }
-    
-    /**
-     * 添加翻译元素
-     * @param {HTMLElement} element - 要翻译的元素
-     * @param {string} prop - 属性类型
-     * @param {string} data - 要翻译的数据
-     * @param {string} to - 目标语言
-     */
-    addTranslateElem(element, prop, data, to) {
-        // 过滤表情符号和非文本内容
-        const filteredData = this.removeEmoji(data).trim();
-
-        // 如果过滤后的内容为空，直接返回
-        if (!filteredData || filteredData.length === 0) return;
-
-        // 如果翻译已完成，直接返回
-        if (element.dataset['translate_' + prop + '_finish'] === to) {
-            return;
-        }
-
-        // 创建元素对象
-        const elementObject = {
-            element: element,
-            prop: prop,
-            data: filteredData
-        };
-
-        // 如果未存储原始数据，则存储
-        if (!element.dataset['translate_' + prop]) {
-            element.dataset['translate_' + prop] = filteredData;
-        } else {
-            // 否则使用已存储的数据
-            elementObject.data = element.dataset['translate_' + prop];
-        }
-
-        // 将元素对象加入等待队列
-        this.waitElements.push(elementObject);
-    }
-    
-    /**
-     * 替换等待翻译的元素
-     * @param {Array<Object>} elements - 元素列表
-     * @param {Array<Object>} translateTexts - 翻译文本列表
-     * @param {string} to - 目标语言
-     * @returns {Array<Object>} 处理后的元素列表
-     */
-    replaceWaitTranslate(elements, translateTexts, to) {
-        for (const element of elements) {
-            if (element.element.dataset['translate_' + element.prop + '_finish'] === to) {
-                continue;
-            }
-            for (const translate of translateTexts) {
-
-                if (translate.Text === element.data) {
-
-                    if (element.prop.startsWith("attr_")) {
-                        element.element.setAttribute(element.prop.substring(5), translate.Translate);
-                    } else {
-                        element.element.innerText = translate.Translate;
-                    }
-                    element.element.dataset['translate_' + element.prop + '_finish'] = to;
-                }
-            }
-        }
-        return elements;
-    }
-}
-
-/**
  * 翻译工具对象
  * 提供翻译API调用和DOM翻译功能
  */
@@ -246,6 +24,95 @@ let TranslateUtils = {
     authApi: 'https://edge.microsoft.com/translate/auth',
     /** @type {string} 翻译API地址 */
     translateApi: 'https://api.cognitive.microsofttranslator.com/translate?from={from}&to={to}&api-version=3.0&includeSentenceLength=true',
+    
+    /** @type {Map} 语言ID到ServiceID的映射缓存 */
+    _languageIdMap: null,
+    /** @type {Map} ServiceID到语言ID的映射缓存 */
+    _languageServiceIdMap: null,
+    /** @type {NodeUtils} NodeUtils单例实例 */
+    _nodeUtils: null,
+    
+    /** @type {Object} 浏览器语言到内部语言ID的映射 */
+    _browserLanguageMap: {
+        // 完整 locale 映射
+        "zh-cn": "chinese_simplified",
+        "zh-sg": "chinese_simplified",
+        "zh": "chinese_simplified",
+        "zh-tw": "chinese_traditional",
+        "zh-hk": "chinese_traditional",
+        // 语言代码映射
+        "uk": "ukrainian",
+        "no": "norwegian",
+        "cy": "welsh",
+        "nl": "dutch",
+        "ja": "japanese",
+        "fil": "filipino",
+        "en": "english",
+        "lo": "lao",
+        "te": "telugu",
+        "ro": "romanian",
+        "ne": "nepali",
+        "fr": "french",
+        "ht": "haitian_creole",
+        "cs": "czech",
+        "sv": "swedish",
+        "ru": "russian",
+        "mg": "malagasy",
+        "my": "burmese",
+        "ps": "pashto",
+        "th": "thai",
+        "hy": "armenian",
+        "fa": "persian",
+        "ku": "kurdish",
+        "tr": "turkish",
+        "hi": "hindi",
+        "bg": "bulgarian",
+        "ms": "malay",
+        "sw": "swahili",
+        "or": "oriya",
+        "is": "icelandic",
+        "ga": "irish",
+        "km": "khmer",
+        "gu": "gujarati",
+        "sk": "slovak",
+        "kn": "kannada",
+        "he": "hebrew",
+        "hu": "hungarian",
+        "mr": "marathi",
+        "ta": "tamil",
+        "et": "estonian",
+        "ml": "malayalam",
+        "iu": "inuktitut",
+        "ar": "arabic",
+        "de": "deutsch",
+        "sl": "slovene",
+        "bn": "bengali",
+        "ur": "urdu",
+        "az": "azerbaijani",
+        "pt": "portuguese",
+        "sm": "samoan",
+        "af": "afrikaans",
+        "to": "tongan",
+        "el": "greek",
+        "id": "indonesian",
+        "es": "spanish",
+        "da": "danish",
+        "am": "amharic",
+        "pa": "punjabi",
+        "sq": "albanian",
+        "lt": "lithuanian",
+        "it": "italian",
+        "vi": "vietnamese",
+        "ko": "korean",
+        "mt": "maltese",
+        "fi": "finnish",
+        "ca": "catalan",
+        "hr": "croatian",
+        "pl": "polish",
+        "lv": "latvian",
+        "mi": "maori"
+    },
+    
     /** @type {Array<Object>} 支持的语言列表 */
     languages: [
         {"id": "ukrainian", "name": "УкраїнськаName", "serviceId": "uk"},
@@ -322,14 +189,44 @@ let TranslateUtils = {
         {"id": "latvian", "name": "latviešu", "serviceId": "lv"},
         {"id": "maori", "name": "Maori", "serviceId": "mi"}
     ],
-    findLanguageServerId: function (id) {
-        for (let language of this.languages) {
-            if (language.id === id) {
-                return language.serviceId;
-            }
+    
+    /**
+     * 初始化语言映射表（懒加载，只执行一次）
+     * 将 O(N) 线性查找优化为 O(1) 哈希查找
+     */
+    _initLanguageMaps() {
+        if (this._languageIdMap) return; // 已初始化
+        
+        this._languageIdMap = new Map();
+        this._languageServiceIdMap = new Map();
+        
+        for (const lang of this.languages) {
+            this._languageIdMap.set(lang.id, lang.serviceId);
+            this._languageServiceIdMap.set(lang.serviceId, lang.id);
         }
-        return null;
     },
+    
+    /**
+     * 根据语言ID查找ServiceID
+     * @param {string} id - 语言ID
+     * @returns {string|null} ServiceID
+     */
+    findLanguageServerId: function (id) {
+        this._initLanguageMaps();
+        return this._languageIdMap.get(id) || null;
+    },
+    
+    /**
+     * 获取 NodeUtils 单例实例
+     * @returns {NodeUtils} NodeUtils实例
+     */
+    _getNodeUtils() {
+        if (!this._nodeUtils) {
+            this._nodeUtils = new NodeUtils();
+        }
+        return this._nodeUtils;
+    },
+    
     jwt: null,
     lastTime: 0,
     /**
@@ -347,222 +244,192 @@ let TranslateUtils = {
     init(localLanguage, autoLanguage) {
         autoLanguage = autoLanguage || false;
         this.fromLanguage = localLanguage || "chinese_simplified";
-        let toLanguage = localStorage.getItem("language");
+        let toLanguage = localStorage.getItem("language") || "";
+        
+        // 清理无效值
+        toLanguage = toLanguage.trim();
+        
         if (autoLanguage && !toLanguage) {
             toLanguage = this.autoLanguage();
         } else {
             toLanguage = toLanguage || "chinese_simplified";
         }
+
+        console.log(this.fromLanguage, toLanguage);
+
         this.change(toLanguage);
         this.bindEvent();
     },
     bindEvent() {
         //监听页面新增元素进行翻译
         let that = this;
+        let rafScheduled = false;
+        let pendingNodes = new Set();
 
-        // 配置观察选项
-        const config = {childList: true};
+        const config = {
+            childList: true,      // 子节点增删
+            characterData: true,  // 文本内容变化
+            subtree: true
+        };
 
-        // 回调函数，当观察到变动时执行
-        const callback = function (mutationsList, observer) {
+        const executeTranslate = function() {
+            pendingNodes.forEach(node => {
+                that.autoTranslate(node);
+            });
+            pendingNodes.clear();
+            rafScheduled = false;
+        };
+
+        const callback = function (mutationsList) {
             for (const mutation of mutationsList) {
                 if (mutation.type === 'childList') {
                     mutation.addedNodes.forEach(node => {
-                        that.autoTranslate(node);
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            pendingNodes.add(node);
+                        }
                     });
+                } else if (mutation.type === 'characterData') {
+                    const parent = mutation.target.parentElement;
+                    if (parent) {
+                        pendingNodes.add(parent);
+                    }
                 }
             }
+
+            if (!rafScheduled && pendingNodes.size > 0) {
+                rafScheduled = true;
+                requestAnimationFrame(executeTranslate);
+            }
         };
 
-        // 创建一个观察器实例并传入回调函数
         const observer = new MutationObserver(callback);
-
-        // 以上述配置开始观察目标节点
         observer.observe(document.body, config);
     },
+    /**
+     * 自动检测浏览器语言
+     * 使用预计算的映射表，避免重复对象创建和字符串操作
+     * @returns {string} 语言ID
+     */
     autoLanguage() {
-        const languageMap = {
-            "uk": "ukrainian",
-            "no": "norwegian",
-            "cy": "welsh",
-            "nl": "dutch",
-            "ja": "japanese",
-            "fil": "filipino",
-            "en": "english",
-            "lo": "lao",
-            "te": "telugu",
-            "ro": "romanian",
-            "ne": "nepali",
-            "fr": "french",
-            "ht": "haitian_creole",
-            "cs": "czech",
-            "sv": "swedish",
-            "ru": "russian",
-            "mg": "malagasy",
-            "my": "burmese",
-            "ps": "pashto",
-            "th": "thai",
-            "hy": "armenian",
-            "zh-CHS": "chinese_simplified",
-            "fa": "persian",
-            "zh-CHT": "chinese_traditional",
-            "ku": "kurdish",
-            "tr": "turkish",
-            "hi": "hindi",
-            "bg": "bulgarian",
-            "ms": "malay",
-            "sw": "swahili",
-            "or": "oriya",
-            "is": "icelandic",
-            "ga": "irish",
-            "km": "khmer",
-            "gu": "gujarati",
-            "sk": "slovak",
-            "kn": "kannada",
-            "he": "hebrew",
-            "hu": "hungarian",
-            "mr": "marathi",
-            "ta": "tamil",
-            "et": "estonian",
-            "ml": "malayalam",
-            "iu": "inuktitut",
-            "ar": "arabic",
-            "de": "deutsch",
-            "sl": "slovene",
-            "bn": "bengali",
-            "ur": "urdu",
-            "az": "azerbaijani",
-            "pt": "portuguese",
-            "sm": "samoan",
-            "af": "afrikaans",
-            "to": "tongan",
-            "el": "greek",
-            "id": "indonesian",
-            "es": "spanish",
-            "da": "danish",
-            "am": "amharic",
-            "pa": "punjabi",
-            "sq": "albanian",
-            "lt": "lithuanian",
-            "it": "italian",
-            "vi": "vietnamese",
-            "ko": "korean",
-            "mt": "maltese",
-            "fi": "finnish",
-            "ca": "catalan",
-            "hr": "croatian",
-            "bs-Latn": "bosnian",
-            "pl": "polish",
-            "lv": "latvian",
-            "mi": "maori"
-        };
-
-// 获取浏览器语言
-        const browserLanguage = navigator.language || navigator.userLanguage;
-
-// 特别处理简体中文和繁体中文
-        let languageId;
-        if (browserLanguage.toLowerCase() === "zh-cn" || browserLanguage.toLowerCase() === "zh-sg" || browserLanguage.toLowerCase() === "zh") {
-            languageId = "chinese_simplified";
-        } else if (browserLanguage.toLowerCase() === "zh-tw" || browserLanguage.toLowerCase() === "zh-hk") {
-            languageId = "chinese_traditional";
-        } else {
-            // 提取语言代码
-            const languageCode = browserLanguage.split('-')[0].toLowerCase();
-            languageId = languageMap[languageCode] || "chinese_simplified"; // chinese_simplified
+        // 获取浏览器语言并转为小写（只调用一次）
+        const browserLang = (navigator.language || navigator.userLanguage).toLowerCase();
+        
+        // 优先匹配完整 locale（如 zh-cn, zh-tw）
+        if (this._browserLanguageMap[browserLang]) {
+            return this._browserLanguageMap[browserLang];
         }
-        return languageId;
-
+        
+        // 降级：提取语言代码（如 zh-cn -> zh）
+        const langCode = browserLang.split('-')[0];
+        return this._browserLanguageMap[langCode] || "chinese_simplified";
     },
     change(toLanguage) {
+        if (!toLanguage) {
+            console.error('TranslateUtils.change: Invalid toLanguage:', toLanguage);
+            return;
+        }
         this.toLanguage = toLanguage;
         localStorage.setItem("language", toLanguage);
-        this.autoTranslate(document);
+        this.autoTranslate(document.body);
     },
+    /**
+     * 自动翻译DOM元素
+     * 使用单例 NodeUtils 避免重复实例化
+     * @param {HTMLElement} element - 要翻译的元素
+     */
     autoTranslate: function (element) {
-        element = element || document;
-        let nodeUtils = new NodeUtils();
-        let waitElements = nodeUtils.getWaitTranslate(element, this.toLanguage);
+        element = element || document.body;
+        const nodeUtils = this._getNodeUtils();
+        const waitElements = nodeUtils.getWaitTranslate(element, this.toLanguage);
+        if (waitElements.length === 0) {
+            return;
+        }
+
+        // 如果源语言和目标语言相同，直接恢复原始文本
         if (this.fromLanguage === this.toLanguage) {
-            let translatedTextResult = [];
-            for (let i = 0; i < waitElements.length; i++) {
-                translatedTextResult.push({
-                    "Text": waitElements[i].data,
-                    "Translate": waitElements[i].element.dataset['translate_' + waitElements[i].prop]
-                })
-            }
+
+            const translatedTextResult = waitElements.map((waitElement, index) => ({
+                index: index,
+                "Text": waitElement.serialized,
+                "Translate": waitElement.serialized
+            }));
+
             nodeUtils.replaceWaitTranslate(waitElements, translatedTextResult, this.toLanguage);
             return;
         }
-        for (const translateText of this.splitTranslateArray(waitElements)) {
 
-            let translatedTextResult = [];
 
-            this.translate(this.fromLanguage, this.toLanguage, translateText, (translateData) => {
+
+        // 分块翻译，避免单次请求过大
+        for (const chunk of this.splitTranslateArray(waitElements)) {
+            if (!chunk || chunk.payload.length === 0) {
+                continue;
+            }
+            this.translate(this.fromLanguage, this.toLanguage, chunk.payload, (translateData) => {
+                const translatedTextResult = [];
                 for (let i = 0; i < translateData.length; i++) {
                     translatedTextResult.push({
-                        "Text": translateText[i].Text,
+                        index: chunk.indexes[i],
+                        "Text": chunk.payload[i].Text,
                         "Translate": translateData[i].translations[0].text
-                    })
+                    });
                 }
                 nodeUtils.replaceWaitTranslate(waitElements, translatedTextResult, this.toLanguage);
-                // console.log("剩余翻译",waitElements);
             });
         }
-
-
     },
+    /**
+     * 翻译文本（支持单个字符串或字符串数组）
+     * @param {string|Array<string>} text - 要翻译的文本
+     * @param {Function} callback - 回调函数
+     */
     translateText: function (text, callback) {
-        if (text.length === 0) {
+        if (!text || (Array.isArray(text) && text.length === 0)) {
+            callback(Array.isArray(text) ? [] : '');
             return;
         }
 
-        let translate = [];
-
-        if (Array.isArray(text)) {
-            text.forEach((item) => {
-                translate.push({
-                    Text: item
-                })
-            });
-        } else {
-            translate.push({
-                Text: text
-            })
-        }
-
+        // 如果源语言和目标语言相同，直接返回原文
         if (this.fromLanguage === this.toLanguage) {
             callback(text);
             return;
         }
 
-        TranslateUtils.translate(TranslateUtils.fromLanguage, TranslateUtils.toLanguage, translate, (data) => {
-            let result = [];
-            data.forEach((item) => {
-                result.push(item.translations[0].text);
-            });
+        // 统一转为数组格式处理
+        const isArray = Array.isArray(text);
+        const textArray = isArray ? text : [text];
+        const translate = textArray.map(item => ({ Text: item }));
 
-            if (Array.isArray(text)) {
-                callback(result);
-            } else {
-                callback(result[0]);
-            }
+        this.translate(this.fromLanguage, this.toLanguage, translate, (data) => {
+            const result = data.map(item => item.translations[0].text);
+            callback(isArray ? result : result[0]);
         });
     },
+    /**
+     * 调用翻译API
+     * 支持自动重试和指数退避策略
+     * @param {string} from - 源语言ID
+     * @param {string} to - 目标语言ID
+     * @param {Array<Object>} translateArray - 要翻译的文本数组
+     * @param {Function} callback - 翻译成功回调
+     * @param {number} retryCount - 当前重试次数
+     */
     translate: function (from, to, translateArray, callback, retryCount = 0) {
         const maxRetries = 3;
         
         this.getAuthToken((token) => {
-            let headers = {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-            }
-            let uri = this.translateApi.replace('{from}', this.findLanguageServerId(from)).replace('{to}', this.findLanguageServerId(to));
+            const fromServiceId = this.findLanguageServerId(from);
+            const toServiceId = this.findLanguageServerId(to);
+            const uri = this.translateApi
+                .replace('{from}', fromServiceId)
+                .replace('{to}', toServiceId);
 
-            //使用fetch
             fetch(uri, {
                 method: "POST",
-                headers: headers,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
                 body: JSON.stringify(translateArray)
             }).then((response) => {
                 if (!response.ok) {
@@ -572,67 +439,113 @@ let TranslateUtils = {
             }).then((data) => {
                 callback(data);
             }).catch((error) => {
-                console.error(`Error (attempt ${retryCount + 1}/${maxRetries + 1}):`, error);
+                console.error(`Translation error (attempt ${retryCount + 1}/${maxRetries + 1}):`, error);
                 
-                // Retry logic
+                // 指数退避重试策略
                 if (retryCount < maxRetries) {
-                    console.log(`Retrying... (${retryCount + 1}/${maxRetries})`);
-                    // Exponential backoff: wait longer between each retry
                     const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 8000);
+                    console.log(`Retrying in ${backoffTime}ms... (${retryCount + 1}/${maxRetries})`);
                     
                     setTimeout(() => {
                         this.translate(from, to, translateArray, callback, retryCount + 1);
                     }, backoffTime);
                 } else {
-                    console.error('Max retries reached. Translation failed.');
+                    console.error('Max retries reached. Translation failed permanently.');
                 }
             });
         });
     },
+    /**
+     * 获取认证Token
+     * Token缓存8分钟，避免频繁请求
+     * @param {Function} callback - Token获取成功回调
+     */
     getAuthToken: function (callback) {
-        //判断jwt是否过期，jwt 8分钟过期
-        if (this.jwt && new Date().getTime() - this.lastTime < 480000) {
+        const TOKEN_EXPIRE_TIME = 480000; // 8分钟（毫秒）
+        const now = new Date().getTime();
+        
+        // 如果token存在且未过期，直接使用缓存
+        if (this.jwt && now - this.lastTime < TOKEN_EXPIRE_TIME) {
             callback(this.jwt);
             return;
         }
+        
+        // 请求新token
         fetch(this.authApi, {
             method: "GET",
         }).then((response) => {
             return response.text();
         }).then((data) => {
             this.jwt = data;
-            this.lastTime = new Date().getTime();
+            this.lastTime = now;
             callback(data);
         }).catch((error) => {
-            console.error('Error:', error);
+            console.error('Auth token fetch error:', error);
         });
     },
 
+    /**
+     * 分割翻译数组
+     * 将大文本分割成多个小块，避免单次请求过大
+     * @param {Array<Object>} elements - 待翻译元素数组
+     * @param {number} totalLength - 单个分块的最大字符数
+     * @returns {Array<Object>} 分块后的数组
+     */
     splitTranslateArray: function (elements, totalLength = 48000) {
-        let result = [];
-        let temp = [];
-        let arrayLength = 0;
-        for (let i = 0; i < elements.length; i++) {
+        if (!Array.isArray(elements) || elements.length === 0) {
+            return [];
+        }
 
-            let data = elements[i].data;
-            let length = data.length;
+        const result = [];
+        let payload = [];
+        let indexes = [];
+        let currentLength = 0;
 
-            if (arrayLength + length > totalLength) {
-                result.push(temp);
-                temp = [];
-                arrayLength = 0;
-            } else {
-                arrayLength+=length;
-                temp.push({
-                    Text: data
-                })
+        // 将当前批次推入结果
+        const flush = () => {
+            if (payload.length > 0) {
+                result.push({
+                    payload: payload,
+                    indexes: indexes
+                });
+                payload = [];
+                indexes = [];
+                currentLength = 0;
+            }
+        };
+
+        elements.forEach((element, index) => {
+
+            const data = element?.serialized || '';
+            const length = data.length;
+
+            if (!length) return; // 跳过空元素
+
+            // 如果单个元素超过限制，单独处理
+            if (length > totalLength) {
+                flush();
+                result.push({
+                    payload: [{ Text: data }],
+                    indexes: [index]
+                });
+                return;
             }
 
-        }
-        if (temp.length > 0) {
-            result.push(temp);
-        }
+            // 如果加入当前元素会超过限制，先刷新当前批次
+            if (currentLength + length > totalLength) {
+                flush();
+            }
+
+            // 将元素加入当前批次
+            payload.push({ Text: data });
+            indexes.push(index);
+            currentLength += length;
+        });
+
+        // 处理最后一个批次
+        flush();
         return result;
     }
 }
+
 
