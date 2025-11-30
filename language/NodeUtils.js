@@ -292,6 +292,25 @@ class NodeUtils {
      * 序列化容器：将内联元素转换为占位符
      */
     _serializeContainer(container) {
+        // 尝试从缓存恢复
+        const cachedSerialized = container.element.dataset['serialized'];
+        const cachedTagMap = container.element.dataset['tagMap'];
+        
+        if (cachedSerialized && cachedTagMap) {
+            try {
+                return {
+                    type: container.type,
+                    element: container.element,
+                    attr: container.attr || "",
+                    serialized: decodeURIComponent(cachedSerialized),
+                    tagMap: JSON.parse(decodeURIComponent(cachedTagMap)),
+                };
+            } catch (e) {
+                console.warn('[NodeUtils] Failed to restore from cache, re-serializing:', e);
+            }
+        }
+
+        // 缓存不存在或无效，重新序列化
         const tagMap = {};
         let tagIndex = 10;
         /**
@@ -317,11 +336,10 @@ class NodeUtils {
                     innerText += serialize(child);
                 }
 
-                // 保存映射信息
+                // 保存映射信息（不包含element引用，以便缓存）
                 tagMap[placeholder] = {
                     tag: tagName,
                     attrs: this._getAttributes(node),
-                    element: node,
                     isVoid: isVoid
                 };
 
@@ -337,25 +355,25 @@ class NodeUtils {
 
             return '';
         };
-        let serialized = decodeURIComponent(container.element.dataset['serialized'] || '');
-        if (serialized.length === 0){
-            if (container.type === "container") {
-                // 最外层：只处理子节点，不转换容器本身
-                for (const child of container.element.childNodes) {
-                    serialized += serialize(child);
-                }
-                serialized = serialized.trim();
-                console.log(serialized)
-            } else {
-                serialized = container.value;
+        
+        let serialized = '';
+        if (container.type === "container") {
+            // 最外层：只处理子节点，不转换容器本身
+            for (const child of container.element.childNodes) {
+                serialized += serialize(child);
             }
-
-            container.element.dataset['serialized'] = encodeURIComponent(serialized)
+            serialized = serialized.trim();
+        } else {
+            serialized = container.value;
         }
+
+        // 缓存序列化结果和tagMap
+        container.element.dataset['serialized'] = encodeURIComponent(serialized);
+        container.element.dataset['tagMap'] = encodeURIComponent(JSON.stringify(tagMap));
 
         return {
             type: container.type,
-            element:container.element,
+            element: container.element,
             attr: container.attr || "",
             serialized,
             tagMap,
