@@ -63,6 +63,17 @@ class NodeUtils {
     }
 
     /**
+     * 判断标签是否是自闭合标签
+     * 让浏览器自己告诉我们答案，而不是维护硬编码列表
+     */
+    _isVoidElement(tagName) {
+        const temp = document.createElement(tagName);
+        // 自闭合标签的 outerHTML 不包含闭合标签
+        // 例如：<br> vs <div></div>
+        return temp.outerHTML.indexOf('</') === -1;
+    }
+
+    /**
      * 获取待翻译内容（新架构）
      * @param {Element} root - 根节点
      * @param {string} to - 目标语言
@@ -270,7 +281,7 @@ class NodeUtils {
 
         // 检查是否有文本内容
         const text = container.textContent.trim();
-        return text.length > 0;
+        return text.length > 0 && this._hasValidText(text);
     }
 
     /*------------------------------------------
@@ -296,11 +307,7 @@ class NodeUtils {
             if (node.nodeType === Node.ELEMENT_NODE) {
 
                 const tagName = node.tagName.toLowerCase();
-
-                // 跳过忽略的标签
-                if (this.ignoredTags.has(tagName)) {
-                    return '';
-                }
+                const isVoid = this._isVoidElement(tagName);
 
                 const placeholder = `b${tagIndex}`;
                 tagIndex++;
@@ -314,13 +321,18 @@ class NodeUtils {
                 tagMap[placeholder] = {
                     tag: tagName,
                     attrs: this._getAttributes(node),
-                    element: node
+                    element: node,
+                    isVoid: isVoid
                 };
 
-
-                
-                // 返回占位符格式：<b0>内容</b0>
-                return `<${placeholder}>${innerText}</${placeholder}>`;
+                // 返回占位符格式
+                // 自闭合标签：<b0>（无闭合标签）
+                // 普通标签：<b0>内容</b0>
+                if (isVoid) {
+                    return `<${placeholder}>`;
+                } else {
+                    return `<${placeholder}>${innerText}</${placeholder}>`;
+                }
             }
 
             return '';
@@ -333,6 +345,7 @@ class NodeUtils {
                     serialized += serialize(child);
                 }
                 serialized = serialized.trim();
+                console.log(serialized)
             } else {
                 serialized = container.value;
             }
@@ -360,27 +373,6 @@ class NodeUtils {
         return attrs;
     }
 
-    /**
-     * 生成字符串哈希值（用于缓存/去重）
-     * 使用 djb2 算法：简单、快速、碰撞率低
-     * 
-     * @param {string} str - 待哈希的字符串
-     * @returns {string} 32位十六进制哈希值
-     */
-    _hash(str) {
-        if (!str || typeof str !== 'string') return '0';
-        
-        let hash = 5381;
-        for (let i = 0; i < str.length; i++) {
-            // hash = hash * 33 + charCode
-            hash = ((hash << 5) + hash) + str.charCodeAt(i);
-            // 转换为 32 位整数
-            hash = hash & 0xFFFFFFFF;
-        }
-        
-        // 转换为无符号整数并返回十六进制字符串
-        return (hash >>> 0).toString(16);
-    }
 
     /*------------------------------------------
      *       反序列化（还原HTML）
@@ -420,21 +412,27 @@ class NodeUtils {
                 continue;
             }
 
-            // 构建开闭标签
+            // 构建标签
             const attrStr = Object.entries(tagInfo.attrs || {})
                 .map(([k, v]) => `${k}="${this._escapeHtml(v)}"`)
                 .join(' ');
             
             const openTag = attrStr ? `<${tagInfo.tag} ${attrStr}>` : `<${tagInfo.tag}>`;
-            const closeTag = `</${tagInfo.tag}>`;
 
-            // 替换占位符（支持嵌套）
-            const regex = new RegExp(`<${placeholder}[^>]*>(.*?)</${placeholder}>`, 'gs');
-            
             const beforeReplace = result;
-            result = result.replace(regex, (match, inner) => {
-                return openTag + inner + closeTag;
-            });
+
+            // 自闭合标签：只替换 <b0>，无闭合标签
+            if (tagInfo.isVoid) {
+                const regex = new RegExp(`<${placeholder}>`, 'g');
+                result = result.replace(regex, openTag);
+            } else {
+                // 普通标签：替换 <b0>内容</b0>
+                const closeTag = `</${tagInfo.tag}>`;
+                const regex = new RegExp(`<${placeholder}>(.*?)</${placeholder}>`, 'gs');
+                result = result.replace(regex, (match, inner) => {
+                    return openTag + inner + closeTag;
+                });
+            }
 
             // 检查是否替换成功
             if (beforeReplace === result) {
