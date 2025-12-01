@@ -208,7 +208,7 @@ mdui-badge {
 /*------------------------------------*\
   10. 响应式适配
 \*------------------------------------*/
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .layout-header-right {
     gap: calc(var(--gap) / 2);
   }
@@ -231,7 +231,7 @@ mdui-badge {
   }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
   .desktop-nav {
     display: flex !important;
   }
