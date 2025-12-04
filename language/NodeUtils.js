@@ -138,13 +138,9 @@ class NodeUtils {
                 return;
             }
 
-            // 跳过 no-translate
-            if (element.classList){
-                for (const classListElement of element.classList) {
-                    if (this.ignoredClass.has(classListElement)){
-                        return;
-                    }
-                }
+            // 跳过自身或祖先有忽略类的元素
+            if (this._hasIgnoredClassInAncestors(element)) {
+                return;
             }
 
 
@@ -188,6 +184,22 @@ class NodeUtils {
         return containers;
     }
 
+    /**
+     * 检查元素自身或任何祖先是否包含忽略类
+     * 向上遍历DOM树，一旦发现忽略类就返回true
+     */
+    _hasIgnoredClassInAncestors(element) {
+        let node = element;
+        while (node && node.nodeType === Node.ELEMENT_NODE) {
+            for (const cls of node.classList) {
+                if (this.ignoredClass.has(cls)) {
+                    return true;
+                }
+            }
+            node = node.parentElement;
+        }
+        return false;
+    }
 
     /**
      * 检查元素是否包含直接文本内容
@@ -317,9 +329,10 @@ class NodeUtils {
          * 递归序列化节点
          */
         const serialize = (node) => {
-            // 文本节点：直接返回内容
+            // 文本节点：需要转义HTML特殊字符
+            // 因为反序列化时会用innerHTML，浏览器会解析HTML实体
             if (node.nodeType === Node.TEXT_NODE) {
-                return node.nodeValue || '';
+                return this._escapeHtml(node.nodeValue || '');
             }
 
             // 元素节点：全部转换为占位符
@@ -470,6 +483,24 @@ class NodeUtils {
         return div.innerHTML;
     }
 
+    /**
+     * 安全地设置元素内容（避免innerHTML的XSS风险）
+     * 使用 template 元素来解析HTML，不会执行脚本
+     */
+    _safeSetContent(element, htmlString) {
+        // 清空目标元素
+        while (element.firstChild) {
+            element.removeChild(element.firstChild);
+        }
+
+        // 使用 template 元素安全解析HTML
+        const template = document.createElement('template');
+        template.innerHTML = htmlString;
+
+        // 将解析后的内容移动到目标元素
+        element.appendChild(template.content);
+    }
+
     /*------------------------------------------
      *         替换逻辑（新架构）
      ------------------------------------------*/
@@ -510,7 +541,8 @@ class NodeUtils {
             target.element.dataset[finishKey] = to;
 
             if (target.type === "container"){
-                target.element.innerHTML = this._deserializeContainer(target, item.Translate);
+                // 使用安全的DOM操作而不是innerHTML
+                this._safeSetContent(target.element, this._deserializeContainer(target, item.Translate));
             }else{
                 target.element.setAttribute(target.attr,item.Translate)
             }
