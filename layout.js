@@ -94,7 +94,7 @@ DOM.collapseItems
 // 页面加载
 // ============================================
 setActive(window.location.pathname);
-pjaxUtils.loadUri(window.location.pathname + window.location.search);
+pjaxUtils.loadUri(window.location.pathname + window.location.search + window.location.hash);
 
 //
 
