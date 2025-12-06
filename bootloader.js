@@ -28,11 +28,6 @@ $.scriptDir = scriptUrl.origin + scriptUrl.pathname.substring(0, scriptUrl.pathn
 /** @type {string} 基础URI路径 (e.g., https://example.com) */
 window.baseUri = scriptUrl.origin ;
 
-/** @type {Object} 全局文件缓存对象 */
-if (!window.novaFiles) {
-    window.novaFiles = {};
-}
-
 /**
  * 页面加载完成后的初始化函数
  * @param {boolean} loading - 是否正在加载状态
