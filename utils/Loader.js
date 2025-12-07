@@ -257,10 +257,11 @@ const loader = (function (window, document) {
 
         const groups = groupFiles(uris);
         $.logger.debug("Load Modules", groups);
-        // 预标记所有文件为"加载中"，防止并发重复加载
+        // 预标记本域 bundle 文件为"加载中"，防止并发重复加载
+        // 注意：external 资源不能在这里预标记，否则后续 loadFile 再次检查
+        // inProgressResources 时，会直接排队回调而从不真正发起请求，导致永远不加载。
         markInProgress(groups.bundle.js);
         markInProgress(groups.bundle.css, file => element); // element 模式跳过 CSS 标记
-        markInProgress(groups.external, file => element && /\.css(?:\?|#|$)/i.test(file));
         
         // 计算任务数
         let remaining = countTasks(groups);
