@@ -98,10 +98,10 @@ pjaxUtils.loadUri(window.location.pathname + window.location.search + window.loc
 
 //
 
-$.request.setBaseUrl(baseUri).setOnCode(401,()=>{
+$.request.setBaseUrl(baseUri).setOnCode(401,(response)=>{
     $.toaster.error('登录已过期，请重新登录');
     setTimeout(()=>{
-        window.location.href = '/login';
+        window.location.href = response.data || '/login';
     },1000);
 });
 
