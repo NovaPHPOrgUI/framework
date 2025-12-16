@@ -73,7 +73,6 @@ window.jsMap = {
     DialogForm: [
         '/framework/utils/Form.js',
         "/components/formDialog/DialogForm.js",
-
         ],
     ChipGroup: "/components/chipGroup/mduiChipGroup.js",
     AreaPicker: "/components/areaPicker/AreaPicker.js",
@@ -105,7 +104,14 @@ window.jsMap = {
         "/components/markdown/Markdown.js",
     ],
     Captcha: "/components/captcha/Captcha.js",
-    QrScan:"/components/qrscan/QrScan.js",
+    QrScan:[
+
+        "/components/qrscan/jsQR.js",
+        "/components/qrscan/QrScannerUtils.js",
+        "/components/qrscan/QrScan.js",
+
+
+    ],
     Tree: [
         "/components/tree/Tree.js",
         "/components/tree/Tree.css"
