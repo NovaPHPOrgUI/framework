@@ -18,7 +18,10 @@ const pjaxUtils = new PjaxUtils(true, () => {}, "/404");
 
 // 响应式：小屏幕关闭侧边栏
 if (mdui.breakpoint().down("lg")) {
-    DOM.drawer.open = false;
+    if (DOM.drawer){
+        DOM.drawer.open = false;
+    }
+
 }
 
 // ============================================
@@ -78,6 +81,7 @@ $(document)
     })
     .on("click", "mdui-list-item", (e) => handleNavigation(e.target))
     .on("click", "#navigation-drawer-switch", () => {
+        if (DOM.drawer)
         DOM.drawer.open = !DOM.drawer.open;
     });
 
