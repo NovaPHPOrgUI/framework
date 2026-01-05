@@ -117,6 +117,7 @@ window.jsMap = {
         "/components/tree/Tree.css"
     ],
     ContextMenu: "/components/menu/ContextMenu.js",
+    Cron:"/components/cron/Cron.js"
 }
 
 /** @type {boolean} 调试模式开关 */
