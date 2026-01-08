@@ -1,3 +1,8 @@
+<style id="hiddenBody">
+    body{
+        display: none!important;
+    }
+</style>
 <!-- 预连接到 Google Fonts,减少 DNS 查询延迟 -->
 <link rel="preconnect" href="https://fonts.loli.net">
 <link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
@@ -8,7 +13,7 @@
     framework/libs/mdui.css,
     framework/base.css,
     framework/utils/Loading.css,
-    framework/pjax/nprogress.min.css,
+    framework/pjax/nprogress.css,
     framework/layout.css
     &type=css&v={$__v}">
 
