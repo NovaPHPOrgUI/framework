@@ -197,6 +197,10 @@ const loader = (function (window, document) {
     function markBundleLoaded(files) {
         files.forEach(file => {
             loadedResources[file] = true;
+            // 如果有挂起的回调，触发它们
+            if (inProgressResources[file]) {
+                fireCallbacks(file);
+            }
         });
     }
     
@@ -257,6 +261,7 @@ const loader = (function (window, document) {
 
         const groups = groupFiles(uris);
         $.logger.debug("Load Modules", groups);
+        const loadingQueue = groups.loading;
         // 预标记本域 bundle 文件为"加载中"，防止并发重复加载
         // 注意：external 资源不能在这里预标记，否则后续 loadFile 再次检查
         // inProgressResources 时，会直接排队回调而从不真正发起请求，导致永远不加载。
@@ -264,7 +269,7 @@ const loader = (function (window, document) {
         markInProgress(groups.bundle.css, file => element); // element 模式跳过 CSS 标记
         
         // 计算任务数
-        let remaining = countTasks(groups);
+        let remaining = countTasks(groups) + loadingQueue.length;
         if (remaining === 0) {
             callback();
             return;
@@ -273,6 +278,9 @@ const loader = (function (window, document) {
         const taskDone = () => {
             if (--remaining === 0) callback();
         };
+
+        // 已在加载中的资源：排队回调，等它们完成后继续计数
+        loadingQueue.forEach(path => queueCallback(path, taskDone));
         
         // 已加载
         groups.loaded.forEach(() => taskDone());
@@ -284,6 +292,8 @@ const loader = (function (window, document) {
         
         // 外部资源
         groups.external.forEach(path => loadFile(path, taskDone, element));
+
+
     }
 
 
