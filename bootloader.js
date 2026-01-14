@@ -92,6 +92,12 @@ window.jsMap = {
         '/components/dataTable/DataTable.js',
         '/framework/utils/URLUtils.js',
     ],
+    CardView: [
+        "/components/dataTable/Pagination.js",
+        "/components/dataTable/CardView.css",
+        '/components/dataTable/CardView.js',
+        '/framework/utils/URLUtils.js',
+    ],
     Pagination:[
         "/components/dataTable/Pagination.js"
     ],
