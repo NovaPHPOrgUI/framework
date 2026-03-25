@@ -1,69 +1,59 @@
-# nova-pjax
+# PJAX 路由
 
-## layout
-### Html
-```html
-<!doctype html>
-<html lang="zh-CN" class="mdui-theme-light">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
-    <meta name="renderer" content="webkit"/>
-    <title id="title">{$title}</title>
-    {include file="publicHeader.tpl"}
-    <link rel="stylesheet" href="/static/css/init.css">
-    <style id="style">
-    </style>
-</head>
+## 概述
 
-<body class="bg">
-{include file="publicScript.tpl"}
-<script src="/static/js/init.js"></script>
-<div id="container">
-    
+基于 [pjax.js](https://github.com/MoOx/pjax) 封装的 `PjaxUtils`，实现页面无刷新加载。
 
-</div>
-<script id="script"> </script>
-</body>
-</html>
+## 工作原理
 
+PJAX 请求返回后，框架自动替换四个锚点元素：
+
+| 选择器 | 作用 |
+|--------|------|
+| `#title` | 页面标题 |
+| `#style` | 页面级 CSS |
+| `#container` | 页面主体内容 |
+| `#script` | 页面 JS 入口 |
+
+## 生命周期
 
 ```
-### init.js
-```javascript
-$.loader(['Pjax'], () => {
-    let pjax = new PjaxUtils(true, function () {
-    }, "/404");
-
-    let bar = $('mdui-navigation-bar');
-    bar.val(window.location.pathname);
-    // window.location.pathname+window.location.search
-    bar.on("change", function () {
-        if (window.location.pathname !== bar.val()) {
-            pjax.loadUri(bar.val());
-        }
-    });
-    pjax.loadUri(window.location.pathname);
-});
+pjax:send     → NProgress 开始 → $.emitter.off() → pageOnUnLoad()
+pjax:error    → 跳转 /404 错误页
+pjax:complete → 等待 pageOnLoad 声明 → $.loader 加载 pageLoadFiles → pageOnLoad()
 ```
 
-## SubPage
-
-### Html
+## 子页面模板
 
 ```html
 <title id="title">{$title}</title>
 <style id="style"></style>
 <div id="container" class="container"></div>
-<script id="script" src="/static/js/index.js"></script>
+<script id="script" src="/static/js/xxx.js?v={$__v}"></script>
 ```
 
-### index.js
+## 子页面 JS
+
 ```javascript
 window.pageLoadFiles = [];
-window.pageOnLoad = function (loading) {
+window.pageOnLoad = function () {
+    // 所有初始化逻辑...
     window.pageOnUnLoad = function () {
+        // 清理逻辑...
     };
-    return false
+    return false;
 };
 ```
+
+## JS 手动跳转
+
+```javascript
+// 在 layout.js 中已初始化 pjaxUtils 实例
+// 菜单项通过 data-link + data-pjax="true" 自动跳转
+// 带 [data-pjax-item] 的元素点击后跳转到 data-href
+```
+
+## NProgress 进度条
+
+页面切换时自动显示顶部进度条（`nprogress.js`），无需手动控制。
+
