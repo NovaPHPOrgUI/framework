@@ -60,6 +60,7 @@ window.jsMap = {
     Event: '/framework/utils/Event.js',
     Form: '/framework/utils/Form.js',
     Loader: '/framework/utils/Loader.js',
+    Timing: '/framework/utils/Timing.js',
     Loading: [
         '/framework/utils/Loading.js',
         '/framework/utils/Loading.css'
