@@ -19,270 +19,159 @@
  * 继承自HTMLElement，提供自定义图片加载元素
  */
 class ImageLoader extends HTMLElement {
-    /**
-     * 构造函数
-     * 初始化组件属性和Shadow DOM
-     */
     constructor() {
         super();
-        /** @type {string} 图片源地址 */
-        this.imageSrc = this.getAttribute("src");
+        this.attachShadow({ mode: 'open' });
 
-        /** @type {string} 默认图片地址 */
+        this.src = this.getAttribute("src");
+        this.placeholder = this.getAttribute("placeholder") || "/static/framework/imageLoader/default.png";
         this.defaultImage = this.getAttribute('default') || "/static/framework/imageLoader/default.png";
-        /** @type {number} 渐变动画持续时间（毫秒） */
         this.fadeDuration = parseInt(this.getAttribute('duration'), 10) || 300;
-        this.attachShadow({mode: 'open'});
-        /** @type {Loading} 加载状态实例 */
-        this.loading = new Loading(this.shadowRoot);
-        /** @type {string} 占位图片地址 */
-        this.placeholder  = this.getAttribute("placeholder") || "/static/framework/imageLoader/default.png";
-        /** @type {boolean} 是否已加载完成 */
         this.hasLoaded = false;
-        /** @type {IntersectionObserver|null} 视口观察器 */
-        this.observer = null;
-        /** @type {AbortController|null} 用于取消图片加载的控制器 */
-        this.abortController = null;
-        /** @type {boolean} 是否正在加载中 */
         this.isLoading = false;
-        /** @type {number} 离开视口后延迟取消的时间（毫秒） */
-        this.cancelDelay = parseInt(this.getAttribute('cancel-delay'), 10) || 500;
-        /** @type {number|null} 取消加载的延迟定时器 */
-        this.cancelTimer = null;
     }
 
-    /**
-     * 组件连接到DOM时调用
-     * 初始化组件结构和事件绑定
-     */
     connectedCallback() {
+        this.render();
+        this.topImage = this.shadowRoot.querySelector('.top');
+        this.bottomImage = this.shadowRoot.querySelector('.bottom');
+
+        // 如果是 base64 或已存在，直接显示
+        if (this.src && this.src.startsWith("data:image")) {
+            this.showImage(this.src);
+        }
+    }
+
+    render() {
         this.shadowRoot.innerHTML = `
             <style>
-            :host {
-                display: block;
-                width: 100%;
-                position: relative;
-            }
-            img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                position: absolute;
-                left: 0;
-                top: 0;
-                -webkit-transition: opacity ${this.fadeDuration}ms;
-                transition: opacity ${this.fadeDuration}ms;
-            }
-            img.top {
-                position: relative;
-                z-index: 1;
-            }
-            img.bottom {
-                z-index: 0;
-                opacity: 0;
-                -webkit-transition: opacity ${this.fadeDuration}ms;
-                transition: opacity ${this.fadeDuration}ms;
-            }
-            img.bottom.loaded {
-                opacity: 1;
-            }
+            :host { display: block; width: 100%; position: relative; overflow: hidden; min-height: 10px; }
+            img { width: 100%; height: 100%; object-fit: cover; transition: opacity ${this.fadeDuration}ms; }
+            .top { position: relative; z-index: 2; }
+            .bottom { position: absolute; left: 0; top: 0; z-index: 1; opacity: 0; }
+            .loaded { opacity: 1; }
             </style>
-            <img class="top" src="${this.placeholder}" loading="lazy" alt="placeholder">
-            <img class="bottom" loading="lazy" alt="image">
+            <img class="top" src="${this.placeholder}" alt="placeholder">
+            <img class="bottom" alt="real-image">
         `;
-
-        /** @type {HTMLImageElement} 顶部占位图片元素 */
-        this.topImage = this.shadowRoot.querySelector('img.top');
-        /** @type {HTMLImageElement} 底部实际图片元素 */
-        this.bottomImage = this.shadowRoot.querySelector('img.bottom');
-
-        const initialSrc = this.getAttribute('src') || this.imageSrc || '';
-        if(initialSrc.startsWith("data:image")){
-            this.topImage.style.opacity = 0;
-            this.bottomImage.style.opacity = 1;
-            this.bottomImage.src = initialSrc;
-            return;
-        }
-
-        // 将真实图片地址保存到 dataset，等待进入可视区域后再设置 src 触发加载
-        this.bottomImage.dataset.src = initialSrc;
-
-        // 使用现代API - IntersectionObserver
-        this.setupIntersectionObserver();
-
-        /**
-         * 图片加载成功事件处理
-         */
-        this.bottomImage.onload = () => {
-            this.hasLoaded = true;
-            this.isLoading = false;
-            this.bottomImage.classList.add('loaded');
-            this.topImage.style.display = 'none';
-            // 加载完成后清理资源
-            this.cleanupAbortController();
-        };
-
-        /**
-         * 图片加载失败事件处理
-         */
-        this.bottomImage.onerror = () => {
-            this.hasLoaded = true;
-            this.isLoading = false;
-            this.topImage.src = this.defaultImage;
-            // 加载失败后清理资源
-            this.cleanupAbortController();
-        };
     }
 
     /**
-     * 设置IntersectionObserver监听元素进入视口
+     * 核心方法：由外部 lazyLoadImages 触发
      */
-    setupIntersectionObserver() {
-        // 检查浏览器支持
-        if (!window.IntersectionObserver) {
-            // 降级到立即加载
-            this.loadImage();
-            return;
-        }
-
-        this.observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    // 进入视口 - 取消任何待执行的取消操作
-                    this.clearCancelTimer();
-                    if (!this.hasLoaded && !this.isLoading) {
-                        this.loadImage();
-                    }
-                } else {
-                    // 离开视口 - 延迟取消加载
-                    if (this.isLoading && !this.hasLoaded) {
-                        this.scheduleCancelLoading();
-                    }
-                }
-            });
-        }, {
-            // 元素进入视口就开始加载，不需要完全可见
-            threshold: 0.1,
-            // 提前50px开始加载，优化用户体验
-            rootMargin: '50px'
-        });
-
-        this.observer.observe(this);
-    }
-
-    /**
-     * 加载图片
-     */
-    loadImage() {
-        if (this.hasLoaded || this.isLoading) return;
-        
-        const src = this.bottomImage && this.bottomImage.dataset ? this.bottomImage.dataset.src : '';
-        if (!src) return;
+    triggerLoad() {
+        if (this.hasLoaded || this.isLoading || !this.src) return;
 
         this.isLoading = true;
-        
-        // 创建AbortController用于取消请求
-        this.abortController = new AbortController();
-        
-        // 创建新的Image对象来预加载，避免直接设置src导致无法取消
-        const img = new Image();
-        
-        const handleLoad = () => {
-            if (!this.abortController?.signal.aborted) {
-                this.bottomImage.src = src;
-            }
-            cleanup();
-        };
-        
-        const handleError = () => {
-            if (!this.abortController?.signal.aborted) {
-                this.bottomImage.onerror();
-            }
-            cleanup();
-        };
-        
-        const handleAbort = () => {
+
+        this.bottomImage.onload = () => {
             this.isLoading = false;
-            cleanup();
+            this.bottomImage.classList.add('loaded');
+            this.topImage.style.opacity = '0';
+            this.hasLoaded = true;
+            setTimeout(() => { this.topImage.style.display = 'none'; }, this.fadeDuration);
         };
-        
-        const cleanup = () => {
-            img.removeEventListener('load', handleLoad);
-            img.removeEventListener('error', handleError);
-            if (this.abortController) {
-                this.abortController.signal.removeEventListener('abort', handleAbort);
-            }
+
+        this.bottomImage.onerror = () => {
+            this.isLoading = false;
+            this.bottomImage.src = this.defaultImage;
+            this.bottomImage.classList.add('loaded');
         };
-        
-        img.addEventListener('load', handleLoad);
-        img.addEventListener('error', handleError);
-        
-        if (this.abortController) {
-            this.abortController.signal.addEventListener('abort', handleAbort);
-        }
-        
-        img.src = src;
+
+        this.bottomImage.src = this.src;
     }
 
     /**
-     * 安排取消加载（延迟执行）
+     * 终止正在进行的图片加载（元素离开视口时调用）
      */
-    scheduleCancelLoading() {
-        this.clearCancelTimer();
-        this.cancelTimer = setTimeout(() => {
-            this.cancelLoading();
-        }, this.cancelDelay);
+    abortLoad() {
+        if (!this.isLoading) return;
+        this.bottomImage.onload = null;
+        this.bottomImage.onerror = null;
+        this.bottomImage.src = '';
+        this.isLoading = false;
     }
 
-    /**
-     * 清除取消定时器
-     */
-    clearCancelTimer() {
-        if (this.cancelTimer) {
-            clearTimeout(this.cancelTimer);
-            this.cancelTimer = null;
-        }
-    }
-
-    /**
-     * 取消图片加载
-     */
-    cancelLoading() {
-        if (this.abortController && this.isLoading && !this.hasLoaded) {
-            this.abortController.abort();
-            this.cleanupAbortController();
-        }
-    }
-
-    /**
-     * 清理AbortController资源
-     */
-    cleanupAbortController() {
-        if (this.abortController) {
-            this.abortController = null;
-        }
-    }
-
-    /**
-     * 组件从DOM断开时调用
-     * 清理观察器资源
-     */
-    disconnectedCallback() {
-        // 组件销毁时清理所有资源
-        this.clearCancelTimer();
-        this.cancelLoading();
-        
-        if (this.observer) {
-            try { 
-                this.observer.unobserve(this);
-                this.observer.disconnect(); 
-            } catch(e) {}
-            this.observer = null;
-        }
+    showImage(src) {
+        this.bottomImage.src = src;
+        this.bottomImage.classList.add('loaded');
+        this.topImage.style.display = 'none';
+        this.hasLoaded = true;
     }
 }
 
-/**
- * 注册自定义图片加载元素
- */
 customElements.define('image-loader', ImageLoader);
+/**
+ * 全局懒加载调度器
+ * @param {string} selector 选择器
+ * @param {Object} options IntersectionObserver 配置
+ */
+/**
+ * 自动化图片懒加载调度器
+ * 自动监听 DOM 中新增的 selector 元素并处理懒加载
+ */
+function initAutoLazyLoad(selector = 'image-loader', options = { threshold: 0.1, rootMargin: '50px' }) {
+
+    // 1. 创建交叉观察器 (视口监听)
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const el = entry.target;
+            if (entry.isIntersecting) {
+                // 进入视口：触发加载
+                if (typeof el.triggerLoad === 'function') {
+                    el.triggerLoad();
+                }
+                // 已加载完成则无需继续观察
+                if (el.hasLoaded) {
+                    io.unobserve(el);
+                }
+            } else {
+                // 离开视口：若仍在加载中则终止，等待下次进入视口再重新加载
+                if (typeof el.abortLoad === 'function') {
+                    el.abortLoad();
+                }
+            }
+        });
+    }, options);
+
+    // 2. 定义观察函数：将符合条件的元素加入 io 观察队列
+    const observeElements = (nodes) => {
+        nodes.forEach(node => {
+            // 确保是元素节点且符合选择器
+            if (node.nodeType === 1) {
+                if (node.matches(selector)) {
+                    io.observe(node);
+                }
+                // 如果新插入的是容器，递归查找内部的 image-loader
+                node.querySelectorAll(selector).forEach(child => io.observe(child));
+            }
+        });
+    };
+
+    // 3. 立即处理当前已存在的元素
+    observeElements(document.querySelectorAll(selector));
+
+    // 4. 创建突变观察器 (DOM 新增监听)
+    const mo = new MutationObserver((mutations) => {
+        mutations.forEach(mutation => {
+            if (mutation.addedNodes.length) {
+                observeElements(mutation.addedNodes);
+            }
+        });
+    });
+
+    // 开始监听整个 body 的子树变化
+    mo.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+
+    // 返回停止监听的方法（可选）
+    return () => {
+        io.disconnect();
+        mo.disconnect();
+    };
+}
+
+// 执行初始化
+initAutoLazyLoad("image-loader");
