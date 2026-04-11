@@ -20,6 +20,9 @@
  * @property {Function} [onOpen] - 弹层打开时的回调函数
  * @property {Function} [onClosed] - 弹层关闭时的回调函数
  * @property {string} [btn='确定'] - 按钮文本（alert方法专用）
+ * @property {boolean} [scrollable=true] - alert内容是否支持滚动（alert方法专用）
+ * @property {string} [maxHeight='min(70vh, 520px)'] - alert内容最大高度（alert方法专用）
+ * @property {string} [contentStyle=''] - alert内容容器附加样式（alert方法专用）
  * @property {string} [btnConfirm='确定'] - 确定按钮文本（confirm方法专用）
  * @property {string} [btnCancel='取消'] - 取消按钮文本（confirm方法专用）
  * @property {...*} [rest] - 其余MDUI Dialog API支持的选项
@@ -144,6 +147,9 @@
      * @param {Function} [options.yes] - 确定按钮回调函数
      * @param {string} [options.title='提示'] - 弹层标题
      * @param {string} [options.btn='确定'] - 按钮文本
+     * @param {boolean} [options.scrollable=true] - 内容是否可滚动
+     * @param {string} [options.maxHeight='min(70vh, 520px)'] - 内容最大高度
+     * @param {string} [options.contentStyle=''] - 内容容器附加样式
      * @returns {number} 弹层实例ID
      * @example
      * // 基本用法
@@ -170,10 +176,21 @@
      * });
      */
     alert(options = {}) {
-      const { msg, yes, title = '提示', btn = '确定', ...rest } = options;
+      const {
+        msg,
+        yes,
+        title = '提示',
+        btn = '确定',
+        scrollable = true,
+        maxHeight = 'min(70vh, 520px)',
+        contentStyle = '',
+        ...rest
+      } = options;
+      const baseStyle = scrollable ? `max-height:${maxHeight};overflow:auto;` : '';
+      const bodyStyle = `${baseStyle}${contentStyle}`;
       return createDialog({
         title:   title,
-        content: `<div>${msg}</div>`,
+        content: `<div class="layer-alert-content" style="${bodyStyle}">${msg == null ? '' : msg}</div>`,
         buttons: [{ text: btn, onClick: yes }],
         ...rest
       });
