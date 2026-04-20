@@ -5,6 +5,7 @@ framework/bootloader.js,
 framework/utils/Loading.js,
 framework/utils/Logger.js,
 framework/utils/Loader.js,
+framework/utils/Timing.js,
 framework/utils/Event.js,
 framework/utils/Toaster.js,
 framework/utils/Request.js,
@@ -18,3 +19,6 @@ framework/pjax/nprogress.js,
 framework/pjax/PjaxUtils.js,
 framework/layout.js,
 &type=js&v={$__v}"></script>
+<script>
+    document.querySelector("#hiddenBody").remove();
+</script>

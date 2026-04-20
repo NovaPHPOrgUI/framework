@@ -60,6 +60,7 @@ window.jsMap = {
     Event: '/framework/utils/Event.js',
     Form: '/framework/utils/Form.js',
     Loader: '/framework/utils/Loader.js',
+    Timing: '/framework/utils/Timing.js',
     Loading: [
         '/framework/utils/Loading.js',
         '/framework/utils/Loading.css'
@@ -92,6 +93,12 @@ window.jsMap = {
         '/components/dataTable/DataTable.js',
         '/framework/utils/URLUtils.js',
     ],
+    CardView: [
+        "/components/dataTable/Pagination.js",
+        "/components/dataTable/CardView.css",
+        '/components/dataTable/CardView.js',
+        '/framework/utils/URLUtils.js',
+    ],
     Pagination:[
         "/components/dataTable/Pagination.js"
     ],
@@ -117,6 +124,7 @@ window.jsMap = {
         "/components/tree/Tree.css"
     ],
     ContextMenu: "/components/menu/ContextMenu.js",
+    Cron:"/components/cron/Cron.js"
 }
 
 /** @type {boolean} 调试模式开关 */
