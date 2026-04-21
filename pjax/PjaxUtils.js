@@ -123,6 +123,12 @@ class PjaxUtils {
                         window.pageOnLoad();
                     }
                     this.loading = false;
+
+                    if (window.mainAppLoading){
+                        window.mainAppLoading.close();
+                        window.mainAppLoading = null;
+                    }
+
                 });
             };
 

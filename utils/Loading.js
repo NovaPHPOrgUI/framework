@@ -239,3 +239,6 @@ class Loading {
     // 初始化已有元素
     document.querySelectorAll('[loading]').forEach(show);
 })();
+
+window.mainAppLoading = new Loading(document.body);
+window.mainAppLoading.show();
