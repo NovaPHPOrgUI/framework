@@ -281,6 +281,58 @@ $.form = {
     },
 
     /**
+     * 非 &lt;form&gt; 容器：按 data-name 与数据对象 key 对应赋值。默认将匹配元素的 innerHTML 设为数据中的值（对象/数组会先 JSON 序列化）。
+     *
+     * @param {String|HTMLElement|jQuery} container - 根容器
+     * @param {Object} data - 数据对象
+     * @param {function(HTMLElement, string, *, Object): (string|false|void)} [format] - 每个节点赋值前调用。
+     *   参数：当前 DOM 元素、data-name（key）、该 key 在 data 中的 value、完整 data。
+     *   返回 `false`：不执行默认 innerHTML 赋值，由你自己处理；
+     *   返回 `string`：作为最终写入的 HTML 字符串（赋给 innerHTML）；
+     *   其他返回值：继续走默认规则。
+     */
+    setByDataName: function (container, data, format) {
+        const $root = $(container);
+        if ($root.length === 0 || data === null || data === undefined || typeof data !== 'object') {
+            return;
+        }
+        const hasFormat = typeof format === 'function';
+        $root.find('[data-name]').each(function () {
+            const el = this;
+            const key = $(el).data('name');
+            if (key == null || key === '') {
+                return;
+            }
+            if (!Object.prototype.hasOwnProperty.call(data, key)) {
+                return;
+            }
+            let value = data[key];
+            if (hasFormat) {
+                try {
+                    const out = format(el, key, value, data);
+                    if (out === false) {
+                        return;
+                    }
+                    if (typeof out === 'string') {
+                        el.innerHTML = out;
+                        return;
+                    }
+                } catch (e) {
+                    console.error(e);
+                    return;
+                }
+            }
+            if (value === null || value === undefined) {
+                el.innerHTML = '';
+            } else if (typeof value === 'object') {
+                el.innerHTML = JSON.stringify(value);
+            } else {
+                el.innerHTML = String(value);
+            }
+        });
+    },
+
+    /**
      * 动态设置 mdui-select 的选项
      * @param {String|HTMLElement|jQuery} select - 选择器或元素（mdui-select）
      * @param {Array|Object} items - 选项数组（对象或 {value,label,disabled}）或映射对象（value->label）
