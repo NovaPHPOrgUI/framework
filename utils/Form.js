@@ -15,7 +15,7 @@
  */
 
 /** @type {string} 表单元素选择器字符串 */
-let formElems = "mdui-text-field,mdui-switch,mdui-checkbox,mdui-radio-group,mdui-select,mdui-slider,mdui-file-upload,mdui-area-picker,mdui-range-slider,mdui-chip-group,mdui-date-picker"
+let formElems = "mdui-text-field,mdui-switch,mdui-checkbox,mdui-radio-group,mdui-select,mdui-slider,mdui-file-upload,mdui-area-picker,mdui-range-slider,mdui-chip-group,mdui-date-picker,mdui-search-input"
 
 /**
  * 表单工具对象
@@ -56,6 +56,12 @@ $.form = {
         $(form).find("mdui-date-picker").each(function (key, item) {
             let name = $(item).attr("name");
             data[name] = $(item).val();
+        });
+
+        $(form).find("mdui-search-input").each(function (key, item) {
+            let name = $(item).attr("name");
+            if (!name) return;
+            data[name] = item.value;
         });
         return data;
     },
@@ -99,6 +105,8 @@ $.form = {
                     value = value.toString();
                 }
                 $(this)[0].value = value
+            } else if ($(this).is("mdui-search-input")) {
+                $(this)[0].value = value == null ? '' : String(value);
             } else {
                 if(typeof value === "object"){
                     value = JSON.stringify(value);
@@ -285,7 +293,7 @@ $.form = {
      *
      * @param {String|HTMLElement|jQuery} container - 根容器
      * @param {Object} data - 数据对象
-     * @param {function(HTMLElement, string, *, Object): (string|false|void)} [format] - 每个节点赋值前调用。
+     * @param {function(HTMLElement, string, *): (string|false|void)} [format] - 每个节点赋值前调用。
      *   参数：当前 DOM 元素、data-name（key）、该 key 在 data 中的 value、完整 data。
      *   返回 `false`：不执行默认 innerHTML 赋值，由你自己处理；
      *   返回 `string`：作为最终写入的 HTML 字符串（赋给 innerHTML）；
@@ -309,7 +317,7 @@ $.form = {
             let value = data[key];
             if (hasFormat) {
                 try {
-                    const out = format(el, key, value, data);
+                    const out = format(el, key, value);
                     if (out === false) {
                         return;
                     }

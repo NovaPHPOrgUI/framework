@@ -75,6 +75,7 @@ window.jsMap = {
         '/framework/utils/Form.js',
         "/components/formDialog/DialogForm.js",
         ],
+    SearchInput: "/components/searchInput/SearchInput.js",
     ChipGroup: "/components/chipGroup/mduiChipGroup.js",
     AreaPicker: "/components/areaPicker/AreaPicker.js",
     ImageViewer: [
