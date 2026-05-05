@@ -27,6 +27,7 @@ class ImageLoader extends HTMLElement {
         this.placeholder = this.getAttribute("placeholder") || "/static/framework/imageLoader/default.png";
         this.defaultImage = this.getAttribute('default') || "/static/framework/imageLoader/default.png";
         this.fadeDuration = parseInt(this.getAttribute('duration'), 10) || 300;
+        this.noRefer = this.hasAttribute('no-refer');
         this.hasLoaded = false;
         this.isLoading = false;
     }
@@ -51,8 +52,8 @@ class ImageLoader extends HTMLElement {
             .bottom { position: absolute; left: 0; top: 0; z-index: 1; opacity: 0; }
             .loaded { opacity: 1; }
             </style>
-            <img class="top" src="${this.placeholder}" alt="placeholder">
-            <img class="bottom" alt="real-image">
+            <img class="top" src="${this.placeholder}" alt="placeholder" ${this.noRefer ? 'referrerpolicy="no-referrer"' : ''}>
+            <img class="bottom" alt="real-image" ${this.noRefer ? 'referrerpolicy="no-referrer"' : ''}>
         `;
     }
 
@@ -134,22 +135,70 @@ function initAutoLazyLoad(selector = 'image-loader', options = { threshold: 0.1,
         });
     }, options);
 
-    // 2. 定义观察函数：将符合条件的元素加入 io 观察队列
-    const observeElements = (nodes) => {
-        nodes.forEach(node => {
-            // 确保是元素节点且符合选择器
-            if (node.nodeType === 1) {
-                if (node.matches(selector)) {
-                    io.observe(node);
-                }
-                // 如果新插入的是容器，递归查找内部的 image-loader
-                node.querySelectorAll(selector).forEach(child => io.observe(child));
+    // 2. 定义观察函数：将符合条件的元素加入 io 观察队列（支持 Shadow DOM）
+    const observedSet = new WeakSet();
+    const observedShadowRoots = new WeakSet();
+
+    const observeTarget = (el) => {
+        if (!el || observedSet.has(el)) return;
+        observedSet.add(el);
+        io.observe(el);
+    };
+
+    const scanRoot = (root) => {
+        if (!root || typeof root.querySelectorAll !== 'function') return;
+        root.querySelectorAll(selector).forEach(observeTarget);
+        root.querySelectorAll('*').forEach((element) => {
+            if (element.shadowRoot) {
+                scanElementTree(element);
             }
         });
     };
 
-    // 3. 立即处理当前已存在的元素
+    const watchShadowRoot = (shadowRoot) => {
+        if (!shadowRoot || observedShadowRoots.has(shadowRoot)) return;
+        observedShadowRoots.add(shadowRoot);
+        const shadowMo = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.addedNodes.length) {
+                    observeElements(mutation.addedNodes);
+                }
+            });
+        });
+        shadowMo.observe(shadowRoot, {
+            childList: true,
+            subtree: true
+        });
+    };
+
+    const scanElementTree = (element) => {
+        if (!element || element.nodeType !== 1) return;
+        if (element.matches(selector)) {
+            observeTarget(element);
+        }
+        if (element.shadowRoot) {
+            watchShadowRoot(element.shadowRoot);
+            scanRoot(element.shadowRoot);
+        }
+        element.querySelectorAll(selector).forEach(observeTarget);
+        element.querySelectorAll('*').forEach((child) => {
+            if (child.shadowRoot) {
+                scanElementTree(child);
+            }
+        });
+    };
+
+    const observeElements = (nodes) => {
+        nodes.forEach((node) => {
+            if (node.nodeType === 1) {
+                scanElementTree(node);
+            }
+        });
+    };
+
+    // 3. 立即处理当前已存在的元素（包含开放的 Shadow DOM）
     observeElements(document.querySelectorAll(selector));
+    scanRoot(document);
 
     // 4. 创建突变观察器 (DOM 新增监听)
     const mo = new MutationObserver((mutations) => {
