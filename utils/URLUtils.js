@@ -37,7 +37,12 @@ class URLUtils {
      */
      setParam(param, value, updateHistory = false) {
         const url = new URL(window.location);
-        url.searchParams.set(param, value);
+        if (value == null || value.length === 0){
+            url.searchParams.delete(param);
+        }else{
+            url.searchParams.set(param, value);
+        }
+
         const newUrl = url.toString();
 
         if (updateHistory) {
