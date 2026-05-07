@@ -44,6 +44,9 @@ class ImageLoader extends HTMLElement {
     }
 
     render() {
+        // 增加 alt 属性支持，提升可访问性
+        const altText = this.getAttribute("alt") || "image";
+
         this.shadowRoot.innerHTML = `
             <style>
             :host { display: block; width: 100%; position: relative; overflow: hidden; min-height: 10px; }
@@ -52,8 +55,8 @@ class ImageLoader extends HTMLElement {
             .bottom { position: absolute; left: 0; top: 0; z-index: 1; opacity: 0; }
             .loaded { opacity: 1; }
             </style>
-            <img class="top" src="${this.placeholder}" alt="placeholder" ${this.noRefer ? 'referrerpolicy="no-referrer"' : ''}>
-            <img class="bottom" alt="real-image" ${this.noRefer ? 'referrerpolicy="no-referrer"' : ''}>
+            <img class="top" src="${this.placeholder}" alt="" ${this.noRefer ? 'referrerpolicy="no-referrer"' : ''}>
+            <img class="bottom" alt="${altText}" ${this.noRefer ? 'referrerpolicy="no-referrer"' : ''}>
         `;
     }
 
@@ -83,13 +86,14 @@ class ImageLoader extends HTMLElement {
     }
 
     /**
-     * 终止正在进行的图片加载（元素离开视口时调用）
+     * 终止正在进行的图片加载（元素离开视口或被删除时调用）
      */
     abortLoad() {
         if (!this.isLoading) return;
         this.bottomImage.onload = null;
         this.bottomImage.onerror = null;
-        this.bottomImage.src = '';
+        // 必须使用空的 Data URI 才能在浏览器底层真正阻断网络请求
+        this.bottomImage.src = 'data:,';
         this.isLoading = false;
     }
 
@@ -102,125 +106,81 @@ class ImageLoader extends HTMLElement {
 }
 
 customElements.define('image-loader', ImageLoader);
+
 /**
- * 全局懒加载调度器
- * @param {string} selector 选择器
- * @param {Object} options IntersectionObserver 配置
- */
-/**
- * 自动化图片懒加载调度器
- * 自动监听 DOM 中新增的 selector 元素并处理懒加载
+ * 自动化图片懒加载调度器 (性能优化版)
+ * 职责：
+ * 1. 监听常规 DOM 树的增删，处理懒加载。
+ * 2. 处理划入加载、划出取消。
+ * 3. 暴露 scan API，供 Shadow DOM 自定义组件在渲染完成后主动调用。
  */
 function initAutoLazyLoad(selector = 'image-loader', options = { threshold: 0.1, rootMargin: '50px' }) {
 
-    // 1. 创建交叉观察器 (视口监听)
+    // 1. 交叉观察器：处理视口的进入与离开
     const io = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            const el = entry.target;
-            if (entry.isIntersecting) {
-                // 进入视口：触发加载
-                if (typeof el.triggerLoad === 'function') {
-                    el.triggerLoad();
-                }
-                // 已加载完成则无需继续观察
-                if (el.hasLoaded) {
-                    io.unobserve(el);
-                }
+        entries.forEach(e => {
+            const el = e.target;
+            if (e.isIntersecting) {
+                el.triggerLoad?.();
+                if (el.hasLoaded) io.unobserve(el);
             } else {
-                // 离开视口：若仍在加载中则终止，等待下次进入视口再重新加载
-                if (typeof el.abortLoad === 'function') {
-                    el.abortLoad();
-                }
+                el.abortLoad?.(); // 划走时触发取消
             }
         });
     }, options);
 
-    // 2. 定义观察函数：将符合条件的元素加入 io 观察队列（支持 Shadow DOM）
-    const observedSet = new WeakSet();
-    const observedShadowRoots = new WeakSet();
+    // 2. 核心遍历函数：统一处理绑定(isAdd=true)与清理(isAdd=false)
+    const processTree = (root, isAdd) => {
+        if (!root || !root.querySelectorAll) return;
 
-    const observeTarget = (el) => {
-        if (!el || observedSet.has(el)) return;
-        observedSet.add(el);
-        io.observe(el);
-    };
+        // 收集自身（如果匹配）及所有匹配的后代元素
+        const targets = root.matches?.(selector) ? [root, ...root.querySelectorAll(selector)] : root.querySelectorAll(selector);
 
-    const scanRoot = (root) => {
-        if (!root || typeof root.querySelectorAll !== 'function') return;
-        root.querySelectorAll(selector).forEach(observeTarget);
-        root.querySelectorAll('*').forEach((element) => {
-            if (element.shadowRoot) {
-                scanElementTree(element);
+        targets.forEach(el => {
+            if (isAdd) {
+                io.observe(el);
+            } else {
+                io.unobserve(el);
+                el.abortLoad?.(); // 元素被删除时，立即中断进行中的网络请求
             }
         });
     };
 
-    const watchShadowRoot = (shadowRoot) => {
-        if (!shadowRoot || observedShadowRoots.has(shadowRoot)) return;
-        observedShadowRoots.add(shadowRoot);
-        const shadowMo = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.addedNodes.length) {
-                    observeElements(mutation.addedNodes);
-                }
-            });
-        });
-        shadowMo.observe(shadowRoot, {
-            childList: true,
-            subtree: true
+    // 3. 全局 DOM 变化回调
+    const handleMutations = mutations => {
+        mutations.forEach(m => {
+            m.addedNodes.forEach(node => processTree(node, true));
+            m.removedNodes.forEach(node => processTree(node, false));
         });
     };
 
-    const scanElementTree = (element) => {
-        if (!element || element.nodeType !== 1) return;
-        if (element.matches(selector)) {
-            observeTarget(element);
+    // 4. 启动时扫描 body
+    processTree(document.body, true);
+
+    // 5. 启动全局常规 DOM 监听
+    const globalMo = new MutationObserver(handleMutations);
+    globalMo.observe(document.body, { childList: true, subtree: true });
+
+    // 6. 暴露公共 API
+    return {
+        /**
+         * 允许外部自定义组件主动传入其 shadowRoot 进行扫描绑定
+         * @param {HTMLElement|ShadowRoot} rootNode
+         */
+        scan: (rootNode) => processTree(rootNode, true),
+
+        /**
+         * 销毁并回收资源
+         */
+        destroy: () => {
+            io.disconnect();
+            globalMo.disconnect();
         }
-        if (element.shadowRoot) {
-            watchShadowRoot(element.shadowRoot);
-            scanRoot(element.shadowRoot);
-        }
-        element.querySelectorAll(selector).forEach(observeTarget);
-        element.querySelectorAll('*').forEach((child) => {
-            if (child.shadowRoot) {
-                scanElementTree(child);
-            }
-        });
-    };
-
-    const observeElements = (nodes) => {
-        nodes.forEach((node) => {
-            if (node.nodeType === 1) {
-                scanElementTree(node);
-            }
-        });
-    };
-
-    // 3. 立即处理当前已存在的元素（包含开放的 Shadow DOM）
-    observeElements(document.querySelectorAll(selector));
-    scanRoot(document);
-
-    // 4. 创建突变观察器 (DOM 新增监听)
-    const mo = new MutationObserver((mutations) => {
-        mutations.forEach(mutation => {
-            if (mutation.addedNodes.length) {
-                observeElements(mutation.addedNodes);
-            }
-        });
-    });
-
-    // 开始监听整个 body 的子树变化
-    mo.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
-
-    // 返回停止监听的方法（可选）
-    return () => {
-        io.disconnect();
-        mo.disconnect();
     };
 }
 
-// 执行初始化
-initAutoLazyLoad("image-loader");
+// 执行初始化，并挂载到全局变量，方便其他 Web Component 调用
+window.lazyLoader = initAutoLazyLoad("image-loader");
+$.emitter.on("imageLoader", (shadowRoot) => {
+    lazyLoader.scan(shadowRoot)
+});
