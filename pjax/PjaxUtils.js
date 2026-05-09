@@ -155,6 +155,29 @@ class PjaxUtils {
      * @param {string} uri - 要加载的URI路径
      */
     loadUri(uri) {
+        // 1. 获取当前页面的路径名
+        const currentPath = window.location.pathname;
+
+        // 2. 解析目标 uri 的路径名 (处理相对路径或绝对路径)
+        // 利用 URL 构造函数自动解析，避免手动正则匹配的麻烦
+        try {
+            const targetUrl = new URL(uri, window.location.origin);
+            const targetPath = targetUrl.pathname;
+
+            // 3. 核心逻辑判断：如果路径相同，则直接返回，不触发加载
+            if (currentPath === targetPath && $.url) {
+                $.logger.debug(`[Skip] currentPath == targetPath ${targetPath} `);
+
+                $.url.setUri(uri);
+                $.emitter.emit('pjax:prevented',targetUrl.searchParams)
+                return;
+            }
+        } catch (e) {
+            // 如果 uri 格式不规范，回退到原始逻辑或记录错误
+            $.logger.error("Invalid URI:", e);
+        }
+
+        // 4. 执行原有的加载逻辑
         if (!this.history) {
             location.hash = uri;
         } else {

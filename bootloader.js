@@ -33,7 +33,7 @@ window.baseUri = scriptUrl.origin ;
  * @param {boolean} loading - 是否正在加载状态
  * @returns {boolean} 返回false
  */
-window.pageOnLoad = function (loading) {
+window.pageOnLoad = function () {
     return false;
 };
 

@@ -32,8 +32,10 @@ function setActive(url) {
         const $item = $(this);
         const link = $item.data("link");
         const match = $item.data("match");
-        const isActive = link === url || (match && new RegExp(match).test(url));
-        
+        let isActive = false;
+        if (match != null && match.length > 0){
+            isActive =  link === url || (match && new RegExp(match).test(url));
+        }
         // 设置或移除激活状态
         $item.attr("active", isActive || null);
         
@@ -97,7 +99,8 @@ DOM.collapseItems
 // ============================================
 // 页面加载
 // ============================================
-setActive(window.location.pathname);
+
+setActive(window.location.pathname+ window.location.search+ window.location.hash);
 pjaxUtils.loadUri(window.location.pathname + window.location.search + window.location.hash);
 
 //
