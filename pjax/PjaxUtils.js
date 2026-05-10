@@ -166,10 +166,10 @@ class PjaxUtils {
 
             // 3. 核心逻辑判断：如果路径相同，则直接返回，不触发加载
             if (currentPath === targetPath && $.url) {
-                $.logger.debug(`[Skip] currentPath == targetPath ${targetPath} `);
+                $.logger.debug(`[Skip] currentPath == targetPath ${uri} `);
 
                 $.url.setUri(uri);
-                $.emitter.emit('pjax:prevented',targetUrl.searchParams)
+               $.emitter.emit('pjax:prevented',targetUrl.searchParams)
                 return;
             }
         } catch (e) {
