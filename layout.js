@@ -32,10 +32,7 @@ function setActive(url) {
         const $item = $(this);
         const link = $item.data("link");
         const match = $item.data("match");
-        let isActive = false;
-        if (match != null && match.length > 0){
-            isActive =  link === url || (match && new RegExp(match).test(url));
-        }
+        let isActive =  link === url || (match  && match.length > 0 && new RegExp(match).test(url));
         // 设置或移除激活状态
         $item.attr("active", isActive || null);
         
