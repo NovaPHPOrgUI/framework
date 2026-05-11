@@ -78,21 +78,49 @@ class SidebarManager {
     }
 
     /**
+     * 侧边栏高亮匹配用：去掉 query 中的分页参数 page、size，避免翻页后菜单失配。
+     * @param {string} url
+     * @returns {string}
+     */
+    normalizeUrlForSidebarMatch(url) {
+        if (!url || typeof url !== "string") {
+            return "";
+        }
+        const trimmed = url.trim();
+        if (!trimmed) {
+            return "";
+        }
+        try {
+            const u = new URL(trimmed, window.location.origin);
+            u.searchParams.delete("page");
+            u.searchParams.delete("size");
+            return u.pathname + u.search + u.hash;
+        } catch (e) {
+            return trimmed;
+        }
+    }
+
+    /**
      * 根据当前 URL 更新 data-link / data-match 命中项，并展开父级折叠
      * @param {string} url
      */
     updateActiveState(url) {
+        const normalizedCurrent = this.normalizeUrlForSidebarMatch(url);
         const $list = this.navigationDrawer.find("mdui-list");
         $list.find("mdui-list-item[active]").removeAttr("active");
 
         /** @type {JQuery} */
         let $activeItem = $();
-        $list.find("mdui-list-item[data-link]").each(function () {
-            const $item = $(this);
+        $list.find("mdui-list-item[data-link]").each((_, el) => {
+            const $item = $(el);
             const link = $item.data("link");
             const match = $item.data("match");
+            const normalizedLink = this.normalizeUrlForSidebarMatch(String(link ?? ""));
             const isActive =
-                link === url || (match && String(match).length > 0 && new RegExp(match).test(url));
+                normalizedLink === normalizedCurrent ||
+                (match &&
+                    String(match).length > 0 &&
+                    new RegExp(match).test(normalizedCurrent));
             if (isActive) {
                 $item.attr("active", "");
                 $activeItem = $item;
