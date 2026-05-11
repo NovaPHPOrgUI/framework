@@ -388,5 +388,53 @@ $.form = {
 
         // 触发一次变更，便于组件刷新
         $($select).trigger('change');
+    },
+
+    /**
+     * 表单变化监听函数
+     * @param {string} formSelector 表单的选择器，例如 '#searchForm'
+     * @param {number} delay 防抖延迟时间 (ms)
+     * @param {Function} callback 变化后的回调函数，参数为当前表单的数据对象
+     */
+    onChange: function (formSelector, delay, callback) {
+        const $form = $(formSelector);
+        if (!$form.length) return;
+
+        // 获取数据并执行回调的核心逻辑
+        const triggerCallback = function () {
+            if (typeof callback === 'function') {
+                // 使用工具类获取表单当前值
+                const formData = $.form.val(formSelector);
+                callback(formData);
+            }
+        };
+
+        // 构造防抖函数
+        const throttledHandler = $.throttle(triggerCallback, delay || 300);
+
+        // 1. 监听标准事件 (input 用于实时输入，change 用于选择切换)
+        $form.on('input change', formElems, function () {
+            throttledHandler();
+        });
+
+        // 2. 针对特殊组件的增强监听
+        // - clear: 搜索框或文本框点击清空按钮
+        // - confirm: 日期选择器点击确认
+        $form.on('clear confirm', formElems, function () {
+            // 清空或确认通常是明确的操作，建议直接触发
+            triggerCallback();
+        });
+
+        // 3. 监听表单提交
+        $form.on('submit', function (e) {
+            e.preventDefault();
+            triggerCallback();
+        });
+
+        // 4. 监听表单重置
+        $form.on('reset', function () {
+            // setTimeout 确保在表单状态恢复到初始值后再读取数据
+            setTimeout(triggerCallback, 0);
+        });
     }
 }
