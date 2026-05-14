@@ -138,6 +138,11 @@ class Loading {
      */
     show() {
         try {
+            // 如果不是全局 Loading，给容器加上特定的 class
+            if (this.container !== document.body) {
+                this.container.classList.add("parent-loading");
+            }
+
             this.container.appendChild(this.overlayElement);
             fade.in(this.overlayElement);
         } catch (e) {
@@ -152,6 +157,11 @@ class Loading {
         try {
             let that = this;
             fade.out(this.overlayElement, function () {
+                // 动画结束后移除 class，恢复容器原始状态
+                if (that.container !== document.body) {
+                    that.container.classList.remove("parent-loading");
+                }
+
                 window.dispatchEvent(new Event("resize"));
                 $.emitter.emit("translate:start");
                 that.overlayElement.remove();

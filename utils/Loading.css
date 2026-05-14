@@ -34,18 +34,25 @@
     text-align: center;
 }
 .loading-overlay {
-    position: fixed;
+    /* 改为绝对定位，相对于最近的 position: relative/absolute 的父元素 */
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color:  rgba(var(--mdui-color-background)); /* 半透明的黑色背景 */
-    z-index: 2000; /* 确保遮罩层在其他内容之上 */
+    background-color: rgba(var(--mdui-color-background));
+    z-index: 2000;
     overflow: hidden;
-    max-height: var(--vh);
-    pointer-events: none; /* 防止阻挡交互 */
+    /* 移除之前针对全屏的 max-height: var(--vh) */
+    pointer-events: none;
 }
 
 .loading-overlay > * {
     pointer-events: auto; /* 恢复子元素交互 */
+}
+
+.parent-loading {
+    position: relative !important; /* 强制提升定位层级，确保遮罩层相对于它定位 */
+    overflow: hidden !important; /* 防止加载动画或遮罩层超出容器边界 */
+    min-height: 100px; /* 可选：防止空容器高度为0导致看不到 loading */
 }
