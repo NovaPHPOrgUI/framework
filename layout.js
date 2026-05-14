@@ -12,8 +12,9 @@ class SidebarManager {
     constructor(pjaxUtils) {
         this.pjaxUtils = pjaxUtils;
         this.navigationDrawer = $("#navigation-drawer");
-        this.expandTimer = null;
         this.$list = null;
+        /** @type {ReturnType<typeof setTimeout> | null} */
+        this.expandTimer = null;
         this.initCollapseListeners();
     }
 
@@ -35,20 +36,32 @@ class SidebarManager {
                     .find('mdui-icon[slot="end-icon"]')
                     .removeClass("rotate-ccw");
             })
-            .on("click", "mdui-list-item", function (e) {
-                self.handleNavigation(e.target);
+            .on("click", "[data-link]", function () {
+                self.handleNavigation(this);
             });
     }
 
     /**
-     * @param {EventTarget | null} element
+     * 程序化改 value 时 MDUI 往往不派发 open，补发一个与组件同名的冒泡事件，委托在 mdui-list 上的逻辑才能跑。
+     * @param {Element | null | undefined} collapseItemEl
      */
-    handleNavigation(element) {
-        const closest = element && element.closest ? element.closest("mdui-list-item") : null;
-        if (!closest) {
+    dispatchCollapseItemOpen(collapseItemEl) {
+        if (!collapseItemEl) {
             return;
         }
-        const $elem = $(closest);
+        collapseItemEl.dispatchEvent(
+            new CustomEvent("open", {
+                bubbles: true,
+                composed: true,
+            })
+        );
+    }
+
+    /**
+     * @param {Element} element 带 data-link 的 mdui-list-item（委托绑定的 this）
+     */
+    handleNavigation(element) {
+        const $elem = $(element);
         const url = $elem.attr("data-link");
 
         if (!url) {
@@ -67,29 +80,16 @@ class SidebarManager {
         target === "self" ? (window.location.href = url) : window.open(url);
     }
 
-    /** 非手风琴 Collapse：初始 value 置空，避免子组默认全开 */
-    initDefaultCollapseValues() {
-        this.navigationDrawer.find("mdui-collapse").each(function () {
-            const c = this;
-            if (!c.hasAttribute("accordion")) {
-                c.value = [];
-            }
-        });
-    }
-
     /**
      * 侧边栏高亮匹配用：去掉 query 中的分页参数 page、size，避免翻页后菜单失配。
      * @param {string} url
      * @returns {string}
      */
     normalizeUrlForSidebarMatch(url) {
-        if (!url || typeof url !== "string") {
+        if (typeof url !== "string") {
             return "";
         }
         const trimmed = url.trim();
-        if (!trimmed) {
-            return "";
-        }
         try {
             const u = new URL(trimmed, window.location.origin);
             u.searchParams.delete("page");
@@ -101,11 +101,26 @@ class SidebarManager {
     }
 
     /**
+     * 与菜单项 active 比较用的最终 key（路径 + 去掉 .md、首尾斜杠，与文档 slug 风格对齐）
+     * @param {string} url
+     * @returns {string}
+     */
+    normalizeActiveKey(url) {
+        let s = this.normalizeUrlForSidebarMatch(url);
+        try {
+            s = decodeURIComponent(s);
+        } catch (e) {
+            /* ignore */
+        }
+        return s.replace(/\.(md|MD)$/, "").replace(/^\/+/, "").replace(/\/+$/, "");
+    }
+
+    /**
      * 根据当前 URL 更新 data-link / data-match 命中项，并展开父级折叠
      * @param {string} url
      */
     updateActiveState(url) {
-        const normalizedCurrent = this.normalizeUrlForSidebarMatch(url);
+        const normalizedCurrent = this.normalizeActiveKey(url);
         const $list = this.navigationDrawer.find("mdui-list");
         $list.find("mdui-list-item[active]").removeAttr("active");
 
@@ -115,18 +130,19 @@ class SidebarManager {
             const $item = $(el);
             const link = $item.data("link");
             const match = $item.data("match");
-            const normalizedLink = this.normalizeUrlForSidebarMatch(String(link ?? ""));
+            const normalizedLink = this.normalizeActiveKey(String(link ?? ""));
             const isActive =
                 normalizedLink === normalizedCurrent ||
                 (match &&
                     String(match).length > 0 &&
-                    new RegExp(match).test(normalizedCurrent));
+                    new RegExp(match).test(this.normalizeUrlForSidebarMatch(url)));
             if (isActive) {
                 $item.attr("active", "");
                 $activeItem = $item;
             }
         });
 
+        // 即使抽屉不可见也更新展开状态，打开抽屉时层级正确
         this.expandActiveParents();
 
         if ($activeItem.length > 0) {
@@ -146,23 +162,28 @@ class SidebarManager {
                 return;
             }
 
-            $activeItem.parents("mdui-collapse-item").each(function () {
-                const $collapseItem = $(this);
+            $activeItem.parents("mdui-collapse-item").each((_, el) => {
+                const $collapseItem = $(el);
                 const value = $collapseItem.attr("value");
-                const collapseEl = $collapseItem.parent("mdui-collapse")[0];
-                if (!value || !collapseEl) {
-                    return;
-                }
-                if (collapseEl.hasAttribute("accordion")) {
-                    collapseEl.value = value;
-                } else {
-                    const prev = Array.isArray(collapseEl.value)
-                        ? collapseEl.value
-                        : collapseEl.value != null && collapseEl.value !== ""
-                          ? [collapseEl.value]
-                          : [];
-                    if (prev.indexOf(value) === -1) {
-                        collapseEl.value = prev.concat(value);
+                const $collapse = $collapseItem.parent("mdui-collapse");
+
+                if (value && $collapse.length > 0) {
+                    const currentValue = $collapse.attr("value");
+                    /** @type {boolean} */
+                    let didOpen = false;
+                    if (currentValue) {
+                        const values = currentValue.split(" ").filter((v) => v);
+                        if (!values.includes(value)) {
+                            values.push(value);
+                            $collapse.attr("value", values.join(" "));
+                            didOpen = true;
+                        }
+                    } else {
+                        $collapse.attr("value", value);
+                        didOpen = true;
+                    }
+                    if (didOpen) {
+                        this.dispatchCollapseItemOpen(el);
                     }
                 }
             });
@@ -170,10 +191,12 @@ class SidebarManager {
         };
 
         const drawerEl = this.navigationDrawer[0];
-        if (
+        const drawerHidden =
             this.navigationDrawer.css("display") === "none" ||
-            (drawerEl && drawerEl.offsetWidth === 0)
-        ) {
+            this.navigationDrawer.width() === 0 ||
+            (drawerEl && drawerEl.offsetWidth === 0);
+
+        if (drawerHidden) {
             expand();
         } else {
             this.expandTimer = setTimeout(expand, 100);
@@ -256,7 +279,6 @@ $(document).on("scroll", function () {
 // ============================================
 // 页面加载
 // ============================================
-sidebarManager.initDefaultCollapseValues();
 
 const initialUrl =
     window.location.pathname + window.location.search + window.location.hash;
