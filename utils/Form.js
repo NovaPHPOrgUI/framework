@@ -393,48 +393,48 @@ $.form = {
     /**
      * 表单变化监听函数
      * @param {string} formSelector 表单的选择器，例如 '#searchForm'
-     * @param {number} delay 防抖延迟时间 (ms)
+     * @param {number} delay 防抖延迟时间 (ms)，停止输入/变更后再触发回调
      * @param {Function} callback 变化后的回调函数，参数为当前表单的数据对象
+     *
+     * 调试：控制台执行 `window.DEBUG_FORM_ONCHANGE = true` 或
+     * `localStorage.setItem('DEBUG_FORM_ONCHANGE','1')` 后刷新，可在 console 看到事件与序列化后的表单快照。
      */
     onChange: function (formSelector, delay, callback) {
         const $form = $(formSelector);
-        if (!$form.length) return;
+        if (!$form.length) {
+            return;
+        }
 
-        // 获取数据并执行回调的核心逻辑
-        const triggerCallback = function () {
-            if (typeof callback === 'function') {
-                // 使用工具类获取表单当前值
-                const formData = $.form.val(formSelector);
-                callback(formData);
+        const triggerCallback = function (reason) {
+            if (typeof callback !== 'function') {
+                return;
             }
+            const formData = $.form.val(formSelector);
+            callback(formData);
         };
 
-        // 构造防抖函数
-        const throttledHandler = $.throttle(triggerCallback, delay || 300);
+        // 使用防抖（非节流）：连续输入结束后才拉数；原先误用 throttle 会丢掉「停顿前最后一拍」
+        const debouncedHandler = $.debounce(function () {
+            triggerCallback('debounced');
+        }, delay || 300);
 
-        // 1. 监听标准事件 (input 用于实时输入，change 用于选择切换)
-        $form.on('input change', formElems, function () {
-            throttledHandler();
+        // 绑在表单容器上捕获冒泡：避免 Web Component 内部真实 target 与委托选择器 formElems 对不上导致收不到事件
+        $form.on('input change', debouncedHandler);
+
+        // clear / confirm：明确操作，立即触发（仍打 debug 日志）
+        $form.on('clear confirm', function (e) {
+            triggerCallback(e && e.type ? e.type : 'clear|confirm');
         });
 
-        // 2. 针对特殊组件的增强监听
-        // - clear: 搜索框或文本框点击清空按钮
-        // - confirm: 日期选择器点击确认
-        $form.on('clear confirm', formElems, function () {
-            // 清空或确认通常是明确的操作，建议直接触发
-            triggerCallback();
-        });
-
-        // 3. 监听表单提交
         $form.on('submit', function (e) {
             e.preventDefault();
-            triggerCallback();
+            triggerCallback('submit');
         });
 
-        // 4. 监听表单重置
         $form.on('reset', function () {
-            // setTimeout 确保在表单状态恢复到初始值后再读取数据
-            setTimeout(triggerCallback, 0);
+            setTimeout(function () {
+                triggerCallback('reset');
+            }, 0);
         });
     }
 }
