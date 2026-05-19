@@ -419,6 +419,12 @@ $gaps: (1: 0.25rem, 2: 0.5rem, 3: 0.75rem, 4: 1rem, 5: 1.25rem, 6: 1.5rem);
   text-overflow: ellipsis !important;
 }
 
+// 与 .text-ellipsis 联用：限制最大宽度（宽度仍随短文本收缩）
+.ellipsis-max-sm { max-width: 10rem !important; }
+.ellipsis-max-md { max-width: 14rem !important; }
+.ellipsis-max-lg { max-width: 20rem !important; }
+.ellipsis-max-full { max-width: 100% !important; }
+
 @for $i from 2 through 4 {
   .line-clamp-#{$i} {
     overflow: hidden !important;
@@ -543,31 +549,303 @@ legend {
 .center-both { display: flex; align-items: center; justify-content: center; }
 
 /*------------------------------------*\
-  24. Badge 组件
+  24. 胶囊标签 (Tag / Badge)
+  用法: <span class="tag tag-rose">标签</span>
+  MDUI: tag-primary | secondary | tertiary | error | neutral
+  扩展: tag-success | warning | info | accent | rose | pink | red | crimson
+        | orange | coral | amber | yellow | gold | lime | green | emerald | mint
+        | teal | cyan | sky | blue | indigo | violet | purple | grape | fuchsia
+        | brown | stone | slate | navy
+  兼容 .badge 前缀；tag-outline 空心
+  超长省略：另加 text-ellipsis + ellipsis-max-*（勿写进 .tag 默认）
 \*------------------------------------*/
-.badge {
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-  font-weight: 500;
+
+// 扩展色板：bg / fg / border 三元组 (R,G,B)
+@function tag-rgb($tuple) {
+  @return #{nth($tuple, 1)}, #{nth($tuple, 2)}, #{nth($tuple, 3)};
 }
 
-.badge-sm {
-  padding: 0.37rem 0.55rem;
+@mixin emit-tag-css-vars($palette) {
+  @each $name, $triples in $palette {
+    --tag-#{$name}-bg: #{tag-rgb(nth($triples, 1))};
+    --tag-#{$name}-fg: #{tag-rgb(nth($triples, 2))};
+    --tag-#{$name}-border: #{tag-rgb(nth($triples, 3))};
+  }
+}
+
+$tag-palette-light: (
+  'success':  ((220, 252, 231), (21, 128, 61),   (74, 222, 128)),
+  'warning':  ((254, 243, 199), (180, 83, 9),    (251, 191, 36)),
+  'info':     ((219, 234, 254), (29, 78, 216),   (96, 165, 250)),
+  'accent':   ((237, 233, 254), (109, 40, 217),  (167, 139, 250)),
+  'rose':     ((255, 228, 230), (190, 18, 60),   (251, 113, 133)),
+  'pink':     ((252, 231, 243), (157, 23, 77),  (244, 114, 182)),
+  'red':      ((254, 226, 226), (185, 28, 28),  (248, 113, 113)),
+  'crimson':  ((255, 228, 232), (159, 18, 57),  (225, 29, 72)),
+  'orange':   ((255, 237, 213), (194, 65, 12),  (251, 146, 60)),
+  'coral':    ((255, 237, 230), (234, 88, 12),  (255, 127, 80)),
+  'amber':    ((254, 243, 199), (146, 64, 14),  (251, 191, 36)),
+  'yellow':   ((254, 249, 195), (133, 77, 14),  (250, 204, 21)),
+  'gold':     ((255, 251, 235), (161, 98, 7),   (251, 191, 36)),
+  'lime':     ((236, 252, 203), (63, 98, 18),   (163, 230, 53)),
+  'green':    ((220, 252, 231), (22, 101, 52),  (34, 197, 94)),
+  'emerald':  ((209, 250, 229), (4, 120, 87),   (52, 211, 153)),
+  'mint':     ((240, 253, 250), (17, 94, 89),   (94, 234, 212)),
+  'teal':     ((204, 251, 241), (15, 118, 110), (45, 212, 191)),
+  'cyan':     ((207, 250, 254), (14, 116, 144), (34, 211, 238)),
+  'sky':      ((224, 242, 254), (3, 105, 161),  (56, 189, 248)),
+  'blue':     ((219, 234, 254), (29, 78, 216),  (59, 130, 246)),
+  'indigo':   ((224, 231, 255), (55, 48, 163),  (129, 140, 248)),
+  'violet':   ((237, 233, 254), (91, 33, 182),  (167, 139, 250)),
+  'purple':   ((243, 232, 255), (107, 33, 168), (192, 132, 252)),
+  'grape':    ((245, 240, 255), (88, 28, 135),  (196, 181, 253)),
+  'fuchsia':  ((250, 232, 255), (162, 28, 175), (232, 121, 249)),
+  'brown':    ((239, 230, 219), (120, 53, 15),  (180, 143, 110)),
+  'stone':    ((245, 245, 244), (68, 64, 60),   (168, 162, 158)),
+  'slate':    ((241, 245, 249), (51, 65, 85),   (148, 163, 184)),
+  'navy':     ((226, 232, 240), (30, 41, 59),   (100, 116, 139)),
+);
+
+$tag-palette-dark: (
+  'success':  ((6, 78, 59),     (110, 231, 183), (16, 185, 129)),
+  'warning':  ((120, 53, 15),   (252, 211, 77),  (245, 158, 11)),
+  'info':     ((30, 58, 138),   (147, 197, 253), (59, 130, 246)),
+  'accent':   ((76, 29, 149),   (196, 181, 253), (139, 92, 246)),
+  'rose':     ((136, 19, 55),   (251, 207, 232), (244, 63, 94)),
+  'pink':     ((131, 24, 67),  (249, 168, 212), (236, 72, 153)),
+  'red':      ((127, 29, 29),   (254, 202, 202), (239, 68, 68)),
+  'crimson':  ((136, 19, 55),   (255, 205, 210), (233, 30, 99)),
+  'orange':   ((124, 45, 18),   (254, 215, 170), (249, 115, 22)),
+  'coral':    ((154, 52, 18),   (255, 214, 190), (255, 99, 71)),
+  'amber':    ((120, 53, 15),   (252, 211, 77),  (245, 158, 11)),
+  'yellow':   ((113, 63, 18),   (253, 224, 71),  (234, 179, 8)),
+  'gold':     ((120, 83, 14),   (253, 230, 138), (217, 169, 56)),
+  'lime':     ((54, 83, 20),    (217, 249, 157), (132, 204, 22)),
+  'green':    ((20, 83, 45),    (134, 239, 172), (34, 197, 94)),
+  'emerald':  ((6, 78, 59),     (110, 231, 183), (16, 185, 129)),
+  'mint':     ((19, 78, 74),    (153, 246, 228), (45, 212, 191)),
+  'teal':     ((19, 78, 74),    (153, 246, 228), (20, 184, 166)),
+  'cyan':     ((22, 78, 99),    (165, 243, 252), (6, 182, 212)),
+  'sky':      ((12, 74, 110),   (186, 230, 253), (14, 165, 233)),
+  'blue':     ((30, 58, 138),   (147, 197, 253), (59, 130, 246)),
+  'indigo':   ((49, 46, 129),   (199, 210, 254), (99, 102, 241)),
+  'violet':   ((76, 29, 149),   (221, 214, 254), (139, 92, 246)),
+  'purple':   ((88, 28, 135),   (233, 213, 255), (168, 85, 247)),
+  'grape':    ((74, 20, 140),   (233, 213, 255), (192, 132, 252)),
+  'fuchsia':  ((112, 26, 117),  (250, 207, 255), (217, 70, 239)),
+  'brown':    ((69, 26, 3),     (231, 214, 195), (180, 143, 110)),
+  'stone':    ((41, 37, 36),    (231, 229, 228), (168, 162, 158)),
+  'slate':    ((30, 41, 59),    (203, 213, 225), (100, 116, 139)),
+  'navy':     ((15, 23, 42),    (203, 213, 225), (71, 85, 105)),
+);
+
+$tag-color-names: map-keys($tag-palette-light);
+
+:root {
+  @include emit-tag-css-vars($tag-palette-light);
+  --tag-elev-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+@mixin tag-palette-dark {
+  @include emit-tag-css-vars($tag-palette-dark);
+  --tag-elev-shadow: none;
+}
+
+.mdui-theme-dark {
+  @include tag-palette-dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mdui-theme-auto {
+    @include tag-palette-dark;
+  }
+}
+
+// MDUI 内置色板变体
+@mixin tag-mdui-variant($name) {
+  .tag-#{$name},
+  .badge-#{$name} {
+    background-color: rgba(var(--mdui-color-#{$name}-container), 0.92);
+    color: rgba(var(--mdui-color-on-#{$name}-container));
+    border-color: rgba(var(--mdui-color-#{$name}), 0.28);
+  }
+
+  .tag-outline.tag-#{$name},
+  .tag-outline.badge-#{$name} {
+    background-color: transparent;
+    color: rgba(var(--mdui-color-on-#{$name}-container));
+    border-color: rgba(var(--mdui-color-#{$name}), 0.45);
+    box-shadow: none;
+  }
+}
+
+// 自定义语义色变体
+@mixin tag-custom-variant($name) {
+  .tag-#{$name},
+  .badge-#{$name} {
+    background-color: rgb(var(--tag-#{$name}-bg));
+    color: rgb(var(--tag-#{$name}-fg));
+    border-color: rgba(var(--tag-#{$name}-border), 0.55);
+  }
+
+  .tag-outline.tag-#{$name},
+  .tag-outline.badge-#{$name} {
+    background-color: transparent;
+    color: rgb(var(--tag-#{$name}-fg));
+    border-color: rgba(var(--tag-#{$name}-border), 0.65);
+    box-shadow: none;
+  }
+}
+
+// 胶囊：宽度随文本，不内置省略
+.tag,
+.badge {
+  display: inline-block;
+  box-sizing: border-box;
+  font-weight: 500;
+  vertical-align: middle;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  box-shadow: var(--tag-elev-shadow);
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tag-removable,
+.tag-has-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+
+  .tag-label {
+    min-width: 0;
+  }
+}
+
+.tag-remove {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0 0 0 0.25em;
+  margin: 0;
+  line-height: 1;
+  font-size: 1em;
+  color: inherit;
+  opacity: 0.75;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+// 默认尺寸（与 mdui-badge / 表格正文协调）
+.tag:not(.tag-sm):not(.tag-md):not(.tag-lg):not(.badge-sm):not(.badge-md):not(.badge-lg),
+.badge:not(.tag-sm):not(.tag-md):not(.tag-lg):not(.badge-sm):not(.badge-md):not(.badge-lg) {
+  padding: 0.375rem 0.75rem;
+  font-size: var(--mdui-typescale-body-small-size);
+  line-height: var(--mdui-typescale-body-small-line-height);
+  letter-spacing: 0.01em;
+}
+
+.badge-sm,
+.tag-sm {
+  padding: 0.25rem 0.5rem;
   font-size: var(--mdui-typescale-label-small-size);
   line-height: var(--mdui-typescale-label-small-line-height);
 }
 
-.badge-md {
-  padding: 0.5rem 0.75rem;
-  font-size: var(--mdui-typescale-label-medium-size);
-  line-height: var(--mdui-typescale-label-medium-line-height);
+.badge-md,
+.tag-md {
+  padding: 0.375rem 0.75rem;
+  font-size: var(--mdui-typescale-body-small-size);
+  line-height: var(--mdui-typescale-body-small-line-height);
 }
 
-.badge-lg {
-  padding: 0.625rem 1rem;
-  font-size: var(--mdui-typescale-label-large-size);
-  line-height: var(--mdui-typescale-label-large-line-height);
+.badge-lg,
+.tag-lg {
+  padding: 0.5rem 1rem;
+  font-size: var(--mdui-typescale-body-medium-size);
+  line-height: var(--mdui-typescale-body-medium-line-height);
+}
+
+.tags,
+.tag-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.tag-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+
+  &::before {
+    content: '';
+    flex-shrink: 0;
+    width: 0.45em;
+    height: 0.45em;
+    border-radius: 50%;
+    background-color: currentColor;
+    opacity: 0.85;
+  }
+}
+
+a.tag,
+a.badge,
+button.tag,
+button.badge {
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    filter: brightness(0.96);
+  }
+
+  &:active {
+    filter: brightness(0.92);
+  }
+}
+
+.mdui-theme-dark a.tag:hover,
+.mdui-theme-dark a.badge:hover,
+.mdui-theme-dark button.tag:hover,
+.mdui-theme-dark button.badge:hover {
+  filter: brightness(1.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  .mdui-theme-auto a.tag:hover,
+  .mdui-theme-auto a.badge:hover,
+  .mdui-theme-auto button.tag:hover,
+  .mdui-theme-auto button.badge:hover {
+    filter: brightness(1.12);
+  }
+}
+
+@include tag-mdui-variant('primary');
+@include tag-mdui-variant('secondary');
+@include tag-mdui-variant('tertiary');
+@include tag-mdui-variant('error');
+
+.tag-neutral,
+.badge-neutral {
+  background-color: rgba(var(--mdui-color-surface-container-high), 0.95);
+  color: rgba(var(--mdui-color-on-surface-variant));
+  border-color: rgba(var(--mdui-color-outline), 0.35);
+}
+
+.tag-outline.tag-neutral,
+.tag-outline.badge-neutral {
+  background-color: transparent;
+  color: rgba(var(--mdui-color-on-surface-variant));
+  border-color: rgba(var(--mdui-color-outline), 0.5);
+  box-shadow: none;
+}
+
+@each $name in $tag-color-names {
+  @include tag-custom-variant($name);
 }
 
 /*------------------------------------*\
