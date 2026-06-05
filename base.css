@@ -2747,6 +2747,11 @@ legend {
   gap: 0.375rem;
 }
 
+.tag-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+}
 .tag-dot::before {
   content: "";
   flex-shrink: 0;
