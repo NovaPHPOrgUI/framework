@@ -82,14 +82,14 @@ class PjaxUtils {
          * 处理页面加载失败的情况
          */
         document.addEventListener("pjax:error", (evt) => {
-            console.error(evt)
             this.loading = false;
             if (this.pjax.state.href.endsWith(this.error)) {
+                NProgress.done();
                 $.toaster.error("网络错误");
                 return;
             }
-            this.loadUri(this.error);
             $.toaster.error("页面加载失败");
+            this.pjax.loadUrl(this.error, { history: false });
         });
 
         /**
