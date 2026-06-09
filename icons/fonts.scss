@@ -1,9 +1,11 @@
+$icons-dir: "/static/framework/icons/";
+
 $icons: (
-        "Material Icons": "./flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2",
-        "Material Icons Outlined": "./gok-H7zzDkdnRel8-DQ6KAXJ69wP1tGnf4ZGhUcel5euIg.woff2",
-        "Material Icons Round": "./LDItaoyNOAY6Uewc665JcIzCKsKc_M9flwmPq_HTTw.woff2",
-        "Material Icons Sharp": "./oPWQ_lt5nv4pWNJpghLP75WiFR4kLh3kvmvRImcycg.woff2",
-        "Material Icons Two Tone": "./hESh6WRmNCxEqUmNyh3JDeGxjVVyMg4tHGctNCu0NjbrHg.woff2"
+        "Material Icons": "#{$icons-dir}flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2",
+        "Material Icons Outlined": "#{$icons-dir}gok-H7zzDkdnRel8-DQ6KAXJ69wP1tGnf4ZGhUcel5euIg.woff2",
+        "Material Icons Round": "#{$icons-dir}LDItaoyNOAY6Uewc665JcIzCKsKc_M9flwmPq_HTTw.woff2",
+        "Material Icons Sharp": "#{$icons-dir}oPWQ_lt5nv4pWNJpghLP75WiFR4kLh3kvmvRImcycg.woff2",
+        "Material Icons Two Tone": "#{$icons-dir}hESh6WRmNCxEqUmNyh3JDeGxjVVyMg4tHGctNCu0NjbrHg.woff2"
 );
 
 /* 公共样式 */
@@ -48,4 +50,3 @@ $icons: (
     font-family: $name;
   }
 }
-
