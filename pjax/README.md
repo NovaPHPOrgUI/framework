@@ -2,7 +2,7 @@
 
 ## 概述
 
-基于 [pjax.js](https://github.com/MoOx/pjax) 封装的 `PjaxUtils`，实现页面无刷新加载。
+自研 `PjaxUtils`，实现页面无刷新加载，无第三方 PJAX 依赖。
 
 ## 工作原理
 
@@ -18,9 +18,9 @@ PJAX 请求返回后，框架自动替换四个锚点元素：
 ## 生命周期
 
 ```
-pjax:send     → NProgress 开始 → $.emitter.off() → pageOnUnLoad()
-pjax:error    → 跳转 /404 错误页
-pjax:complete → 等待 pageOnLoad 声明 → $.loader 加载 pageLoadFiles → pageOnLoad()
+loadUrl 开始  → beginLoad()：NProgress 开始 → $.emitter.off() → pageOnUnLoad()
+请求失败      → handleError()：跳转 /404 错误页
+请求成功/展示错误页后 → handleSuccess() → onComplete(url) 更新 sidebar → 等待 pageOnLoad → pageOnLoad()
 ```
 
 ## 子页面模板

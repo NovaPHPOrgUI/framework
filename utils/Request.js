@@ -39,6 +39,8 @@ class Request {
         this.codeCallBack = {
 
         };
+        /** @type {boolean} 失败时是否弹出默认 toast */
+        this.silent = false;
     }
 
     /**
@@ -73,6 +75,16 @@ class Request {
     }
 
     /**
+     * 失败时不弹出默认 toast（由调用方自行处理错误）
+     * @param {boolean} [silent=true]
+     * @returns {Request}
+     */
+    setSilent(silent = true) {
+        this.silent = silent;
+        return this;
+    }
+
+    /**
      * 内部AJAX请求方法
      * @param {string} method - 请求方法
      * @param {string} url - 请求URL
@@ -80,10 +92,11 @@ class Request {
      * @param {string} [contentType] - 内容类型
      * @param {Function} [success] - 成功回调
      * @param {Function} [error] - 错误回调
+     * @param {{ dataType?: string }} [options]
      * @returns {Object} jQuery AJAX对象
      * @private
      */
-    _ajax(method, url, data, contentType, success, error) {
+    _ajax(method, url, data, contentType, success, error, options = {}) {
         const self = this;
 
         if(!url.startsWith('http')){
@@ -99,6 +112,7 @@ class Request {
             headers: self.headers,
             data: data,
             contentType: contentType,
+            dataType: options.dataType,
             success(response, status) {
                 $.logger.info(`RequestResult: `);
                 $.logger.info(response);
@@ -119,7 +133,9 @@ class Request {
                 if (typeof error === 'function') {
                     error(status);
                 }
-                $.toaster.error('请求失败');
+                if (!self.silent) {
+                    $.toaster.error('请求失败');
+                }
                 $.logger.error(status);
             },
             complete() {
@@ -134,10 +150,11 @@ class Request {
      * @param {Object} data - 请求参数
      * @param {Function} [success] - 成功回调
      * @param {Function} [error] - 错误回调
+     * @param {{ dataType?: string }} [options]
      * @returns {Object} jQuery AJAX对象
      */
-    get(url, data, success, error) {
-        return this._ajax('GET', url, data, 'application/x-www-form-urlencoded', success, error);
+    get(url, data, success, error, options) {
+        return this._ajax('GET', url, data, 'application/x-www-form-urlencoded', success, error, options);
     }
 
     /**

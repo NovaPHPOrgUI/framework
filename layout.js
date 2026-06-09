@@ -246,8 +246,11 @@ class SidebarManager {
 // ============================================
 // 初始化
 // ============================================
-const pjaxUtils = new PjaxUtils(true, () => {}, "/404");
-const sidebarManager = new SidebarManager(pjaxUtils);
+let sidebarManager;
+const pjaxUtils = new PjaxUtils((url) => {
+    sidebarManager.updateActiveState(url);
+}, "/404");
+sidebarManager = new SidebarManager(pjaxUtils);
 
 const navigationDrawerEl = document.querySelector(".navigation-drawer");
 
@@ -280,10 +283,9 @@ $(document).on("scroll", function () {
 // 页面加载
 // ============================================
 
-const initialUrl =
-    window.location.pathname + window.location.search + window.location.hash;
+const initialUrl = window.location.pathname + window.location.search;
 sidebarManager.updateActiveState(initialUrl);
-pjaxUtils.loadUri(initialUrl);
+pjaxUtils.loadUri(initialUrl, { history: false });
 
 $.request.setBaseUrl(baseUri).setOnCode(401, (response) => {
     $.toaster.error("登录已过期，请重新登录");
