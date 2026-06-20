@@ -73,9 +73,14 @@ $.form = {
      * @param {boolean} [disabled] - 是否禁用表单元素
      */
     set: function (form, data, disabled) {
+
+        console.log(form,$(form), $(form).find(formElems))
+
         $(form).find(formElems).each(function () {
             let name = $(this).attr("name");
-            let value = data[name];
+            // 去掉 name 中的 [] 后缀，支持 permissions[] 对应 permissions
+            let dataKey = name.replace(/\[\]$/, '');
+            let value = data[dataKey];
 
             if(value === undefined) return;
 
@@ -83,6 +88,8 @@ $.form = {
                 if (value instanceof Array) {
                     if (value.indexOf($(this).val()) !== -1) {
                         $(this).prop("checked", true);
+                    } else {
+                        $(this).prop("checked", false);
                     }
                 }else{
                     $(this).prop("checked", value === 1 || value === "true" || value === true || value === "1" );
