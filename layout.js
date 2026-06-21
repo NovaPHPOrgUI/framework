@@ -255,7 +255,7 @@ sidebarManager = new SidebarManager(pjaxUtils);
 const navigationDrawerEl = document.querySelector(".navigation-drawer");
 
 // 响应式：小屏幕关闭侧边栏
-if (mdui.breakpoint().down("lg")) {
+if (mdui.breakpoint().down("md")) {
     if (navigationDrawerEl) {
         navigationDrawerEl.open = false;
     }

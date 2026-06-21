@@ -28,7 +28,7 @@ mdui-top-app-bar,
   padding: 0.3rem 0.5rem;
   height: 3.1rem;
   box-sizing: border-box;
-  margin-right: 1.5rem;
+  cursor: pointer;
 }
 .layout-header-user-info::part(button) {
   padding: 0;
