@@ -4,6 +4,8 @@
  */
 
 @use "sass:math";
+@use "sass:color";
+@use "sass:map";
 
 /*------------------------------------*\
   1. 基础 Reset
@@ -556,97 +558,132 @@ legend {
         | orange | coral | amber | yellow | gold | lime | green | emerald | mint
         | teal | cyan | sky | blue | indigo | violet | purple | grape | fuchsia
         | brown | stone | slate | navy
+  色源: --material-*（Android Material 原色）→ 自动生成 --tag-*-bg/fg（日夜间）
   兼容 .badge 前缀；tag-outline 空心
   超长省略：另加 text-ellipsis + ellipsis-max-*（勿写进 .tag 默认）
 \*------------------------------------*/
 
-// 扩展色板：bg / fg / border 三元组 (R,G,B)
+// 扩展色板：bg / fg 二元组 (R,G,B)，同色相低对比
 @function tag-rgb($tuple) {
   @return #{nth($tuple, 1)}, #{nth($tuple, 2)}, #{nth($tuple, 3)};
 }
 
-@mixin emit-tag-css-vars($palette) {
-  @each $name, $triples in $palette {
-    --tag-#{$name}-bg: #{tag-rgb(nth($triples, 1))};
-    --tag-#{$name}-fg: #{tag-rgb(nth($triples, 2))};
-    --tag-#{$name}-border: #{tag-rgb(nth($triples, 3))};
+@function tag-rgb-tuple($c) {
+  @return (
+    math.round(color.channel($c, "red", $space: rgb)),
+    math.round(color.channel($c, "green", $space: rgb)),
+    math.round(color.channel($c, "blue", $space: rgb))
+  );
+}
+
+// Material 原始色（与 Android ThemeColorDef 对齐）
+$material-source: (
+  'default':      #6750A4,
+  'sakura':       #FF9CA8,
+  'red':          #F44336,
+  'pink':         #E91E63,
+  'purple':       #9C27B0,
+  'deep-purple':  #673AB7,
+  'indigo':       #3F51B5,
+  'blue':         #2196F3,
+  'light-blue':   #03A9F4,
+  'cyan':         #00BCD4,
+  'teal':         #009688,
+  'green':        #4CAF50,
+  'light-green':  #8BC34A,
+  'lime':         #CDDC39,
+  'yellow':       #FFEB3B,
+  'amber':        #FFC107,
+  'orange':       #FF9800,
+  'deep-orange':  #FF5722,
+  'brown':        #795548,
+  'blue-grey':    #607D8F,
+);
+
+// tag 类名 → Material 色键
+$tag-material-map: (
+  'success':  'green',
+  'warning':  'amber',
+  'info':     'blue',
+  'accent':   'default',
+  'rose':     'sakura',
+  'pink':     'pink',
+  'red':      'red',
+  'crimson':  'deep-orange',
+  'orange':   'orange',
+  'coral':    'deep-orange',
+  'amber':    'amber',
+  'yellow':   'yellow',
+  'gold':     'amber',
+  'lime':     'lime',
+  'green':    'green',
+  'emerald':  'teal',
+  'mint':     'light-green',
+  'teal':     'teal',
+  'cyan':     'cyan',
+  'sky':      'light-blue',
+  'blue':     'blue',
+  'indigo':   'indigo',
+  'violet':   'deep-purple',
+  'purple':   'purple',
+  'grape':    'purple',
+  'fuchsia':  'pink',
+  'brown':    'brown',
+  'stone':    'blue-grey',
+  'slate':    'blue-grey',
+  'navy':     'indigo',
+);
+
+@mixin emit-material-source-vars($sources) {
+  @each $name, $hex in $sources {
+    --material-#{$name}: #{tag-rgb(tag-rgb-tuple($hex))};
   }
 }
 
-$tag-palette-light: (
-  'success':  ((220, 252, 231), (21, 128, 61),   (74, 222, 128)),
-  'warning':  ((254, 243, 199), (180, 83, 9),    (251, 191, 36)),
-  'info':     ((219, 234, 254), (29, 78, 216),   (96, 165, 250)),
-  'accent':   ((237, 233, 254), (109, 40, 217),  (167, 139, 250)),
-  'rose':     ((255, 228, 230), (190, 18, 60),   (251, 113, 133)),
-  'pink':     ((252, 231, 243), (157, 23, 77),  (244, 114, 182)),
-  'red':      ((254, 226, 226), (185, 28, 28),  (248, 113, 113)),
-  'crimson':  ((255, 228, 232), (159, 18, 57),  (225, 29, 72)),
-  'orange':   ((255, 237, 213), (194, 65, 12),  (251, 146, 60)),
-  'coral':    ((255, 237, 230), (234, 88, 12),  (255, 127, 80)),
-  'amber':    ((254, 243, 199), (146, 64, 14),  (251, 191, 36)),
-  'yellow':   ((254, 249, 195), (133, 77, 14),  (250, 204, 21)),
-  'gold':     ((255, 251, 235), (161, 98, 7),   (251, 191, 36)),
-  'lime':     ((236, 252, 203), (63, 98, 18),   (163, 230, 53)),
-  'green':    ((220, 252, 231), (22, 101, 52),  (34, 197, 94)),
-  'emerald':  ((209, 250, 229), (4, 120, 87),   (52, 211, 153)),
-  'mint':     ((240, 253, 250), (17, 94, 89),   (94, 234, 212)),
-  'teal':     ((204, 251, 241), (15, 118, 110), (45, 212, 191)),
-  'cyan':     ((207, 250, 254), (14, 116, 144), (34, 211, 238)),
-  'sky':      ((224, 242, 254), (3, 105, 161),  (56, 189, 248)),
-  'blue':     ((219, 234, 254), (29, 78, 216),  (59, 130, 246)),
-  'indigo':   ((224, 231, 255), (55, 48, 163),  (129, 140, 248)),
-  'violet':   ((237, 233, 254), (91, 33, 182),  (167, 139, 250)),
-  'purple':   ((243, 232, 255), (107, 33, 168), (192, 132, 252)),
-  'grape':    ((245, 240, 255), (88, 28, 135),  (196, 181, 253)),
-  'fuchsia':  ((250, 232, 255), (162, 28, 175), (232, 121, 249)),
-  'brown':    ((239, 230, 219), (120, 53, 15),  (180, 143, 110)),
-  'stone':    ((245, 245, 244), (68, 64, 60),   (168, 162, 158)),
-  'slate':    ((241, 245, 249), (51, 65, 85),   (148, 163, 184)),
-  'navy':     ((226, 232, 240), (30, 41, 59),   (100, 116, 139)),
-);
+/// 浅色：以 Material 原色为种子，生成同色相低对比 bg/fg
+@function tag-light-pair-from($source) {
+  $bg: color.mix(white, $source, 90%);
+  $fg: color.mix($source, #4a4458, 54%);
+  @return (tag-rgb-tuple($bg), tag-rgb-tuple($fg));
+}
 
-$tag-palette-dark: (
-  'success':  ((6, 78, 59),     (110, 231, 183), (16, 185, 129)),
-  'warning':  ((120, 53, 15),   (252, 211, 77),  (245, 158, 11)),
-  'info':     ((30, 58, 138),   (147, 197, 253), (59, 130, 246)),
-  'accent':   ((76, 29, 149),   (196, 181, 253), (139, 92, 246)),
-  'rose':     ((136, 19, 55),   (251, 207, 232), (244, 63, 94)),
-  'pink':     ((131, 24, 67),  (249, 168, 212), (236, 72, 153)),
-  'red':      ((127, 29, 29),   (254, 202, 202), (239, 68, 68)),
-  'crimson':  ((136, 19, 55),   (255, 205, 210), (233, 30, 99)),
-  'orange':   ((124, 45, 18),   (254, 215, 170), (249, 115, 22)),
-  'coral':    ((154, 52, 18),   (255, 214, 190), (255, 99, 71)),
-  'amber':    ((120, 53, 15),   (252, 211, 77),  (245, 158, 11)),
-  'yellow':   ((113, 63, 18),   (253, 224, 71),  (234, 179, 8)),
-  'gold':     ((120, 83, 14),   (253, 230, 138), (217, 169, 56)),
-  'lime':     ((54, 83, 20),    (217, 249, 157), (132, 204, 22)),
-  'green':    ((20, 83, 45),    (134, 239, 172), (34, 197, 94)),
-  'emerald':  ((6, 78, 59),     (110, 231, 183), (16, 185, 129)),
-  'mint':     ((19, 78, 74),    (153, 246, 228), (45, 212, 191)),
-  'teal':     ((19, 78, 74),    (153, 246, 228), (20, 184, 166)),
-  'cyan':     ((22, 78, 99),    (165, 243, 252), (6, 182, 212)),
-  'sky':      ((12, 74, 110),   (186, 230, 253), (14, 165, 233)),
-  'blue':     ((30, 58, 138),   (147, 197, 253), (59, 130, 246)),
-  'indigo':   ((49, 46, 129),   (199, 210, 254), (99, 102, 241)),
-  'violet':   ((76, 29, 149),   (221, 214, 254), (139, 92, 246)),
-  'purple':   ((88, 28, 135),   (233, 213, 255), (168, 85, 247)),
-  'grape':    ((74, 20, 140),   (233, 213, 255), (192, 132, 252)),
-  'fuchsia':  ((112, 26, 117),  (250, 207, 255), (217, 70, 239)),
-  'brown':    ((69, 26, 3),     (231, 214, 195), (180, 143, 110)),
-  'stone':    ((41, 37, 36),    (231, 229, 228), (168, 162, 158)),
-  'slate':    ((30, 41, 59),    (203, 213, 225), (100, 116, 139)),
-  'navy':     ((15, 23, 42),    (203, 213, 225), (71, 85, 105)),
-);
+/// 深色：压低明度背景 + 提亮同色相前景
+@function tag-dark-pair-from($source) {
+  $bg: color.mix(#141218, $source, 86%);
+  $fg: color.mix(white, $source, 64%);
+  @return (tag-rgb-tuple($bg), tag-rgb-tuple($fg));
+}
 
-$tag-color-names: map-keys($tag-palette-light);
+@function build-tag-palette-from-material($tag-map, $sources, $mode: 'light') {
+  $palette: ();
+  @each $tag-name, $material-name in $tag-map {
+    $source: map.get($sources, $material-name);
+    $pair: if($mode == 'light', tag-light-pair-from($source), tag-dark-pair-from($source));
+    $palette: map.merge($palette, ($tag-name: $pair));
+  }
+  @return $palette;
+}
+
+@mixin emit-tag-css-vars($palette) {
+  @each $name, $pairs in $palette {
+    --tag-#{$name}-bg: #{tag-rgb(nth($pairs, 1))};
+    --tag-#{$name}-fg: #{tag-rgb(nth($pairs, 2))};
+  }
+}
+
+$tag-palette-light: build-tag-palette-from-material($tag-material-map, $material-source, 'light');
+$tag-palette-dark: build-tag-palette-from-material($tag-material-map, $material-source, 'dark');
+
+$tag-color-names: map.keys($tag-palette-light);
 
 :root {
+  @include emit-material-source-vars($material-source);
   @include emit-tag-css-vars($tag-palette-light);
-  --tag-elev-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --tag-elev-shadow: none;
 }
 
 @mixin tag-palette-dark {
+  @include emit-material-source-vars($material-source);
   @include emit-tag-css-vars($tag-palette-dark);
   --tag-elev-shadow: none;
 }
@@ -661,20 +698,18 @@ $tag-color-names: map-keys($tag-palette-light);
   }
 }
 
-// MDUI 内置色板变体
+// MDUI 内置色板变体（同色相低对比，无边框）
 @mixin tag-mdui-variant($name) {
   .tag-#{$name},
   .badge-#{$name} {
-    background-color: rgba(var(--mdui-color-#{$name}-container), 0.92);
-    color: rgba(var(--mdui-color-on-#{$name}-container));
-    border-color: rgba(var(--mdui-color-#{$name}), 0.28);
+    background-color: rgba(var(--mdui-color-#{$name}-container), 0.5);
+    color: rgba(var(--mdui-color-#{$name}), 0.82);
   }
 
   .tag-outline.tag-#{$name},
   .tag-outline.badge-#{$name} {
-    background-color: transparent;
-    color: rgba(var(--mdui-color-on-#{$name}-container));
-    border-color: rgba(var(--mdui-color-#{$name}), 0.45);
+    background-color: rgba(var(--mdui-color-#{$name}-container), 0.28);
+    color: rgba(var(--mdui-color-#{$name}), 0.78);
     box-shadow: none;
   }
 }
@@ -685,14 +720,12 @@ $tag-color-names: map-keys($tag-palette-light);
   .badge-#{$name} {
     background-color: rgb(var(--tag-#{$name}-bg));
     color: rgb(var(--tag-#{$name}-fg));
-    border-color: rgba(var(--tag-#{$name}-border), 0.55);
   }
 
   .tag-outline.tag-#{$name},
   .tag-outline.badge-#{$name} {
-    background-color: transparent;
+    background-color: rgba(var(--tag-#{$name}-bg), 0.45);
     color: rgb(var(--tag-#{$name}-fg));
-    border-color: rgba(var(--tag-#{$name}-border), 0.65);
     box-shadow: none;
   }
 }
@@ -705,9 +738,9 @@ $tag-color-names: map-keys($tag-palette-light);
   font-weight: 500;
   vertical-align: middle;
   border-radius: 9999px;
-  border: 1px solid transparent;
+  border: none;
   box-shadow: var(--tag-elev-shadow);
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .tag-removable,
@@ -831,16 +864,14 @@ button.badge {
 
 .tag-neutral,
 .badge-neutral {
-  background-color: rgba(var(--mdui-color-surface-container-high), 0.95);
+  background-color: rgba(var(--mdui-color-surface-container-high), 0.72);
   color: rgba(var(--mdui-color-on-surface-variant));
-  border-color: rgba(var(--mdui-color-outline), 0.35);
 }
 
 .tag-outline.tag-neutral,
 .tag-outline.badge-neutral {
-  background-color: transparent;
+  background-color: rgba(var(--mdui-color-surface-container-high), 0.38);
   color: rgba(var(--mdui-color-on-surface-variant));
-  border-color: rgba(var(--mdui-color-outline), 0.5);
   box-shadow: none;
 }
 
