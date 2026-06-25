@@ -75,6 +75,8 @@ $.form = {
     set: function (form, data, disabled) {
         $(form).find(formElems).each(function () {
             let name = $(this).attr("name");
+            // 无 name 的元素（如组件内部的子控件）无法映射数据，跳过，避免后续 replace 报错
+            if (!name) return;
             // 去掉 name 中的 [] 后缀，支持 permissions[] 对应 permissions
             let dataKey = name.replace(/\[\]$/, '');
             let value = data[dataKey];
