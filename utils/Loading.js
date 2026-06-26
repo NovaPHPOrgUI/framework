@@ -178,8 +178,10 @@ class Loading {
     const map = new WeakMap();
 
     function show(el,text) {
-        // 仅对 div 生效：避免与 mdui-button 等组件自带的 loading 属性冲突
-        if (!el || el.tagName !== 'DIV') return;
+        // 排除 mdui-button 系列：它们自带 loading 属性，避免冲突；其余任意容器均可作为遮罩宿主
+        if (!el) return;
+        var tag = (el.tagName || '').toLowerCase();
+        if (tag === 'mdui-button' || tag === 'mdui-button-icon' || tag === 'mdui-fab') return;
         if (map.has(el)) return;
         
         // 确保元素有定位，否则遮罩层会飞掉
