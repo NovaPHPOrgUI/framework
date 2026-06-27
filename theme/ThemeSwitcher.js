@@ -34,6 +34,9 @@ class ThemeSwitcher extends HTMLElement {
           :host {
             display: flex;
           }
+          #iconBtn {
+            --mdui-color-on-surface-variant: var(--bar-icon-color, var(--mdui-color-on-surface-variant));
+          }
 
           .card {
             padding: 1rem;
