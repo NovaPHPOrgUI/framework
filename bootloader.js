@@ -104,12 +104,20 @@ window.jsMap = {
         "/components/dataTable/Pagination.js"
     ],
     DatePicker: "/components/datepicker/datepicker.js",
-    Markdown: [
-        '/components/markdown/cherry-markdown.min.css',
-        '/components/markdown/cherry.css',
-        '/components/markdown/cherry-markdown.min.js',
-        "/components/markdown/diff.min.js",
-        "/components/markdown/Markdown.js",
+    /** 纯预览 */
+    MarkdownPreviewer: [
+        '/components/markdown/penna-render.min.css',
+        '/components/markdown/penna-host.css',
+        '/components/markdown/penna-render.min.js',
+        '/components/markdown/MarkdownPreviewer.js',
+    ],
+    /** 完整编辑器 */
+    MarkdownEditor: [
+        '/components/markdown/penna-editor-base.min.css',
+        '/components/markdown/penna-render.min.css',
+        '/components/markdown/penna-host.css',
+        '/components/markdown/penna.min.js',
+        '/components/markdown/MarkdownEditor.js',
     ],
     Captcha: "/components/captcha/Captcha.js",
     QrScan:[
