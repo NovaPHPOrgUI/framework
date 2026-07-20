@@ -47,9 +47,6 @@ ${iconBtn ? '<mdui-button-icon slot="trigger"  icon="translate" id="iconBtn"></m
           :host,mdui-menu-item {
           display: flex;
           }
-          #iconBtn {
-            --mdui-color-on-surface-variant: var(--bar-icon-color, var(--mdui-color-on-surface-variant));
-          }
           mdui-menu-item{
             align-items: center;
             cursor: pointer;
