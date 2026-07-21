@@ -132,7 +132,10 @@ window.jsMap = {
         "/components/tree/Tree.js",
         "/components/tree/Tree.css"
     ],
-    ContextMenu: "/components/menu/ContextMenu.js",
+    ContextMenu: [
+        "/components/menu/ContextMenu.css",
+        "/components/menu/ContextMenu.js",
+    ],
     Cron:"/components/cron/Cron.js"
 }
 
