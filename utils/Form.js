@@ -43,6 +43,15 @@ $.form = {
             data[name] = $(item).prop("checked")?1:0;
         });
 
+        // 布尔 checkbox（非 name[] 分组）：未勾选时 serialize 不会带上字段
+        $(form).find("mdui-checkbox").each(function (key, item) {
+            let name = $(item).attr("name");
+            if (!name || /\[\]$/.test(name)) {
+                return;
+            }
+            data[name] = $(item).prop("checked") ? 1 : 0;
+        });
+
         $(form).find("mdui-chip-group").each(function (key, item) {
             let name = $(item).attr("name");
             data[name] = $(item).val();
