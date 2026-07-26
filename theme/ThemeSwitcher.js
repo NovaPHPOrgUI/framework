@@ -14,7 +14,7 @@ class ThemeSwitcher extends HTMLElement {
         const iconBtn = this.getAttribute('iconBtn') || false;
         this.shadowRoot.innerHTML = `
           <mdui-dropdown placement="auto">
-          ${iconBtn ? '<mdui-button-icon slot="trigger" icon="color_lens" id="iconBtn"></mdui-button-icon>' : '<mdui-fab slot="trigger" id="fabBtn" icon="color_lens"></mdui-fab>'}
+          ${iconBtn ? '<mdui-button-icon slot="trigger" part="trigger-icon" icon="color_lens" id="iconBtn"></mdui-button-icon>' : '<mdui-fab slot="trigger" id="fabBtn" icon="color_lens"></mdui-fab>'}
             <mdui-card class="card" variant="elevated">
               <div class="color-label">页面样式</div>
               <div class="color-preset color-preset--mode">

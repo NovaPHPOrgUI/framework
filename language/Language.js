@@ -38,7 +38,7 @@ class Language extends HTMLElement {
       const iconBtn = this.getAttribute("iconBtn") || false;
       this.shadowRoot.innerHTML = `
         <mdui-dropdown placement="auto">
-${iconBtn ? '<mdui-button-icon slot="trigger"  icon="translate" id="iconBtn"></mdui-button-icon>' : '<mdui-fab slot="trigger" id="fabBtn" icon="language" >    </mdui-fab>'}
+${iconBtn ? '<mdui-button-icon slot="trigger" part="trigger-icon" icon="translate" id="iconBtn"></mdui-button-icon>' : '<mdui-fab slot="trigger" id="fabBtn" icon="language" >    </mdui-fab>'}
 
     <mdui-menu selects="single" >
     </mdui-menu>
