@@ -233,6 +233,22 @@ class PjaxUtils {
             return;
         }
 
+        // 首屏 seed：服务端把当前页片段放进 <template id="page">，直接消费一次，省去首屏请求
+        const seed = document.getElementById("page");
+        if (seed && seed.tagName === "TEMPLATE") {
+            const html = seed.innerHTML;
+            seed.remove();
+            try {
+                this.switchContent(html);
+                this.state = { href: targetHref, history };
+                this.handleSuccess();
+            } catch (e) {
+                $.logger.error(e);
+                this.handleError();
+            }
+            return;
+        }
+
         this.request = this.http.get(
             targetHref,
             {},
