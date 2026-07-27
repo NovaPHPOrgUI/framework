@@ -305,8 +305,21 @@ $.waitClass(selector, parent, fn); // 等待 class 出现
 - 菜单项 `data-link` + `data-pjax="true"` → 自动 PJAX 跳转
 - 元素 `[data-pjax-item]` + `data-href` → 点击跳转
 - 顶栏滚动时自动添加 `scrolling` 属性
+- layout 中存在 `<template id="page">` 时，首屏直接消费该片段，不再发请求（详见 `pjax/README.md`）
 
-### 5.5 jsMap 组件注册
+### 5.5 请求预取 `Preloader`
+
+按 key 缓存异步请求的 Promise：命中即复用，失败自动移除以便重试。取数方式由 loader 注入，适用于悬停预取、点击直出。
+
+```javascript
+const pre = new Preloader((path) => new Promise((resolve, reject) => {
+    $.request.get('/api/doc/' + path, {}, resolve, () => reject());
+}));
+el.addEventListener('mouseover', () => pre.prefetch(path));
+pre.fetch(path).then(render).catch(showError);
+```
+
+### 5.6 jsMap 组件注册
 
 `bootloader.js` 中的 `window.jsMap` 定义可按需加载的组件映射，`pageLoadFiles` 使用 key 名：
 

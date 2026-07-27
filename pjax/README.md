@@ -19,9 +19,22 @@ PJAX 请求返回后，框架自动替换四个锚点元素：
 
 ```
 loadUrl 开始  → beginLoad()：NProgress 开始 → $.emitter.off() → pageOnUnLoad()
+命中首屏 seed → 直接 switchContent()，不发请求
 请求失败      → handleError()：跳转 /404 错误页
 请求成功/展示错误页后 → handleSuccess() → onComplete(url) 更新 sidebar → 等待 pageOnLoad → pageOnLoad()
 ```
+
+## 首屏 seed（零请求首屏）
+
+`layout.js` 启动时会对当前地址执行一次 `loadUri()`。若后端已把当前页片段直出进 layout：
+
+```html
+<template id="page"><!-- 子页面片段 --></template>
+```
+
+`loadUrl()` 会直接消费并移除该 `<template>`，省掉首屏那次 PJAX 请求。`<template>` 内容不进入活动 DOM，所以其中的 `#title` / `#style` / `#container` / `#script` 不会和 layout 自身的锚点冲突。
+
+后端约定见 `nova/plugin/tpl/README.md` 的「布局与首屏直出」。没有该 `<template>` 时行为不变，仍走一次请求。
 
 ## 子页面模板
 
