@@ -306,6 +306,7 @@ $.waitClass(selector, parent, fn); // 等待 class 出现
 - 元素 `[data-pjax-item]` + `data-href` → 点击跳转
 - 顶栏滚动时自动添加 `scrolling` 属性
 - layout 中存在 `<template id="page">` 时，首屏直接消费该片段，不再发请求（详见 `pjax/README.md`）
+- `pjaxUtils.prefetch(uri)` 悬停预取，点击时直接命中；单槽抢跑不做缓存，只给搜索结果这类高价值入口加
 
 ### 5.5 请求预取 `Preloader`
 

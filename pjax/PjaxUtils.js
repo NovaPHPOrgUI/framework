@@ -31,8 +31,11 @@ class PjaxUtils {
         this.error = error;
         /** @type {{ href: string | null, history: boolean }} 当前请求状态 */
         this.state = { href: null, history: true };
-        /** @type {JQuery.jqXHR | null} 进行中的 AJAX 请求，用于 abort */
-        this.request = null;
+        /**
+         * 悬停预取的单槽。只留最近一个：预取的是整页片段，留多份既压后端也会读到过期内容。
+         * @type {{ href: string | null, html: Promise<string> | null }}
+         */
+        this.prefetched = { href: null, html: null };
         /** @type {number} History state 递增 uid */
         this.uid = 0;
         /** @type {Request} 专用 HTTP 客户端（带 PJAX 请求头、静默错误 toast） */
@@ -100,23 +103,9 @@ class PjaxUtils {
     }
 
     /**
-     * 中止进行中的 PJAX 请求
-     */
-    abortRequest() {
-        if (this.request) {
-            this.request.abort();
-            this.request = null;
-        }
-    }
-
-    /**
      * 开始加载：显示进度条、清理旧页面状态
-     * @returns {boolean} 若已在加载中则返回 false，调用方应跳过本次请求
      */
     beginLoad() {
-        if (this.loading) {
-            return false;
-        }
         this.loading = true;
         try {
             NProgress.start();
@@ -129,7 +118,6 @@ class PjaxUtils {
         } catch (e) {
             $.logger.error(e);
         }
-        return true;
     }
 
     /**
@@ -215,11 +203,15 @@ class PjaxUtils {
      *   - recover: 为 true 表示内部加载错误页，不更新 navigationHref / 地址栏
      */
     loadUrl(href, options = {}) {
+        // mdui 的 $.ajax 返回裸 Promise，无法中止在途请求，故导航期间直接忽略新的跳转
+        if (this.loading) {
+            return;
+        }
+
         const history = options.history !== false;
         const recover = options.recover === true;
         const targetHref = this.normalizeHref(href);
 
-        this.abortRequest();
         this.state = { href: targetHref, history };
 
         if (!recover) {
@@ -229,51 +221,88 @@ class PjaxUtils {
             }
         }
 
-        if (!this.beginLoad()) {
-            return;
-        }
+        this.beginLoad();
 
-        // 首屏 seed：服务端把当前页片段放进 <template id="page">，直接消费一次，省去首屏请求
-        const seed = document.getElementById("page");
-        if (seed && seed.tagName === "TEMPLATE") {
-            const html = seed.innerHTML;
-            seed.remove();
-            try {
-                this.switchContent(html);
-                this.state = { href: targetHref, history };
-                this.handleSuccess();
-            } catch (e) {
-                $.logger.error(e);
-                this.handleError();
+        // seed 片段本就属于当前文档，不是新到达的页面，不复位视口
+        const seed = this.takeSeed();
+        const html = seed === null ? this.takeHtml(targetHref) : Promise.resolve(seed);
+
+        html.then((text) => {
+            this.switchContent(text);
+            if (seed === null) {
+                const [x, y] = Array.isArray(options.scrollPos) ? options.scrollPos : [0, 0];
+                window.scrollTo(x, y);
             }
+            this.handleSuccess();
+        }).catch((e) => {
+            $.logger.error(e);
+            this.handleError();
+        });
+    }
+
+    /**
+     * 取出首屏 seed 并消费掉：服务端把当前页片段直出进 <template id="page">，省去首屏请求
+     * @returns {string | null} 无 seed 时返回 null
+     */
+    takeSeed() {
+        const seed = document.getElementById("page");
+        if (!seed || seed.tagName !== "TEMPLATE") {
+            return null;
+        }
+        const html = seed.innerHTML;
+        seed.remove();
+        return html;
+    }
+
+    /**
+     * 取目标片段：命中悬停预取则复用，否则实时请求。取走即清槽，不做缓存。
+     * @param {string} targetHref - 已规范化的目标地址
+     * @returns {Promise<string>}
+     */
+    takeHtml(targetHref) {
+        const slot = this.prefetched;
+        this.prefetched = { href: null, html: null };
+        return slot.href === targetHref ? slot.html : this.fetchHtml(targetHref);
+    }
+
+    /**
+     * 发起一次 PJAX 片段请求
+     * @param {string} targetHref - 已规范化的目标地址
+     * @returns {Promise<string>}
+     */
+    fetchHtml(targetHref) {
+        return new Promise((resolve, reject) => {
+            this.http.get(
+                targetHref,
+                {},
+                resolve,
+                (status) => reject(new Error(`PJAX request failed: ${targetHref} (${status})`)),
+                { dataType: "html" }
+            );
+        });
+    }
+
+    /**
+     * 悬停预取：提前发起请求占住单槽，点击同一地址时直接复用，省掉一次往返
+     * @param {string} uri - 目标 URI（相对或绝对路径）
+     */
+    prefetch(uri) {
+        if (!uri) {
+            return;
+        }
+        const targetHref = this.normalizeHref(uri);
+        if (targetHref === this.prefetched.href) {
             return;
         }
 
-        this.request = this.http.get(
-            targetHref,
-            {},
-            (html) => {
-                this.request = null;
-                try {
-                    this.switchContent(html);
-                    if (Array.isArray(options.scrollPos)) {
-                        window.scrollTo(options.scrollPos[0], options.scrollPos[1]);
-                    } else {
-                        window.scrollTo(0, 0);
-                    }
-                    this.state = { href: targetHref, history };
-                    this.handleSuccess();
-                } catch (e) {
-                    $.logger.error(e);
-                    this.handleError();
-                }
-            },
-            () => {
-                this.request = null;
-                this.handleError();
-            },
-            { dataType: "html" }
-        );
+        const html = this.fetchHtml(targetHref);
+        this.prefetched = { href: targetHref, html };
+        // 预取失败静默清槽，点击时按正常流程重发
+        html.catch(() => {
+            if (this.prefetched.html === html) {
+                this.prefetched = { href: null, html: null };
+            }
+        });
     }
 
     /**
