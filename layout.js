@@ -261,9 +261,31 @@ if (mdui.breakpoint().down("md")) {
     }
 }
 
+/** @type {number} 悬停多久才算「想点」，够短不影响体感，够长能滤掉鼠标划过 */
+const HOVER_INTENT_MS = 100;
+let hoverIntentHref = "";
+let hoverIntentTimer = 0;
+
 $(document)
     .on("click", "[data-pjax-item]", function () {
         pjaxUtils.loadUri($(this).data("href"));
+    })
+    /*
+     * 悬停预取：顶栏导航横向排列，鼠标去右侧工具区必然扫过一整排。
+     * 换一项就重新计时，只有停住的那一项能等满 HOVER_INTENT_MS，划过的全部作废。
+     * 不监听 mouseout——移到子元素也会触发，反而打断计时；靠 href 去重就够了。
+     */
+    .on("mouseover", "[data-pjax-item]", function () {
+        const href = $(this).data("href");
+        if (!href || href === hoverIntentHref) {
+            return;
+        }
+        hoverIntentHref = href;
+        clearTimeout(hoverIntentTimer);
+        hoverIntentTimer = setTimeout(() => {
+            hoverIntentHref = "";
+            pjaxUtils.prefetch(href);
+        }, HOVER_INTENT_MS);
     })
     .on("click", "#navigation-drawer-switch", () => {
         if (navigationDrawerEl) {

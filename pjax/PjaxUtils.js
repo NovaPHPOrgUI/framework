@@ -38,15 +38,26 @@ class PjaxUtils {
         this.prefetched = { href: null, html: null };
         /** @type {number} History state 递增 uid */
         this.uid = 0;
+        const pjaxHeaders = {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-PJAX": "true",
+            "X-PJAX-Selectors": JSON.stringify(PjaxUtils.SELECTORS),
+        };
+
         /** @type {Request} 专用 HTTP 客户端（带 PJAX 请求头、静默错误 toast） */
         this.http = new Request()
             .setSilent()
             .setBaseUrl(window.baseUri || "")
-            .setHeaders({
-                "X-Requested-With": "XMLHttpRequest",
-                "X-PJAX": "true",
-                "X-PJAX-Selectors": JSON.stringify(PjaxUtils.SELECTORS),
-            });
+            .setHeaders(pjaxHeaders);
+        /**
+         * 预取专用客户端。多带 X-PJAX-Prefetch，后端据此跳过「记录登录后跳转地址」这类
+         * 只对真实导航才有意义的副作用——否则划过 A 再点 B，登录后会落到 A。
+         * @type {Request}
+         */
+        this.prefetchHttp = new Request()
+            .setSilent()
+            .setBaseUrl(window.baseUri || "")
+            .setHeaders({ ...pjaxHeaders, "X-PJAX-Prefetch": "true" });
 
         if (!window.pageOnUnLoad) {
             window.pageOnUnLoad = NOOP;
@@ -268,11 +279,12 @@ class PjaxUtils {
     /**
      * 发起一次 PJAX 片段请求
      * @param {string} targetHref - 已规范化的目标地址
+     * @param {Request} [http] - 使用的客户端，预取需传 this.prefetchHttp
      * @returns {Promise<string>}
      */
-    fetchHtml(targetHref) {
+    fetchHtml(targetHref, http = this.http) {
         return new Promise((resolve, reject) => {
-            this.http.get(
+            http.get(
                 targetHref,
                 {},
                 resolve,
@@ -295,7 +307,7 @@ class PjaxUtils {
             return;
         }
 
-        const html = this.fetchHtml(targetHref);
+        const html = this.fetchHtml(targetHref, this.prefetchHttp);
         this.prefetched = { href: targetHref, html };
         // 预取失败静默清槽，点击时按正常流程重发
         html.catch(() => {

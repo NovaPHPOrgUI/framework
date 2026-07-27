@@ -46,22 +46,44 @@ loadUrl 开始 → 已在加载中则忽略本次跳转
 
 ## 悬停预取
 
-`pjaxUtils.prefetch(uri)` 提前发起片段请求，点击同一地址时 `loadUrl()` 直接复用，省掉一次往返。
-
-```javascript
-$('#docListContainer').on('mouseover', (e) => {
-    const card = e.target.closest('[data-pjax-item][data-href]');
-    if (card) pjaxUtils.prefetch(card.getAttribute('data-href'));
-});
-```
+`layout.js` 已对全部 `[data-pjax-item]` 开启，无需页面自己接。手动调用入口是 `pjaxUtils.prefetch(uri)`：提前发起片段请求，点击同一地址时 `loadUrl()` 直接复用，省掉一次往返。
 
 设计上是**单槽抢跑，不是缓存**：
 
 - 只保留最近一个预取结果，取走即清空，绝不复用第二次——`PjaxUtils` 是活到整页刷新的全局单例，缓存整页片段会读到过期内容
-- 同一地址重复 `prefetch()` 直接返回，所以 `mouseover` 不需要防抖
+- 同一地址重复 `prefetch()` 直接返回
 - 预取失败静默清槽，点击时按正常流程重发
 
-不要无脑绑到所有 `[data-pjax-item]` 上。PJAX 片段是整页渲染（登录校验、权限过滤、模板渲染都要跑一遍），鼠标扫过一排菜单就是一排请求。只给用户会「扫视 → 犹豫 → 点击」的入口加，比如搜索结果列表。
+### 必须有 hover-intent
+
+单槽限制的是「保留的结果」，**不是「发出的请求」**：换一个 href 就立刻发一次，旧请求还在飞（无法 abort）。而 PJAX 片段是整页渲染，登录校验、权限过滤、菜单构建、模板渲染都要跑一遍。
+
+顶栏导航横向排列，鼠标去右侧工具区必然扫过一整排；侧边栏纵向排列，点第 5 项必然扫过前 4 项。所以 `layout.js` 里换一项就重新计时，只有停住的那一项能等满 `HOVER_INTENT_MS`（100ms），划过的全部作废：
+
+```javascript
+.on("mouseover", "[data-pjax-item]", function () {
+    const href = $(this).data("href");
+    if (!href || href === hoverIntentHref) {
+        return;
+    }
+    hoverIntentHref = href;
+    clearTimeout(hoverIntentTimer);
+    hoverIntentTimer = setTimeout(() => {
+        hoverIntentHref = "";
+        pjaxUtils.prefetch(href);
+    }, HOVER_INTENT_MS);
+})
+```
+
+不监听 `mouseout`——移到子元素也会触发，反而打断计时；靠 href 去重就够了。代价是鼠标扫过后停在最后一项再离开时会多发一次请求。
+
+### 预取请求带 `X-PJAX-Prefetch: true`
+
+预取不是真实导航，后端必须能区分。`prefetch()` 走 `this.prefetchHttp`，比正常客户端多带一个 `X-PJAX-Prefetch: true`。
+
+目前后端用它跳过 `LoginManager::setRedirectUriIfNeeded()`：该方法会把当前 URI 记成「登录后跳转目标」，若预取也记，会话过期时划过 A 再点 B，登录后会落到 A。
+
+**给 GET 加任何写副作用之前，先想清楚它被预取时会怎样。**
 
 ## 子页面模板
 
