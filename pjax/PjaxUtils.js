@@ -303,6 +303,12 @@ class PjaxUtils {
      * @param {HTMLScriptElement} el - 源 script 元素
      */
     evalScript(el) {
+        // 只执行可执行脚本；application/json 等数据块浏览器原生不执行，
+        // pjax 也必须跳过，否则会把数据（如 #page-data 的 JSON）当 JS 执行而报错
+        const type = (el.type || "").toLowerCase();
+        if (type && type !== "text/javascript" && type !== "application/javascript" && type !== "module") {
+            return;
+        }
         const code = el.text || el.textContent || el.innerHTML || "";
         const src = el.src || "";
         if (code.includes("document.write")) {
