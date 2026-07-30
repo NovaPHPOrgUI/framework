@@ -177,9 +177,18 @@ class Loading {
 (function() {
     const map = new WeakMap();
 
+    function isNativeLoading(el) {
+        var tag = (el.tagName || '').toLowerCase();
+        // 原生 loading 只存在于 img/iframe；值只能是 lazy/eager
+        if (tag === 'img' || tag === 'iframe') return true;
+        var v = (el.getAttribute('loading') || '').toLowerCase();
+        return v === 'lazy' || v === 'eager';
+    }
+
     function show(el,text) {
         // 排除 mdui-button 系列：它们自带 loading 属性，避免冲突；其余任意容器均可作为遮罩宿主
         if (!el) return;
+        if (isNativeLoading(el)) return;
         var tag = (el.tagName || '').toLowerCase();
         if (tag === 'mdui-button' || tag === 'mdui-button-icon' || tag === 'mdui-fab') return;
         if (map.has(el)) return;
