@@ -87,6 +87,7 @@ window.jsMap = {
         "/components/fileUpload/FileUploader.js",
         "/components/fileUpload/File.js",
     ],
+    DragUpload: "/components/fileUpload/DragUpload.js",
     DataTable: [
         "/components/dataTable/Pagination.js",
         "/components/dataTable/gridManager.js",
