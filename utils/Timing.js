@@ -29,12 +29,29 @@
          */
         debounce(fn, wait = 300) {
             let timer = null;
-            return function (...args) {
+            const debounced = function (...args) {
                 if (timer) clearTimeout(timer);
                 timer = setTimeout(() => {
+                    timer = null;
                     fn.apply(this, args);
                 }, wait);
             };
+            /** 取消尚未触发的调用（切文档时必须先 cancel，再手动落地） */
+            debounced.cancel = function () {
+                if (timer) clearTimeout(timer);
+                timer = null;
+            };
+            /** 若有等待中的调用则立刻执行，否则 noop */
+            debounced.flush = function (...args) {
+                if (!timer) return;
+                clearTimeout(timer);
+                timer = null;
+                fn.apply(this, args);
+            };
+            debounced.pending = function () {
+                return timer != null;
+            };
+            return debounced;
         },
 
         /**
