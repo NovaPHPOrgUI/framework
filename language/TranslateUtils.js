@@ -20,10 +20,8 @@
  * 提供翻译API调用和DOM翻译功能
  */
 let TranslateUtils = {
-    /** @type {string} 认证API地址 */
-    authApi: 'https://edge.microsoft.com/translate/auth',
-    /** @type {string} 翻译API地址 */
-    translateApi: 'https://api.cognitive.microsofttranslator.com/translate?from={from}&to={to}&api-version=3.0&includeSentenceLength=true',
+    /** @type {string} 翻译API地址（Edge 公开接口，无需鉴权） */
+    translateApi: 'https://edge.microsoft.com/translate/translatetext?from={from}&to={to}&isEnterpriseClient=false',
     
     /** @type {Map} 语言ID到ServiceID的映射缓存 */
     _languageIdMap: null,
@@ -136,9 +134,9 @@ let TranslateUtils = {
         {"id": "pashto", "name": "پښتوName", "serviceId": "ps"},
         {"id": "thai", "name": "คนไทย", "serviceId": "th"},
         {"id": "armenian", "name": "Արմենյան", "serviceId": "hy"},
-        {"id": "chinese_simplified", "name": "简体中文", "serviceId": "zh-CHS"},
+        {"id": "chinese_simplified", "name": "简体中文", "serviceId": "zh-Hans"},
         {"id": "persian", "name": "Persian", "serviceId": "fa"},
-        {"id": "chinese_traditional", "name": "繁體中文", "serviceId": "zh-CHT"},
+        {"id": "chinese_traditional", "name": "繁體中文", "serviceId": "zh-Hant"},
         {"id": "kurdish", "name": "Kurdî", "serviceId": "ku"},
         {"id": "turkish", "name": "Türkçe", "serviceId": "tr"},
         {"id": "hindi", "name": "हिन्दी", "serviceId": "hi"},
@@ -227,18 +225,6 @@ let TranslateUtils = {
         return this._nodeUtils;
     },
     
-    jwt: null,
-    lastTime: 0,
-    /**
-
-     {
-     "element":element,
-     "from":from,
-     "to":to,
-     "callback
-     }
-
-     **/
     fromLanguage: "chinese_simplified",
     toLanguage: "chinese_simplified",
     init(localLanguage, autoLanguage) {
@@ -370,7 +356,7 @@ let TranslateUtils = {
                 for (let i = 0; i < translateData.length; i++) {
                     translatedTextResult.push({
                         index: chunk.indexes[i],
-                        "Text": chunk.payload[i].Text,
+                        "Text": chunk.payload[i],
                         "Translate": translateData[i].translations[0].text
                     });
                 }
@@ -395,12 +381,11 @@ let TranslateUtils = {
             return;
         }
 
-        // 统一转为数组格式处理
+        // 统一转为字符串数组
         const isArray = Array.isArray(text);
         const textArray = isArray ? text : [text];
-        const translate = textArray.map(item => ({ Text: item }));
 
-        this.translate(this.fromLanguage, this.toLanguage, translate, (data) => {
+        this.translate(this.fromLanguage, this.toLanguage, textArray, (data) => {
             const result = data.map(item => item.translations[0].text);
             callback(isArray ? result : result[0]);
         });
@@ -410,77 +395,44 @@ let TranslateUtils = {
      * 支持自动重试和指数退避策略
      * @param {string} from - 源语言ID
      * @param {string} to - 目标语言ID
-     * @param {Array<Object>} translateArray - 要翻译的文本数组
+     * @param {Array<string>} translateArray - 要翻译的文本字符串数组
      * @param {Function} callback - 翻译成功回调
      * @param {number} retryCount - 当前重试次数
      */
     translate: function (from, to, translateArray, callback, retryCount = 0) {
         const maxRetries = 3;
-        
-        this.getAuthToken((token) => {
-            const fromServiceId = this.findLanguageServerId(from);
-            const toServiceId = this.findLanguageServerId(to);
-            const uri = this.translateApi
-                .replace('{from}', fromServiceId)
-                .replace('{to}', toServiceId);
+        const fromServiceId = this.findLanguageServerId(from) || '';
+        const toServiceId = this.findLanguageServerId(to);
+        const uri = this.translateApi
+            .replace('{from}', fromServiceId)
+            .replace('{to}', toServiceId);
 
-            fetch(uri, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify(translateArray)
-            }).then((response) => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            }).then((data) => {
-                callback(data);
-            }).catch((error) => {
-                console.error(`Translation error (attempt ${retryCount + 1}/${maxRetries + 1}):`, error);
-                
-                // 指数退避重试策略
-                if (retryCount < maxRetries) {
-                    const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 8000);
-                    console.log(`Retrying in ${backoffTime}ms... (${retryCount + 1}/${maxRetries})`);
-                    
-                    setTimeout(() => {
-                        this.translate(from, to, translateArray, callback, retryCount + 1);
-                    }, backoffTime);
-                } else {
-                    console.error('Max retries reached. Translation failed permanently.');
-                }
-            });
-        });
-    },
-    /**
-     * 获取认证Token
-     * Token缓存8分钟，避免频繁请求
-     * @param {Function} callback - Token获取成功回调
-     */
-    getAuthToken: function (callback) {
-        const TOKEN_EXPIRE_TIME = 480000; // 8分钟（毫秒）
-        const now = new Date().getTime();
-        
-        // 如果token存在且未过期，直接使用缓存
-        if (this.jwt && now - this.lastTime < TOKEN_EXPIRE_TIME) {
-            callback(this.jwt);
-            return;
-        }
-        
-        // 请求新token
-        fetch(this.authApi, {
-            method: "GET",
+        fetch(uri, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(translateArray)
         }).then((response) => {
-            return response.text();
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
         }).then((data) => {
-            this.jwt = data;
-            this.lastTime = now;
             callback(data);
         }).catch((error) => {
-            console.error('Auth token fetch error:', error);
+            console.error(`Translation error (attempt ${retryCount + 1}/${maxRetries + 1}):`, error);
+
+            if (retryCount < maxRetries) {
+                const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 8000);
+                console.log(`Retrying in ${backoffTime}ms... (${retryCount + 1}/${maxRetries})`);
+
+                setTimeout(() => {
+                    this.translate(from, to, translateArray, callback, retryCount + 1);
+                }, backoffTime);
+            } else {
+                console.error('Max retries reached. Translation failed permanently.');
+            }
         });
     },
 
@@ -489,7 +441,7 @@ let TranslateUtils = {
      * 将大文本分割成多个小块，避免单次请求过大
      * @param {Array<Object>} elements - 待翻译元素数组
      * @param {number} totalLength - 单个分块的最大字符数
-     * @returns {Array<Object>} 分块后的数组
+     * @returns {Array<Object>} 分块后的数组，payload 为字符串数组
      */
     splitTranslateArray: function (elements, totalLength = 48000) {
         if (!Array.isArray(elements) || elements.length === 0) {
@@ -525,7 +477,7 @@ let TranslateUtils = {
             if (length > totalLength) {
                 flush();
                 result.push({
-                    payload: [{ Text: data }],
+                    payload: [data],
                     indexes: [index]
                 });
                 return;
@@ -536,8 +488,8 @@ let TranslateUtils = {
                 flush();
             }
 
-            // 将元素加入当前批次
-            payload.push({ Text: data });
+            // 将元素加入当前批次（新接口要求纯字符串数组）
+            payload.push(data);
             indexes.push(index);
             currentLength += length;
         });
