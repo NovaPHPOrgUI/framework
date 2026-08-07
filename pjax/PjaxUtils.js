@@ -257,7 +257,7 @@ class PjaxUtils {
      */
     takeSeed() {
         const seed = document.getElementById("page");
-        if (!seed || seed.tagName !== "TEMPLATE") {
+        if (!seed || seed.tagName !== "ARTICLE") {
             return null;
         }
         const html = seed.innerHTML;
