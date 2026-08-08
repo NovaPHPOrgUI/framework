@@ -32,27 +32,49 @@
     color: rgba(var(--mdui-color-primary));
     font-size: 1rem;
     text-align: center;
+    max-width: 90%;
+    word-break: break-word;
 }
 .loading-overlay {
-    /* 改为绝对定位，相对于最近的 position: relative/absolute 的父元素 */
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
+    /* 遮罩本身不超过可视高度，避免跟着超长内容一起拉高 */
+    max-height: var(--vh, 100vh);
     background-color: rgba(var(--mdui-color-background));
     z-index: 2000;
     overflow: hidden;
-    /* 移除之前针对全屏的 max-height: var(--vh) */
-    pointer-events: none;
+    /* 必须能接到滚轮/触摸，否则会穿透滚动底层 */
+    pointer-events: auto;
+    overscroll-behavior: none;
+    touch-action: none;
 }
 
-.loading-overlay > * {
-    pointer-events: auto; /* 恢复子元素交互 */
+/* body / 全屏：钉死在可视区，高度=视口，不跟文档内容走 */
+.loading-overlay.loading-overlay-fixed {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: var(--vh, 100vh);
+    max-height: var(--vh, 100vh);
+    z-index: 9999;
 }
 
 .parent-loading {
-    position: relative !important; /* 强制提升定位层级，确保遮罩层相对于它定位 */
-    overflow: hidden !important; /* 防止加载动画或遮罩层超出容器边界 */
-    min-height: 100px; /* 可选：防止空容器高度为0导致看不到 loading */
+    position: relative !important;
+    overflow: hidden !important;
+    max-height: var(--vh, 100vh) !important;
+    min-height: 100px;
+    overscroll-behavior: none;
+    touch-action: none;
+}
+
+/* loading 期间锁住页面滚动（html+body） */
+html.loading-scroll-lock,
+html.loading-scroll-lock body {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+    height: var(--vh, 100vh);
+    max-height: var(--vh, 100vh);
 }

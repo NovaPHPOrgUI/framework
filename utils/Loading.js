@@ -138,11 +138,15 @@ class Loading {
      */
     show() {
         try {
-            // 如果不是全局 Loading，给容器加上特定的 class
-            if (this.container !== document.body) {
+            const isBody = this.container === document.body;
+            if (isBody) {
+                // 全屏：fixed 到可视区，不跟 body 内容高度走
+                this.overlayElement.classList.add("loading-overlay-fixed");
+            } else {
                 this.container.classList.add("parent-loading");
             }
 
+            Loading.lockScroll();
             this.container.appendChild(this.overlayElement);
             fade.in(this.overlayElement);
         } catch (e) {
@@ -157,10 +161,11 @@ class Loading {
         try {
             let that = this;
             fade.out(this.overlayElement, function () {
-                // 动画结束后移除 class，恢复容器原始状态
                 if (that.container !== document.body) {
                     that.container.classList.remove("parent-loading");
                 }
+                that.overlayElement.classList.remove("loading-overlay-fixed");
+                Loading.unlockScroll();
 
                 window.dispatchEvent(new Event("resize"));
                 $.emitter.emit("translate:start");
@@ -168,6 +173,22 @@ class Loading {
             });
         } catch (e) {
             console.error("Loading close 方法错误:", e);
+        }
+    }
+
+    /** @type {number} */
+    static scrollLockCount = 0;
+
+    static lockScroll() {
+        if (Loading.scrollLockCount++ === 0) {
+            document.documentElement.classList.add("loading-scroll-lock");
+        }
+    }
+
+    static unlockScroll() {
+        Loading.scrollLockCount = Math.max(0, Loading.scrollLockCount - 1);
+        if (Loading.scrollLockCount === 0) {
+            document.documentElement.classList.remove("loading-scroll-lock");
         }
     }
 }
