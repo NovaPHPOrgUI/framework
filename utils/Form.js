@@ -43,13 +43,38 @@ $.form = {
             data[name] = $(item).prop("checked")?1:0;
         });
 
-        // 布尔 checkbox（非 name[] 分组）：未勾选时 serialize 不会带上字段
+        // checkbox：同名多项收集为数组；单项保持 0/1 布尔语义
+        const checkboxGroups = {};
         $(form).find("mdui-checkbox").each(function (key, item) {
-            let name = $(item).attr("name");
-            if (!name || /\[\]$/.test(name)) {
+            const name = $(item).attr("name");
+            if (!name) {
                 return;
             }
-            data[name] = $(item).prop("checked") ? 1 : 0;
+            const baseName = name.replace(/\[\]$/, '');
+            if (!checkboxGroups[baseName]) {
+                checkboxGroups[baseName] = {
+                    elements: [],
+                    hasBracket: /\[\]$/.test(name),
+                };
+            }
+            checkboxGroups[baseName].elements.push(item);
+        });
+
+        Object.keys(checkboxGroups).forEach(function (baseName) {
+            const group = checkboxGroups[baseName];
+            if (group.elements.length > 1 || group.hasBracket) {
+                const values = [];
+                group.elements.forEach(function (item) {
+                    if ($(item).prop("checked")) {
+                        values.push($(item).val());
+                    }
+                });
+                data[baseName] = values;
+                return;
+            }
+
+            const item = group.elements[0];
+            data[baseName] = $(item).prop("checked") ? 1 : 0;
         });
 
         $(form).find("mdui-chip-group").each(function (key, item) {
@@ -278,6 +303,10 @@ $.form = {
         $(form).find("mdui-file-upload").each(function (key, item) {
             //item.setFiles([]);
              $(item).val('');
+        });
+
+        $(form).find("mdui-checkbox").each(function (key, item) {
+            $(item).prop("checked", false);
         });
 
         $(form).find("mdui-chip-group").each(function (key, item) {
