@@ -139,14 +139,17 @@ class Loading {
     show() {
         try {
             const isBody = this.container === document.body;
+            this._lockedScroll = false;
             if (isBody) {
-                // 全屏：fixed 到可视区，不跟 body 内容高度走
+                // 全屏：fixed 到可视区，并锁页面滚动
                 this.overlayElement.classList.add("loading-overlay-fixed");
+                Loading.lockScroll();
+                this._lockedScroll = true;
             } else {
+                // 局部容器：只盖住宿主，不锁整页（否则翻页会滚回顶部）
                 this.container.classList.add("parent-loading");
             }
 
-            Loading.lockScroll();
             this.container.appendChild(this.overlayElement);
             fade.in(this.overlayElement);
         } catch (e) {
@@ -165,7 +168,10 @@ class Loading {
                     that.container.classList.remove("parent-loading");
                 }
                 that.overlayElement.classList.remove("loading-overlay-fixed");
-                Loading.unlockScroll();
+                if (that._lockedScroll) {
+                    Loading.unlockScroll();
+                    that._lockedScroll = false;
+                }
 
                 window.dispatchEvent(new Event("resize"));
                 $.emitter.emit("translate:start");
