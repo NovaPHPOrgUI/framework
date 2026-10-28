@@ -284,6 +284,26 @@ mdui-badge {
     display: flex !important;
   }
 }
+/* 手机顶栏：品牌区可收缩 + 标题省略号，藏版本号和用户名，避免头像被挤出屏幕 */
+@media (max-width: 600px) {
+  .app-bar-brand {
+    flex-shrink: 1;
+  }
+  .brand-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .brand-version,
+  .layout-header-user-info [slot=trigger] > span {
+    display: none;
+  }
+  .layout-header-user-info {
+    padding-inline: 0;
+  }
+  .layout-header-user-info [slot=trigger] {
+    margin-left: 0;
+  }
+}
 @media (min-width: 1025px) {
   .desktop-nav {
     display: flex !important;
