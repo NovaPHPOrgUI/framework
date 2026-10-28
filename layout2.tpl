@@ -20,7 +20,7 @@
 <body class="bg">
 
 
-<mdui-layout lass="scroll-line" >
+<mdui-layout class="scroll-line" >
     <mdui-top-app-bar class="banner position-fixed" scroll-behavior="elevate" scroll-target=".layout-main">
         <div class="container d-flex title-container p-0">
             <mdui-button-icon icon="menu" class="d-none" id="navigation-drawer-switch"></mdui-button-icon>
