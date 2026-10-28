@@ -42,15 +42,15 @@
   }
 }
 
-/* PJAX 主内容进场 */
+/* PJAX 主内容进场：只用 opacity。
+ * 禁止 transform——哪怕动画结束成单位矩阵，也会让内部 position:fixed
+ *（mdui-dialog 等）改相对 #container 定位，弹窗飞出视口。 */
 @keyframes nova-page-enter {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
 

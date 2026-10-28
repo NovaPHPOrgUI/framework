@@ -341,13 +341,16 @@ class PjaxUtils {
             }
         });
 
-        // 主内容区进场动效（motion.css）；无 class 时静默跳过
+        // 主内容区进场动效（motion.css）；用完立刻摘掉 class。
         const container = document.querySelector("#container");
         if (container) {
             container.classList.remove("nova-page-enter");
-            // 强制重启动画
             void container.offsetWidth;
             container.classList.add("nova-page-enter");
+            const clearEnter = () => container.classList.remove("nova-page-enter");
+            container.addEventListener("animationend", clearEnter, { once: true });
+            // 无动效 / prefers-reduced-motion 时 animationend 可能不来
+            setTimeout(clearEnter, 500);
         }
     }
 
