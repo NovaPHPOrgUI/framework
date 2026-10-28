@@ -111,6 +111,7 @@ window.jsMap = {
         '/components/markdown/penna-host.css',
         '/components/markdown/penna-render.min.js',
         '/components/markdown/penna-theme.js',
+        '/components/markdown/penna-engines.js',
         '/components/markdown/MarkdownPreviewer.js',
     ],
     /** 完整编辑器 */
@@ -120,6 +121,7 @@ window.jsMap = {
         '/components/markdown/penna-host.css',
         '/components/markdown/penna.min.js',
         '/components/markdown/penna-theme.js',
+        '/components/markdown/penna-engines.js',
         '/components/markdown/MarkdownEditor.js',
     ],
     Captcha: "/components/captcha/Captcha.js",
