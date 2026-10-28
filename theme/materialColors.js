@@ -52,6 +52,7 @@ const MATERIAL_DEFAULT_COLOR = MATERIAL_COLORS.default_color;
 function renderMaterialPresetSwatches() {
     return MATERIAL_COLOR_ORDER.map((key) => {
         const hex = MATERIAL_COLORS[key];
-        return `<div class="color-swatch" data-material="${key}" data-color="${hex}" title="${key}" style="background-color: rgb(var(--material-${key}))"></div>`;
+        // 直接用 hex：ThemeSwitcher 在 Shadow DOM 里，且 --material-* 只覆盖标签色少数键，不能当色板背景
+        return `<div class="color-swatch" data-material="${key}" data-color="${hex}" title="${key}" style="background-color:${hex}"></div>`;
     }).join('');
 }

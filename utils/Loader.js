@@ -15,7 +15,9 @@ window.loadedResources = {};
 window.inProgressResources = {};
 
 const loader = (function (window, document) {
-    const addVersion = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + window.version;
+    // version 为空时退回时间戳，避免 materialColors 等懒加载被浏览器永久缓存旧内容
+    const addVersion = (url) =>
+        url + (url.includes('?') ? '&' : '?') + 'v=' + (window.version || Date.now());
     
     /** 执行并清空回调队列 */
     function fireCallbacks(path, ...args) {
