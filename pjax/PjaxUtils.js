@@ -340,6 +340,15 @@ class PjaxUtils {
                 this.executeScripts(el);
             }
         });
+
+        // 主内容区进场动效（motion.css）；无 class 时静默跳过
+        const container = document.querySelector("#container");
+        if (container) {
+            container.classList.remove("nova-page-enter");
+            // 强制重启动画
+            void container.offsetWidth;
+            container.classList.add("nova-page-enter");
+        }
     }
 
     /**

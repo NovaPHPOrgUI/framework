@@ -1,0 +1,131 @@
+/*!
+ * Nova UI Motion
+ * Material You 时长/缓动 + PJAX / 列表 / 封面 常用动效
+ */
+
+:root {
+  --nova-motion-duration-short1: 50ms;
+  --nova-motion-duration-short2: 100ms;
+  --nova-motion-duration-short3: 150ms;
+  --nova-motion-duration-short4: 200ms;
+  --nova-motion-duration-medium1: 250ms;
+  --nova-motion-duration-medium2: 300ms;
+  --nova-motion-duration-medium3: 350ms;
+  --nova-motion-duration-medium4: 400ms;
+  --nova-motion-duration-long1: 450ms;
+  --nova-motion-duration-long2: 500ms;
+  --nova-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --nova-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --nova-motion-easing-decelerate: cubic-bezier(0, 0, 0, 1);
+  --nova-motion-easing-accelerate: cubic-bezier(0.3, 0, 1, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --nova-motion-duration-short1: 0ms;
+    --nova-motion-duration-short2: 0ms;
+    --nova-motion-duration-short3: 0ms;
+    --nova-motion-duration-short4: 0ms;
+    --nova-motion-duration-medium1: 0ms;
+    --nova-motion-duration-medium2: 0ms;
+    --nova-motion-duration-medium3: 0ms;
+    --nova-motion-duration-medium4: 0ms;
+    --nova-motion-duration-long1: 0ms;
+    --nova-motion-duration-long2: 0ms;
+  }
+
+  .nova-page-enter,
+  .nova-fade-in,
+  .nova-rise,
+  .nova-stagger > * {
+    animation: none !important;
+  }
+}
+
+/* PJAX 主内容进场 */
+@keyframes nova-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.nova-page-enter {
+  animation: nova-page-enter var(--nova-motion-duration-medium2) var(--nova-motion-easing-decelerate) both;
+}
+
+@keyframes nova-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.nova-fade-in {
+  animation: nova-fade-in var(--nova-motion-duration-medium1) var(--nova-motion-easing-standard) both;
+}
+
+@keyframes nova-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.nova-rise {
+  animation: nova-rise var(--nova-motion-duration-medium3) var(--nova-motion-easing-decelerate) both;
+}
+
+/* 子项错落入场：父级加 .nova-stagger */
+.nova-stagger > * {
+  animation: nova-rise var(--nova-motion-duration-medium2) var(--nova-motion-easing-decelerate) both;
+}
+
+@for $i from 1 through 12 {
+  .nova-stagger > *:nth-child(#{$i}) {
+    animation-delay: #{($i - 1) * 40}ms;
+  }
+}
+
+/* 封面 / 卡片悬停抬起 */
+.nova-lift {
+  transition:
+    transform var(--nova-motion-duration-short4) var(--nova-motion-easing-standard),
+    box-shadow var(--nova-motion-duration-short4) var(--nova-motion-easing-standard);
+}
+
+.nova-lift:hover {
+  transform: translateY(-3px);
+}
+
+.nova-lift:active {
+  transform: translateY(-1px);
+}
+
+/* 顶栏滚动 elevation 过渡 */
+.nova-app-bar-surface {
+  transition:
+    background-color var(--nova-motion-duration-short4) var(--nova-motion-easing-standard),
+    box-shadow var(--nova-motion-duration-short4) var(--nova-motion-easing-standard);
+}
+
+/* 通用过渡工具 */
+.nova-transition {
+  transition-property: color, background-color, border-color, opacity, transform, box-shadow;
+  transition-duration: var(--nova-motion-duration-short4);
+  transition-timing-function: var(--nova-motion-easing-standard);
+}
+
+.nova-transition-fast {
+  transition-duration: var(--nova-motion-duration-short3);
+}
+
+.nova-transition-slow {
+  transition-duration: var(--nova-motion-duration-medium4);
+}

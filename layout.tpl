@@ -2,7 +2,7 @@
 <html lang="zh-CN" class="mdui-theme-auto scroll-line">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
     <meta name="renderer" content="webkit"/>
     <title id="title">{$title}</title>
     {include file="publicHeader.tpl"}
@@ -11,8 +11,8 @@
 
 <body class="bg">
 
-<mdui-layout class="">
-    <mdui-top-app-bar scroll-behavior="elevate" scroll-target=".layout-main" class="position-fixed">
+<mdui-layout>
+    <mdui-top-app-bar scroll-behavior="elevate" scroll-target=".layout-main" class="position-fixed nova-app-bar-surface">
         <mdui-button-icon icon="menu" id="navigation-drawer-switch"></mdui-button-icon>
         <mdui-top-app-bar-title>{$title}</mdui-top-app-bar-title>
         <div style="flex-grow: 1"></div>
@@ -46,6 +46,22 @@
     </mdui-top-app-bar>
 
     <mdui-navigation-drawer open class="navigation-drawer position-fixed" id="navigation-drawer" close-on-overlay-click>
+        {* 可选品牌：业务侧传 $brandName / $brandSub / $brandLogo *}
+        {if isset($brandName) || isset($brandLogo)}
+            <div class="drawer-brand nova-rise">
+                {if isset($brandLogo) && $brandLogo != ''}
+                    <img class="logo" src="{$brandLogo}" alt="" width="40" height="40"/>
+                {elseif isset($brandMark) && $brandMark != ''}
+                    <div class="brand-mark" aria-hidden="true">{$brandMark}</div>
+                {/if}
+                <div class="brand-text">
+                    <div class="brand-title">{if isset($brandName)}{$brandName}{else}{$title}{/if}</div>
+                    {if isset($brandSub) && $brandSub != ''}
+                        <div class="brand-sub">{$brandSub}</div>
+                    {/if}
+                </div>
+            </div>
+        {/if}
         <mdui-list class="m-2">
             { $menuNavItems = $menuConfig }
             {include file="menuNav.tpl"}
@@ -72,4 +88,3 @@
 {include file="publicScript.tpl"}
 </body>
 </html>
-

@@ -52,14 +52,49 @@ mdui-top-app-bar,
   aspect-ratio: 1 / 1;
   width: auto;
   height: 100%;
-  border-radius: 22%;
+  border-radius: var(--mdui-shape-corner-medium, 12px);
   object-fit: cover;
 }
 
 .brand-title {
   font-size: 1.25rem;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  color: rgb(var(--mdui-color-on-surface));
+}
+
+.brand-sub {
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: rgb(var(--mdui-color-on-surface-variant));
+  letter-spacing: 0.04em;
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--mdui-shape-corner-medium, 12px);
+  background: rgb(var(--mdui-color-primary-container));
+  color: rgb(var(--mdui-color-on-primary-container));
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.drawer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem 0.75rem;
+}
+
+.drawer-brand .logo {
+  width: 40px;
+  height: 40px;
+  max-height: 40px;
 }
 
 .desktop-nav mdui-dropdown mdui-button,
@@ -72,6 +107,61 @@ mdui-top-app-bar,
 \*------------------------------------*/
 .navigation-drawer mdui-list {
   padding: var(--nova-padding);
+}
+
+.nav-section {
+  padding: 0.85rem 1rem 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+
+.nav-submenu {
+  margin-left: 2.5rem;
+}
+
+.nav-system {
+  margin: 0.25rem 0;
+}
+
+.nav-system-summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding: 0 1rem;
+  border-radius: var(--mdui-shape-corner-full, 999px);
+  color: rgb(var(--mdui-color-on-surface-variant));
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--nova-motion-duration-short4, 200ms) var(--nova-motion-easing-standard, ease);
+}
+
+.nav-system-summary::-webkit-details-marker {
+  display: none;
+}
+
+.nav-system-summary:hover {
+  background: rgba(var(--mdui-color-on-surface), 0.06);
+}
+
+.nav-system-title {
+  flex: 1;
+  font-size: 0.92rem;
+}
+
+.nav-system-chevron {
+  transition: transform var(--nova-motion-duration-short4, 200ms) var(--nova-motion-easing-standard, ease);
+}
+
+.nav-system[open] > .nav-system-summary .nav-system-chevron {
+  transform: rotate(180deg);
+}
+
+.nav-system-body {
+  padding: 0.15rem 0 0.35rem 0.5rem;
 }
 
 ::part(submenu) {
@@ -129,7 +219,7 @@ footer {
 }
 
 .navigation-drawer::part(panel)::-webkit-scrollbar-thumb:hover,
-.scroll-line::-webkit-scrollbar-thumb:hover,{
+.scroll-line::-webkit-scrollbar-thumb:hover {
   background: rgba(var(--mdui-color-on-background), 0.4);
 }
 

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nova UI Demo · 后台 M3</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #006a60; --on-primary: #fff;
+      --primary-c: #9ef2e4; --on-primary-c: #00201c;
+      --secondary-c: #cce8e2; --on-secondary-c: #05201c;
+      --surface: #f4fbf8; --on-surface: #161d1c; --on-variant: #3f4946;
+      --container-low: #eff5f2; --container: #e9efec; --highest: #dde4e0;
+      --outline: #6f7976; --sidebar: 280px;
+      --ease: cubic-bezier(0.2, 0, 0, 1);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Noto Sans SC", system-ui, sans-serif; background: var(--surface); color: var(--on-surface); }
+    .ms { font-family: "Material Symbols Rounded"; font-size: 22px; vertical-align: middle; }
+    .app { display: grid; grid-template-columns: var(--sidebar) 1fr; min-height: 100vh; }
+    .drawer { background: var(--container-low); padding: 12px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
+    .brand { display: flex; gap: 12px; align-items: center; padding: 16px; }
+    .mark { width: 44px; height: 44px; border-radius: 12px; background: var(--primary-c); color: var(--on-primary-c); display: grid; place-items: center; font-weight: 700; }
+    .brand h1 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+    .brand p { margin: 2px 0 0; font-size: .75rem; color: var(--on-variant); }
+    .sec { padding: 10px 16px 4px; font-size: .7rem; font-weight: 600; letter-spacing: .08em; color: var(--on-variant); }
+    .item { width: 100%; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 16px; border: 0; background: none; border-radius: 999px; color: var(--on-variant); cursor: pointer; font: inherit; text-align: left; }
+    .item:hover { background: rgba(22,29,28,.06); }
+    .item.active { background: var(--secondary-c); color: var(--on-secondary-c); font-weight: 600; }
+    details summary { list-style: none; display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 16px; border-radius: 999px; color: var(--on-variant); cursor: pointer; }
+    details summary::-webkit-details-marker { display: none; }
+    .main { min-width: 0; }
+    .bar { display: flex; align-items: center; gap: 8px; min-height: 64px; padding: 0 20px; position: sticky; top: 0; background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(10px); }
+    .bar h2 { margin: 0; font-size: 1.25rem; font-weight: 500; }
+    .spacer { flex: 1; }
+    .icon { width: 40px; height: 40px; border: 0; border-radius: 999px; background: none; cursor: pointer; color: var(--on-variant); }
+    .content { padding: 8px 24px 40px; animation: enter .3s var(--ease) both; }
+    @keyframes enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+    .kpi { padding: 18px; border-radius: 16px; background: var(--container-low); }
+    .kpi:first-child { background: var(--primary-c); color: var(--on-primary-c); }
+    .kpi .l { font-size: .78rem; opacity: .75; }
+    .kpi .v { font-size: 1.75rem; font-weight: 500; margin-top: 8px; }
+    .card { padding: 20px; border-radius: 28px; background: var(--container-low); }
+    .card h3 { margin: 0 0 12px; font-size: 1rem; font-weight: 500; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th, td { text-align: left; padding: 12px 8px; border-bottom: 1px solid var(--highest); }
+    th { color: var(--on-variant); font-weight: 500; }
+    .back { display: inline-block; margin: 12px 24px 0; font-size: .85rem; color: var(--primary); }
+    @media (max-width: 820px) { .app { grid-template-columns: 1fr; } .drawer { height: auto; position: relative; } .kpis { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <a class="back" href="index.html">← Demo 目录</a>
+  <div class="app">
+    <aside class="drawer">
+      <div class="brand"><div class="mark">N</div><div><h1>Nova Admin</h1><p>Material You 后台壳</p></div></div>
+      <div class="sec">业务</div>
+      <button class="item active" type="button"><span class="ms">dashboard</span>概览</button>
+      <button class="item" type="button"><span class="ms">inventory_2</span>资源</button>
+      <button class="item" type="button"><span class="ms">groups</span>用户</button>
+      <details>
+        <summary><span class="ms">settings</span>系统<span class="ms" style="margin-left:auto">expand_more</span></summary>
+        <button class="item" type="button"><span class="ms">tune</span>设置</button>
+        <button class="item" type="button"><span class="ms">key</span>权限</button>
+        <button class="item" type="button"><span class="ms">work_history</span>任务</button>
+      </details>
+    </aside>
+    <div class="main">
+      <header class="bar"><h2>概览</h2><div class="spacer"></div><button class="icon" type="button"><span class="ms">palette</span></button></header>
+      <main class="content">
+        <div class="kpis">
+          <div class="kpi"><div class="l">今日请求</div><div class="v">12.4k</div></div>
+          <div class="kpi"><div class="l">活跃用户</div><div class="v">836</div></div>
+          <div class="kpi"><div class="l">错误率</div><div class="v">0.12%</div></div>
+          <div class="kpi"><div class="l">队列</div><div class="v">3</div></div>
+        </div>
+        <div class="card">
+          <h3>最近事件</h3>
+          <table>
+            <thead><tr><th>时间</th><th>事件</th><th>状态</th></tr></thead>
+            <tbody>
+              <tr><td>18:02</td><td>同步完成</td><td>成功</td></tr>
+              <tr><td>17:41</td><td>导入 24 条</td><td>成功</td></tr>
+              <tr><td>16:10</td><td>Webhook 重试</td><td>警告</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

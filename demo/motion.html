@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nova UI Demo · Motion</title>
+  <link rel="stylesheet" href="../motion.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", system-ui, sans-serif;
+      background: #f4fbf8;
+      color: #161d1c;
+      padding: 32px 24px 64px;
+    }
+    .wrap { max-width: 880px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; font-weight: 600; margin: 0 0 8px; }
+    p { color: #3f4946; margin: 0 0 24px; line-height: 1.5; }
+    .back { display: inline-block; margin-bottom: 16px; color: #006a60; font-size: .9rem; }
+    section { margin-bottom: 36px; }
+    h2 { font-size: 1rem; font-weight: 500; margin: 0 0 12px; }
+    .box {
+      padding: 20px;
+      border-radius: 16px;
+      background: #eff5f2;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+    }
+    .tile {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #006a60, #3d9a84);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0,0,0,.08);
+    }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    button {
+      height: 40px; padding: 0 18px; border: 0; border-radius: 999px;
+      background: #006a60; color: #fff; font: inherit; cursor: pointer;
+    }
+    button.ghost { background: #cce8e2; color: #05201c; }
+    code { font-size: .85em; background: #dde4e0; padding: 1px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="index.html">← Demo 目录</a>
+    <h1>Motion 样例</h1>
+    <p>对应框架 <code>motion.css</code>。PJAX 切换时会给 <code>#container</code> 自动加上 <code>nova-page-enter</code>。</p>
+
+    <section>
+      <h2>nova-page-enter</h2>
+      <div class="box nova-page-enter" id="enterBox">主内容进场（刷新本块可重放）</div>
+      <div class="row" style="margin-top:12px">
+        <button type="button" id="replayEnter">重放</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>nova-stagger</h2>
+      <div class="grid nova-stagger" id="stagger">
+        <div class="tile">1</div><div class="tile">2</div><div class="tile">3</div>
+        <div class="tile">4</div><div class="tile">5</div><div class="tile">6</div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="ghost" type="button" id="replayStagger">重放 stagger</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>nova-lift</h2>
+      <div class="grid">
+        <div class="tile nova-lift">Hover</div>
+        <div class="tile nova-lift">Hover</div>
+        <div class="tile nova-lift">Hover</div>
+      </div>
+    </section>
+  </div>
+  <script>
+    function replay(el, cls) {
+      el.classList.remove(cls);
+      void el.offsetWidth;
+      el.classList.add(cls);
+    }
+    document.getElementById('replayEnter').onclick = () => replay(document.getElementById('enterBox'), 'nova-page-enter');
+    document.getElementById('replayStagger').onclick = () => {
+      const g = document.getElementById('stagger');
+      g.classList.remove('nova-stagger');
+      void g.offsetWidth;
+      g.classList.add('nova-stagger');
+    };
+  </script>
+</body>
+</html>

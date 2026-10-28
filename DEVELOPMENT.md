@@ -26,11 +26,15 @@ static/
 ├── framework/              # 框架核心
 │   ├── bootloader.js       # 启动器：全局变量、jsMap
 │   ├── layout.js           # 布局：菜单、PJAX、全局事件
-│   ├── layout.tpl          # 主布局模板
+│   ├── layout.tpl          # 后台布局（抽屉 + 可选品牌）
+│   ├── layout2.tpl         # 前台布局（顶栏品牌 + desktop/mobile nav）
+│   ├── menuNav.tpl         # 菜单：支持 type=section / type=system
 │   ├── tpl.tpl             # 子页面骨架模板
 │   ├── base.scss           # 全局 Reset + 工具类（详见 README.md）
+│   ├── motion.scss         # 动效 token + PJAX/列表/封面常用动画
+│   ├── demo/               # 开发期风格参考（打包剔除）
 │   ├── utils/              # 框架工具类
-│   ├── pjax/               # PJAX 路由
+│   ├── pjax/               # PJAX 路由（切换时自动 nova-page-enter）
 │   ├── theme/              # 主题切换 Web Component
 │   ├── language/           # 多语言 Web Component
 │   ├── imageLoader/        # 图片懒加载 Web Component

@@ -1750,20 +1750,8 @@ h6 {
 }
 
 /*------------------------------------*\
-  6. 字重工具类 (只保留命名的)
+  6. 字重工具类（仅保留实际在用的）
 \*------------------------------------*/
-.font-light {
-  font-weight: 300 !important;
-}
-
-.font-normal {
-  font-weight: 400 !important;
-}
-
-.font-medium {
-  font-weight: 500 !important;
-}
-
 .font-semibold {
   font-weight: 600 !important;
 }
@@ -2824,36 +2812,17 @@ legend {
 
 /*------------------------------------*\
   24. 胶囊标签 (Tag / Badge)
-  用法: <span class="tag tag-rose">标签</span>
+  用法: <span class="tag tag-success">标签</span>
   MDUI: tag-primary | secondary | tertiary | error | neutral
-  扩展: tag-success | warning | info | accent | rose | pink | red | crimson
-        | orange | coral | amber | yellow | gold | lime | green | emerald | mint
-        | teal | cyan | sky | blue | indigo | violet | purple | grape | fuchsia
-        | brown | stone | slate | navy
-  色源: --material-*（Android Material 原色）→ 自动生成 --tag-*-bg/fg（日夜间）
-  兼容 .badge 前缀；tag-outline 空心
-  超长省略：另加 text-ellipsis + ellipsis-max-*（勿写进 .tag 默认）
+  扩展（仅保留业务在用色）: success | warning | info | gold | stone
+  色源: --material-* → --tag-*-bg/fg（日夜间）
+  兼容 .badge 前缀
 \*------------------------------------*/
 :root {
   --material-default: 103, 80, 164;
-  --material-sakura: 255, 156, 168;
-  --material-red: 244, 67, 54;
-  --material-pink: 233, 30, 99;
-  --material-purple: 156, 39, 176;
-  --material-deep-purple: 103, 58, 183;
-  --material-indigo: 63, 81, 181;
   --material-blue: 33, 150, 243;
-  --material-light-blue: 3, 169, 244;
-  --material-cyan: 0, 188, 212;
-  --material-teal: 0, 150, 136;
   --material-green: 76, 175, 80;
-  --material-light-green: 139, 195, 74;
-  --material-lime: 205, 220, 57;
-  --material-yellow: 255, 235, 59;
   --material-amber: 255, 193, 7;
-  --material-orange: 255, 152, 0;
-  --material-deep-orange: 255, 87, 34;
-  --material-brown: 121, 85, 72;
   --material-blue-grey: 96, 125, 143;
   --tag-success-bg: 237, 247, 238;
   --tag-success-fg: 75, 126, 84;
@@ -2861,83 +2830,18 @@ legend {
   --tag-warning-fg: 172, 136, 44;
   --tag-info-bg: 233, 245, 254;
   --tag-info-fg: 52, 112, 172;
-  --tag-accent-bg: 240, 238, 246;
-  --tag-accent-fg: 90, 74, 129;
-  --tag-rose-bg: 255, 245, 246;
-  --tag-rose-fg: 172, 116, 131;
-  --tag-pink-bg: 253, 233, 239;
-  --tag-pink-fg: 160, 47, 94;
-  --tag-red-bg: 254, 236, 235;
-  --tag-red-fg: 166, 67, 70;
-  --tag-crimson-bg: 255, 238, 233;
-  --tag-crimson-fg: 172, 78, 59;
-  --tag-orange-bg: 255, 245, 230;
-  --tag-orange-fg: 172, 113, 40;
-  --tag-coral-bg: 255, 238, 233;
-  --tag-coral-fg: 172, 78, 59;
-  --tag-amber-bg: 255, 249, 230;
-  --tag-amber-fg: 172, 136, 44;
-  --tag-yellow-bg: 255, 253, 235;
-  --tag-yellow-fg: 172, 158, 72;
   --tag-gold-bg: 255, 249, 230;
   --tag-gold-fg: 172, 136, 44;
-  --tag-lime-bg: 250, 252, 235;
-  --tag-lime-fg: 145, 150, 71;
-  --tag-green-bg: 237, 247, 238;
-  --tag-green-fg: 75, 126, 84;
-  --tag-emerald-bg: 230, 245, 243;
-  --tag-emerald-fg: 34, 112, 114;
-  --tag-mint-bg: 243, 249, 237;
-  --tag-mint-fg: 109, 137, 80;
-  --tag-teal-bg: 230, 245, 243;
-  --tag-teal-fg: 34, 112, 114;
-  --tag-cyan-bg: 230, 248, 251;
-  --tag-cyan-fg: 34, 133, 155;
-  --tag-sky-bg: 230, 246, 254;
-  --tag-sky-fg: 36, 123, 172;
-  --tag-blue-bg: 233, 245, 254;
-  --tag-blue-fg: 52, 112, 172;
-  --tag-indigo-bg: 236, 238, 248;
-  --tag-indigo-fg: 68, 75, 138;
-  --tag-violet-bg: 240, 235, 248;
-  --tag-violet-fg: 90, 63, 139;
-  --tag-purple-bg: 245, 233, 247;
-  --tag-purple-fg: 118, 52, 136;
-  --tag-grape-bg: 245, 233, 247;
-  --tag-grape-fg: 118, 52, 136;
-  --tag-fuchsia-bg: 253, 233, 239;
-  --tag-fuchsia-fg: 160, 47, 94;
-  --tag-brown-bg: 242, 238, 237;
-  --tag-brown-fg: 99, 77, 79;
   --tag-stone-bg: 239, 242, 244;
   --tag-stone-fg: 86, 99, 118;
-  --tag-slate-bg: 239, 242, 244;
-  --tag-slate-fg: 86, 99, 118;
-  --tag-navy-bg: 236, 238, 248;
-  --tag-navy-fg: 68, 75, 138;
   --tag-elev-shadow: none;
 }
 
 .mdui-theme-dark {
   --material-default: 103, 80, 164;
-  --material-sakura: 255, 156, 168;
-  --material-red: 244, 67, 54;
-  --material-pink: 233, 30, 99;
-  --material-purple: 156, 39, 176;
-  --material-deep-purple: 103, 58, 183;
-  --material-indigo: 63, 81, 181;
   --material-blue: 33, 150, 243;
-  --material-light-blue: 3, 169, 244;
-  --material-cyan: 0, 188, 212;
-  --material-teal: 0, 150, 136;
   --material-green: 76, 175, 80;
-  --material-light-green: 139, 195, 74;
-  --material-lime: 205, 220, 57;
-  --material-yellow: 255, 235, 59;
   --material-amber: 255, 193, 7;
-  --material-orange: 255, 152, 0;
-  --material-deep-orange: 255, 87, 34;
-  --material-brown: 121, 85, 72;
   --material-blue-grey: 96, 125, 143;
   --tag-success-bg: 28, 40, 32;
   --tag-success-fg: 191, 226, 192;
@@ -2945,84 +2849,19 @@ legend {
   --tag-warning-fg: 255, 233, 166;
   --tag-info-bg: 22, 36, 55;
   --tag-info-fg: 175, 217, 251;
-  --tag-accent-bg: 32, 27, 44;
-  --tag-accent-fg: 200, 192, 222;
-  --tag-rose-bg: 53, 37, 44;
-  --tag-rose-fg: 255, 219, 224;
-  --tag-pink-bg: 50, 20, 35;
-  --tag-pink-fg: 247, 174, 199;
-  --tag-red-bg: 51, 25, 28;
-  --tag-red-fg: 251, 187, 183;
-  --tag-crimson-bg: 53, 28, 25;
-  --tag-crimson-fg: 255, 195, 175;
-  --tag-orange-bg: 53, 37, 21;
-  --tag-orange-fg: 255, 218, 163;
-  --tag-coral-bg: 53, 28, 25;
-  --tag-coral-fg: 255, 195, 175;
-  --tag-amber-bg: 53, 43, 22;
-  --tag-amber-fg: 255, 233, 166;
-  --tag-yellow-bg: 53, 48, 29;
-  --tag-yellow-fg: 255, 248, 184;
   --tag-gold-bg: 53, 43, 22;
   --tag-gold-fg: 255, 233, 166;
-  --tag-lime-bg: 46, 46, 29;
-  --tag-lime-fg: 237, 242, 184;
-  --tag-green-bg: 28, 40, 32;
-  --tag-green-fg: 191, 226, 192;
-  --tag-emerald-bg: 17, 36, 40;
-  --tag-emerald-fg: 163, 217, 212;
-  --tag-mint-bg: 37, 43, 31;
-  --tag-mint-fg: 213, 233, 190;
-  --tag-teal-bg: 17, 36, 40;
-  --tag-teal-fg: 163, 217, 212;
-  --tag-cyan-bg: 17, 42, 50;
-  --tag-cyan-fg: 163, 231, 240;
-  --tag-sky-bg: 18, 39, 55;
-  --tag-sky-fg: 164, 224, 251;
-  --tag-blue-bg: 22, 36, 55;
-  --tag-blue-fg: 175, 217, 251;
-  --tag-indigo-bg: 26, 27, 46;
-  --tag-indigo-fg: 186, 192, 228;
-  --tag-violet-bg: 32, 24, 46;
-  --tag-violet-fg: 200, 184, 229;
-  --tag-purple-bg: 39, 21, 45;
-  --tag-purple-fg: 219, 177, 227;
-  --tag-grape-bg: 39, 21, 45;
-  --tag-grape-fg: 219, 177, 227;
-  --tag-fuchsia-bg: 50, 20, 35;
-  --tag-fuchsia-fg: 247, 174, 199;
-  --tag-brown-bg: 34, 27, 31;
-  --tag-brown-fg: 207, 194, 189;
   --tag-stone-bg: 31, 33, 41;
   --tag-stone-fg: 198, 208, 215;
-  --tag-slate-bg: 31, 33, 41;
-  --tag-slate-fg: 198, 208, 215;
-  --tag-navy-bg: 26, 27, 46;
-  --tag-navy-fg: 186, 192, 228;
   --tag-elev-shadow: none;
 }
 
 @media (prefers-color-scheme: dark) {
   .mdui-theme-auto {
     --material-default: 103, 80, 164;
-    --material-sakura: 255, 156, 168;
-    --material-red: 244, 67, 54;
-    --material-pink: 233, 30, 99;
-    --material-purple: 156, 39, 176;
-    --material-deep-purple: 103, 58, 183;
-    --material-indigo: 63, 81, 181;
     --material-blue: 33, 150, 243;
-    --material-light-blue: 3, 169, 244;
-    --material-cyan: 0, 188, 212;
-    --material-teal: 0, 150, 136;
     --material-green: 76, 175, 80;
-    --material-light-green: 139, 195, 74;
-    --material-lime: 205, 220, 57;
-    --material-yellow: 255, 235, 59;
     --material-amber: 255, 193, 7;
-    --material-orange: 255, 152, 0;
-    --material-deep-orange: 255, 87, 34;
-    --material-brown: 121, 85, 72;
     --material-blue-grey: 96, 125, 143;
     --tag-success-bg: 28, 40, 32;
     --tag-success-fg: 191, 226, 192;
@@ -3030,60 +2869,10 @@ legend {
     --tag-warning-fg: 255, 233, 166;
     --tag-info-bg: 22, 36, 55;
     --tag-info-fg: 175, 217, 251;
-    --tag-accent-bg: 32, 27, 44;
-    --tag-accent-fg: 200, 192, 222;
-    --tag-rose-bg: 53, 37, 44;
-    --tag-rose-fg: 255, 219, 224;
-    --tag-pink-bg: 50, 20, 35;
-    --tag-pink-fg: 247, 174, 199;
-    --tag-red-bg: 51, 25, 28;
-    --tag-red-fg: 251, 187, 183;
-    --tag-crimson-bg: 53, 28, 25;
-    --tag-crimson-fg: 255, 195, 175;
-    --tag-orange-bg: 53, 37, 21;
-    --tag-orange-fg: 255, 218, 163;
-    --tag-coral-bg: 53, 28, 25;
-    --tag-coral-fg: 255, 195, 175;
-    --tag-amber-bg: 53, 43, 22;
-    --tag-amber-fg: 255, 233, 166;
-    --tag-yellow-bg: 53, 48, 29;
-    --tag-yellow-fg: 255, 248, 184;
     --tag-gold-bg: 53, 43, 22;
     --tag-gold-fg: 255, 233, 166;
-    --tag-lime-bg: 46, 46, 29;
-    --tag-lime-fg: 237, 242, 184;
-    --tag-green-bg: 28, 40, 32;
-    --tag-green-fg: 191, 226, 192;
-    --tag-emerald-bg: 17, 36, 40;
-    --tag-emerald-fg: 163, 217, 212;
-    --tag-mint-bg: 37, 43, 31;
-    --tag-mint-fg: 213, 233, 190;
-    --tag-teal-bg: 17, 36, 40;
-    --tag-teal-fg: 163, 217, 212;
-    --tag-cyan-bg: 17, 42, 50;
-    --tag-cyan-fg: 163, 231, 240;
-    --tag-sky-bg: 18, 39, 55;
-    --tag-sky-fg: 164, 224, 251;
-    --tag-blue-bg: 22, 36, 55;
-    --tag-blue-fg: 175, 217, 251;
-    --tag-indigo-bg: 26, 27, 46;
-    --tag-indigo-fg: 186, 192, 228;
-    --tag-violet-bg: 32, 24, 46;
-    --tag-violet-fg: 200, 184, 229;
-    --tag-purple-bg: 39, 21, 45;
-    --tag-purple-fg: 219, 177, 227;
-    --tag-grape-bg: 39, 21, 45;
-    --tag-grape-fg: 219, 177, 227;
-    --tag-fuchsia-bg: 50, 20, 35;
-    --tag-fuchsia-fg: 247, 174, 199;
-    --tag-brown-bg: 34, 27, 31;
-    --tag-brown-fg: 207, 194, 189;
     --tag-stone-bg: 31, 33, 41;
     --tag-stone-fg: 198, 208, 215;
-    --tag-slate-bg: 31, 33, 41;
-    --tag-slate-fg: 198, 208, 215;
-    --tag-navy-bg: 26, 27, 46;
-    --tag-navy-fg: 186, 192, 228;
     --tag-elev-shadow: none;
   }
 }
@@ -3099,35 +2888,8 @@ legend {
   transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.tag-removable,
-.tag-has-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25em;
-}
-.tag-removable .tag-label,
-.tag-has-action .tag-label {
-  min-width: 0;
-}
-
-.tag-remove {
-  flex-shrink: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 0 0 0 0.25em;
-  margin: 0;
-  line-height: 1;
-  font-size: 1em;
-  color: inherit;
-  opacity: 0.75;
-}
-.tag-remove:hover {
-  opacity: 1;
-}
-
-.tag:not(.tag-sm):not(.tag-md):not(.tag-lg):not(.badge-sm):not(.badge-md):not(.badge-lg),
-.badge:not(.tag-sm):not(.tag-md):not(.tag-lg):not(.badge-sm):not(.badge-md):not(.badge-lg) {
+.tag:not(.tag-sm):not(.badge-sm),
+.badge:not(.tag-sm):not(.badge-sm) {
   padding: 0.375rem 0.75rem;
   font-size: var(--mdui-typescale-body-small-size);
   line-height: var(--mdui-typescale-body-small-line-height);
@@ -3141,41 +2903,11 @@ legend {
   line-height: var(--mdui-typescale-label-small-line-height);
 }
 
-.badge-md,
-.tag-md {
-  padding: 0.375rem 0.75rem;
-  font-size: var(--mdui-typescale-body-small-size);
-  line-height: var(--mdui-typescale-body-small-line-height);
-}
-
-.badge-lg,
-.tag-lg {
-  padding: 0.5rem 1rem;
-  font-size: var(--mdui-typescale-body-medium-size);
-  line-height: var(--mdui-typescale-body-medium-line-height);
-}
-
-.tags,
-.tag-group {
+.tags {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.375rem;
-}
-
-.tag-dot {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25em;
-}
-.tag-dot::before {
-  content: "";
-  flex-shrink: 0;
-  width: 0.45em;
-  height: 0.45em;
-  border-radius: 50%;
-  background-color: currentColor;
-  opacity: 0.85;
 }
 
 a.tag,
@@ -3317,123 +3049,6 @@ button.badge:active {
   box-shadow: none;
 }
 
-.tag-accent,
-.badge-accent {
-  background-color: rgb(var(--tag-accent-bg));
-  color: rgb(var(--tag-accent-fg));
-}
-
-.tag-outline.tag-accent,
-.tag-outline.badge-accent {
-  background-color: rgba(var(--tag-accent-bg), 0.45);
-  color: rgb(var(--tag-accent-fg));
-  box-shadow: none;
-}
-
-.tag-rose,
-.badge-rose {
-  background-color: rgb(var(--tag-rose-bg));
-  color: rgb(var(--tag-rose-fg));
-}
-
-.tag-outline.tag-rose,
-.tag-outline.badge-rose {
-  background-color: rgba(var(--tag-rose-bg), 0.45);
-  color: rgb(var(--tag-rose-fg));
-  box-shadow: none;
-}
-
-.tag-pink,
-.badge-pink {
-  background-color: rgb(var(--tag-pink-bg));
-  color: rgb(var(--tag-pink-fg));
-}
-
-.tag-outline.tag-pink,
-.tag-outline.badge-pink {
-  background-color: rgba(var(--tag-pink-bg), 0.45);
-  color: rgb(var(--tag-pink-fg));
-  box-shadow: none;
-}
-
-.tag-red,
-.badge-red {
-  background-color: rgb(var(--tag-red-bg));
-  color: rgb(var(--tag-red-fg));
-}
-
-.tag-outline.tag-red,
-.tag-outline.badge-red {
-  background-color: rgba(var(--tag-red-bg), 0.45);
-  color: rgb(var(--tag-red-fg));
-  box-shadow: none;
-}
-
-.tag-crimson,
-.badge-crimson {
-  background-color: rgb(var(--tag-crimson-bg));
-  color: rgb(var(--tag-crimson-fg));
-}
-
-.tag-outline.tag-crimson,
-.tag-outline.badge-crimson {
-  background-color: rgba(var(--tag-crimson-bg), 0.45);
-  color: rgb(var(--tag-crimson-fg));
-  box-shadow: none;
-}
-
-.tag-orange,
-.badge-orange {
-  background-color: rgb(var(--tag-orange-bg));
-  color: rgb(var(--tag-orange-fg));
-}
-
-.tag-outline.tag-orange,
-.tag-outline.badge-orange {
-  background-color: rgba(var(--tag-orange-bg), 0.45);
-  color: rgb(var(--tag-orange-fg));
-  box-shadow: none;
-}
-
-.tag-coral,
-.badge-coral {
-  background-color: rgb(var(--tag-coral-bg));
-  color: rgb(var(--tag-coral-fg));
-}
-
-.tag-outline.tag-coral,
-.tag-outline.badge-coral {
-  background-color: rgba(var(--tag-coral-bg), 0.45);
-  color: rgb(var(--tag-coral-fg));
-  box-shadow: none;
-}
-
-.tag-amber,
-.badge-amber {
-  background-color: rgb(var(--tag-amber-bg));
-  color: rgb(var(--tag-amber-fg));
-}
-
-.tag-outline.tag-amber,
-.tag-outline.badge-amber {
-  background-color: rgba(var(--tag-amber-bg), 0.45);
-  color: rgb(var(--tag-amber-fg));
-  box-shadow: none;
-}
-
-.tag-yellow,
-.badge-yellow {
-  background-color: rgb(var(--tag-yellow-bg));
-  color: rgb(var(--tag-yellow-fg));
-}
-
-.tag-outline.tag-yellow,
-.tag-outline.badge-yellow {
-  background-color: rgba(var(--tag-yellow-bg), 0.45);
-  color: rgb(var(--tag-yellow-fg));
-  box-shadow: none;
-}
-
 .tag-gold,
 .badge-gold {
   background-color: rgb(var(--tag-gold-bg));
@@ -3447,188 +3062,6 @@ button.badge:active {
   box-shadow: none;
 }
 
-.tag-lime,
-.badge-lime {
-  background-color: rgb(var(--tag-lime-bg));
-  color: rgb(var(--tag-lime-fg));
-}
-
-.tag-outline.tag-lime,
-.tag-outline.badge-lime {
-  background-color: rgba(var(--tag-lime-bg), 0.45);
-  color: rgb(var(--tag-lime-fg));
-  box-shadow: none;
-}
-
-.tag-green,
-.badge-green {
-  background-color: rgb(var(--tag-green-bg));
-  color: rgb(var(--tag-green-fg));
-}
-
-.tag-outline.tag-green,
-.tag-outline.badge-green {
-  background-color: rgba(var(--tag-green-bg), 0.45);
-  color: rgb(var(--tag-green-fg));
-  box-shadow: none;
-}
-
-.tag-emerald,
-.badge-emerald {
-  background-color: rgb(var(--tag-emerald-bg));
-  color: rgb(var(--tag-emerald-fg));
-}
-
-.tag-outline.tag-emerald,
-.tag-outline.badge-emerald {
-  background-color: rgba(var(--tag-emerald-bg), 0.45);
-  color: rgb(var(--tag-emerald-fg));
-  box-shadow: none;
-}
-
-.tag-mint,
-.badge-mint {
-  background-color: rgb(var(--tag-mint-bg));
-  color: rgb(var(--tag-mint-fg));
-}
-
-.tag-outline.tag-mint,
-.tag-outline.badge-mint {
-  background-color: rgba(var(--tag-mint-bg), 0.45);
-  color: rgb(var(--tag-mint-fg));
-  box-shadow: none;
-}
-
-.tag-teal,
-.badge-teal {
-  background-color: rgb(var(--tag-teal-bg));
-  color: rgb(var(--tag-teal-fg));
-}
-
-.tag-outline.tag-teal,
-.tag-outline.badge-teal {
-  background-color: rgba(var(--tag-teal-bg), 0.45);
-  color: rgb(var(--tag-teal-fg));
-  box-shadow: none;
-}
-
-.tag-cyan,
-.badge-cyan {
-  background-color: rgb(var(--tag-cyan-bg));
-  color: rgb(var(--tag-cyan-fg));
-}
-
-.tag-outline.tag-cyan,
-.tag-outline.badge-cyan {
-  background-color: rgba(var(--tag-cyan-bg), 0.45);
-  color: rgb(var(--tag-cyan-fg));
-  box-shadow: none;
-}
-
-.tag-sky,
-.badge-sky {
-  background-color: rgb(var(--tag-sky-bg));
-  color: rgb(var(--tag-sky-fg));
-}
-
-.tag-outline.tag-sky,
-.tag-outline.badge-sky {
-  background-color: rgba(var(--tag-sky-bg), 0.45);
-  color: rgb(var(--tag-sky-fg));
-  box-shadow: none;
-}
-
-.tag-blue,
-.badge-blue {
-  background-color: rgb(var(--tag-blue-bg));
-  color: rgb(var(--tag-blue-fg));
-}
-
-.tag-outline.tag-blue,
-.tag-outline.badge-blue {
-  background-color: rgba(var(--tag-blue-bg), 0.45);
-  color: rgb(var(--tag-blue-fg));
-  box-shadow: none;
-}
-
-.tag-indigo,
-.badge-indigo {
-  background-color: rgb(var(--tag-indigo-bg));
-  color: rgb(var(--tag-indigo-fg));
-}
-
-.tag-outline.tag-indigo,
-.tag-outline.badge-indigo {
-  background-color: rgba(var(--tag-indigo-bg), 0.45);
-  color: rgb(var(--tag-indigo-fg));
-  box-shadow: none;
-}
-
-.tag-violet,
-.badge-violet {
-  background-color: rgb(var(--tag-violet-bg));
-  color: rgb(var(--tag-violet-fg));
-}
-
-.tag-outline.tag-violet,
-.tag-outline.badge-violet {
-  background-color: rgba(var(--tag-violet-bg), 0.45);
-  color: rgb(var(--tag-violet-fg));
-  box-shadow: none;
-}
-
-.tag-purple,
-.badge-purple {
-  background-color: rgb(var(--tag-purple-bg));
-  color: rgb(var(--tag-purple-fg));
-}
-
-.tag-outline.tag-purple,
-.tag-outline.badge-purple {
-  background-color: rgba(var(--tag-purple-bg), 0.45);
-  color: rgb(var(--tag-purple-fg));
-  box-shadow: none;
-}
-
-.tag-grape,
-.badge-grape {
-  background-color: rgb(var(--tag-grape-bg));
-  color: rgb(var(--tag-grape-fg));
-}
-
-.tag-outline.tag-grape,
-.tag-outline.badge-grape {
-  background-color: rgba(var(--tag-grape-bg), 0.45);
-  color: rgb(var(--tag-grape-fg));
-  box-shadow: none;
-}
-
-.tag-fuchsia,
-.badge-fuchsia {
-  background-color: rgb(var(--tag-fuchsia-bg));
-  color: rgb(var(--tag-fuchsia-fg));
-}
-
-.tag-outline.tag-fuchsia,
-.tag-outline.badge-fuchsia {
-  background-color: rgba(var(--tag-fuchsia-bg), 0.45);
-  color: rgb(var(--tag-fuchsia-fg));
-  box-shadow: none;
-}
-
-.tag-brown,
-.badge-brown {
-  background-color: rgb(var(--tag-brown-bg));
-  color: rgb(var(--tag-brown-fg));
-}
-
-.tag-outline.tag-brown,
-.tag-outline.badge-brown {
-  background-color: rgba(var(--tag-brown-bg), 0.45);
-  color: rgb(var(--tag-brown-fg));
-  box-shadow: none;
-}
-
 .tag-stone,
 .badge-stone {
   background-color: rgb(var(--tag-stone-bg));
@@ -3639,32 +3072,6 @@ button.badge:active {
 .tag-outline.badge-stone {
   background-color: rgba(var(--tag-stone-bg), 0.45);
   color: rgb(var(--tag-stone-fg));
-  box-shadow: none;
-}
-
-.tag-slate,
-.badge-slate {
-  background-color: rgb(var(--tag-slate-bg));
-  color: rgb(var(--tag-slate-fg));
-}
-
-.tag-outline.tag-slate,
-.tag-outline.badge-slate {
-  background-color: rgba(var(--tag-slate-bg), 0.45);
-  color: rgb(var(--tag-slate-fg));
-  box-shadow: none;
-}
-
-.tag-navy,
-.badge-navy {
-  background-color: rgb(var(--tag-navy-bg));
-  color: rgb(var(--tag-navy-fg));
-}
-
-.tag-outline.tag-navy,
-.tag-outline.badge-navy {
-  background-color: rgba(var(--tag-navy-bg), 0.45);
-  color: rgb(var(--tag-navy-fg));
   box-shadow: none;
 }
 
